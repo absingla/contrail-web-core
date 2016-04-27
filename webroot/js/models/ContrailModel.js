@@ -15,6 +15,8 @@ define([
             return modelConfig;
         },
 
+        initModel: function() {},
+
         constructor: function (modelData, modelRemoteDataConfig) {
             var model, errorAttributes,
                 editingLockAttrs, _this = this,
@@ -30,11 +32,13 @@ define([
             modelData = $.extend(true, {}, modelData, {errors: new Backbone.Model(errorAttributes), locks: new Backbone.Model(editingLockAttrs)});
 
             modelData = this.formatModelConfig(modelData);
+
             model = new ContrailViewModel($.extend(true, {data: modelData}, modelRemoteDataConfig));
             model = _.extend(model, this.validations, {_originalAttributes: modelAttributes});
 
             Knockback.ViewModel.prototype.constructor.call(this, model);
 
+            this.initModel();
             delete this.validations;
             return this;
         },
