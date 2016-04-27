@@ -22,12 +22,12 @@
         return self;
     };
 
-    $.fn.contrailMultiselect = function(option,option2){
-        var self = this;
-        option.multiple = true;
-        self.data('contrailMultiselect', constructSelect2(self, option, option2));
-        return self;
-    };
+    // $.fn.contrailMultiselect = function(option,option2){
+    //     var self = this;
+    //     option.multiple = true;
+    //     self.data('contrailMultiselect', constructSelect2(self, option, option2));
+    //     return self;
+    // };
 
     $.fn.contrailTabs = function(option) {
         var self = this,
@@ -193,11 +193,11 @@
         return self;
     };
 
-    $.fn.contrailDropdown = function(defaultOption, args) {
-        var self = this;
-        self.data('contrailDropdown', constructSelect2(self, defaultOption, args));
-        return self;
-    };
+    // $.fn.contrailDropdown = function(defaultOption, args) {
+    //     var self = this;
+    //     self.data('contrailDropdown', constructSelect2(self, defaultOption, args));
+    //     return self;
+    // };
 
     $.fn.contrailCombobox = function(customOption) {
         var option = $.extend(true, {}, customOption),
@@ -1158,6 +1158,7 @@ function findTextInObj(text, data){
 };
 
 function  fetchSourceMapData(index, data){
+    console.log(index)
     var arr = index.split("."),
         returnVal = data;
 
@@ -1171,6 +1172,7 @@ function  fetchSourceMapData(index, data){
     return returnVal;
 };
 
+/*
 function constructSelect2(self, customConfig, args) {
     if(typeof args !== 'undefined') {
         self.select2(customConfig, args);
@@ -1186,42 +1188,46 @@ function constructSelect2(self, customConfig, args) {
                 dataTextField: 'text',
                 dataValueField: 'id',
                 data: [],
-                query: function (q) {
-                    if(q.term != null){
-                        var pageSize = 50;
-                        var results = _.filter(this.data,
-                            function(e) {
-                                return (q.term == ""  || e.text.toUpperCase().indexOf(q.term.toUpperCase()) >= 0 );
-                            });
-                        q.callback({results:results.slice((q.page-1)*pageSize, q.page*pageSize),
-                            more:results.length >= q.page*pageSize });
-                    } else {
-                        var t = q.term,filtered = { results: [] }, process;
-                        process = function(datum, collection) {
-                            var group, attr;
-                            datum = datum[0];
-                            if (datum.children) {
-                                group = {};
-                                for (attr in datum) {
-                                    if (datum.hasOwnProperty(attr)) group[attr]=datum[attr];
-                                }
-                                group.children=[];
-                                $(datum.children).each2(function(i, childDatum) { process(childDatum, group.children); });
-                                if (group.children.length || query.matcher(t, '', datum)) {
-                                    collection.push(group);
-                                }
-                            } else {
-                                if (q.matcher(t, '', datum)) {
-                                    collection.push(datum);
-                                }
-                            }
-                        };
-                        if(t != ""){
-                            $(this.data).each2(function(i, datum) { process(datum, filtered.results); })
-                        }
-                        q.callback({results:this.data});
-                    }
-                },
+                // query: function (q) {
+                //     // console.log(q)
+                //     if(q.term != null){
+                //         var pageSize = 50;
+                //         var results = _.filter(this.data,
+                //             function(e) {
+                //                 return (q.term == ""  || e.text.toUpperCase().indexOf(q.term.toUpperCase()) >= 0 );
+                //             });
+                //         q.callback({results:results.slice((q.page-1)*pageSize, q.page*pageSize),
+                //             more:results.length >= q.page*pageSize });
+                //     } else {
+                //         var t = q.term,
+                //             filtered = { results: [] },
+                //             process;
+                //
+                //         process = function(datum, collection) {
+                //             var group, attr;
+                //             datum = datum[0];
+                //             if (datum.children) {
+                //                 group = {};
+                //                 for (attr in datum) {
+                //                     if (datum.hasOwnProperty(attr)) group[attr]=datum[attr];
+                //                 }
+                //                 group.children=[];
+                //                 $(datum.children).each2(function(i, childDatum) { process(childDatum, group.children); });
+                //                 if (group.children.length || query.matcher(t, '', datum)) {
+                //                     collection.push(group);
+                //                 }
+                //             } else {
+                //                 if (q.matcher(t, '', datum)) {
+                //                     collection.push(datum);
+                //                 }
+                //             }
+                //         };
+                //         if(t != ""){
+                //             $(this.data).each2(function(i, datum) { process(datum, filtered.results); })
+                //         }
+                //         q.callback({results:this.data});
+                //     }
+                // },
                 formatResultCssClass: function(obj){
                     if(obj.label && 'children' in obj){
                         return 'select2-result-label';
@@ -1305,17 +1311,18 @@ function constructSelect2(self, customConfig, args) {
 
             if (contrail.checkIfExist(self.data('select2'))) {
                 self.select2('destroy');
+                self.empty();
             }
 
             self.select2(option)
                 .off("change", changeFunction)
                 .on("change", changeFunction)
-                .off("select2-selecting", selectingFunction)
-                .on("select2-selecting", selectingFunction)
-                .off("select2-open", openFunction)
-                .on("select2-open", openFunction)
-                .off("select2-close", closeFunction)
-                .on("select2-close", closeFunction);
+                .off("select2:selecting", selectingFunction)
+                .on("select2:selecting", selectingFunction)
+                .off("select2:open", openFunction)
+                .on("select2:open", openFunction)
+                .off("select2:close", closeFunction)
+                .on("select2:close", closeFunction);
 
             option.sourceMap = constructSourceMap(option.data, 'id');
 
@@ -1323,23 +1330,23 @@ function constructSelect2(self, customConfig, args) {
                 if (contrail.checkIfExist(option.multiple)) {
                     // set value for Multiselect
                     if (contrail.checkIfExist(value)){
-                        self.select2('val', value, triggerChange);
+                        self.val(value, triggerChange);
                     }
                 } else {
-
+            
                     // set value for Dropdown
                     if (contrail.checkIfExist(value) && value !== '' && contrail.checkIfExist(option.sourceMap[value])) {
-                        self.select2('val', value, triggerChange);
+                        self.val(value, triggerChange);
                     } else if (contrail.checkIfExist(option.defaultValueId) &&
                         option.defaultValueId >= 0 && option.data.length > option.defaultValueId) {
-
+            
                         // set default value
                         var selectedOption = option.data[option.defaultValueId];
                         if (contrail.checkIfExist(option.data[0].children) && option.data[0].children.length > 1) {
                             selectedOption = option.data[0].children[option.defaultValueId];
                         }
-
-                        self.select2('val', selectedOption[option.dataValueField.dsVar], triggerChange);
+            
+                        self.val(selectedOption[option.dataValueField.dsVar], triggerChange);
                     }
                 }
             }
@@ -1389,10 +1396,10 @@ function constructSelect2(self, customConfig, args) {
         $.extend(true, dataObject, {
             getAllData: function(){
                 if(self.data('select2') != null)
-                    return self.data('select2').opts.data;
+                    return self.data('select2').data();
             },
             getSelectedData: function() {
-                var selectedValue = self.select2('val'),
+                var selectedValue = self.val(),
                     selectedObjects = [], index;
                 if (selectedValue == null) {
                     selectedValue = [];
@@ -1407,9 +1414,9 @@ function constructSelect2(self, customConfig, args) {
             },
             text: function(text) {
                 if(typeof text !== 'undefined') {
-                    var data = self.data('select2').opts.data;
+                    var data = self.data('select2').data();
                     var answer = findTextInObj(text, data);
-                    self.select2('val', answer.id);
+                    self.val(answer.id);
                 } else {
                     if(self.select2('data') != null && typeof self.select2('data').length !== 'undefined' && self.select2('data').length > 0){
                         var result = [];
@@ -1424,19 +1431,23 @@ function constructSelect2(self, customConfig, args) {
                 }
             },
             value: function(value, triggerChange) {
+                console.log(value)
                 if (contrail.checkIfExist(value)) {
                     if (dataObject.isRequestInProgress == true) {
                         dataObject.cachedValue = value;
                     }
-                    self.select2('val', value, (contrail.checkIfExist(triggerChange) ? triggerChange : false));
+                    self.val(value);
+                    // self.val(value, (contrail.checkIfExist(triggerChange) ? triggerChange : false));
                 } else {
-                    return self.select2('val');
+                    return self.val();
                 }
             },
             setData: function(data, value, triggerChange) {
                 if(dataObject.isRequestInProgress == true && contrail.checkIfExist(value)) {
                     dataObject.cachedValue = value;
                 }
+
+                console.log(data)
 
                 config.data = data;
                 initSelect2(config, value, triggerChange)
@@ -1459,7 +1470,7 @@ function constructSelect2(self, customConfig, args) {
                 }
                 self.select2('destroy');
                 self.select2(config);
-                self.select2('val', "");
+                self.val("");
             },
             enable: function(flag){
                 self.select2("enable", flag);
@@ -1496,6 +1507,7 @@ function constructSelect2(self, customConfig, args) {
         return dataObject;
     }
 }
+*/
 
 function startWidgetLoading(selectorId) {
     $("#" + selectorId + "-loading").show();

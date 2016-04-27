@@ -9,6 +9,7 @@ require([
         'core-cache',
         'core-labels',
         'core-messages',
+        'core-form-elements',
         'core-views-default-config',
         'layout-handler',
         'core-basedir/js/common/qe.utils',
@@ -19,7 +20,7 @@ require([
         'core-basedir/js/common/core.alarms.utils',
         'core-basedir/js/common/core.alarms.parsers',
         'text!core-basedir/templates/core.common.tmpl'
-    ], function (CoreUtils, CoreConstants, CoreFormatters, Cache, CoreLabels, CoreMessages, CoreViewsDefaultConfig,
+    ], function (CoreUtils, CoreConstants, CoreFormatters, Cache, CoreLabels, CoreMessages, CoreFormElements, CoreViewsDefaultConfig,
                  LayoutHandler, QEUtils, QEModelConfig, QEGridConfig, QEParsers, ChartUtils, CoreAlarmUtils, CoreAlarmParsers, CoreCommonTmpls) {
         cowc = new CoreConstants();
         cowu = new CoreUtils();

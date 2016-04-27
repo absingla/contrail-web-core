@@ -32,13 +32,11 @@
     border-color: #ddd;
 }
 .grid-header .select2-container,
-.widget-header .select2-container,
-.breadcrumb .select2-container{
+.widget-header .select2-container {
     margin-bottom: 2px;
 }
 .grid-header .select2-container.select2-container-active,
-.widget-header .select2-container.select2-container-active,
-.breadcrumb .select2-container.select2-container-active{
+.widget-header .select2-container.select2-container-active {
     -webkit-box-shadow: none;
     -moz-box-shadow: none;
     box-shadow: none;
@@ -57,8 +55,7 @@
     margin-bottom: 2px;
 }
 .grid-header .select2-container a.select2-choice,
-.widget-header .select2-container a.select2-choice,
-.breadcrumb .select2-container a.select2-choice{
+.widget-header .select2-container a.select2-choice {
     border: none;
     padding: 0 4px;
 }
@@ -67,8 +64,7 @@
     cursor: default;
 }
 .grid-header .widget-toolbar .select2-chosen,
-.widget-header .widget-toolbar .select2-chosen,
-.breadcrumb li.active .select2-chosen {
+.widget-header .widget-toolbar .select2-chosen {
     color: #3182bd;
     font-weight: 600;
 }
@@ -274,7 +270,7 @@
 }
 .grid-footer{
     width:100%;
-    height:22px;
+    height:20px;
     border-top: 1px solid #dadada;
     margin-top: -2px;
     font-size: 11px;
@@ -326,23 +322,36 @@
     float: left;
     width: 75px;
 }
-.select2-container.csg-current-page {
-    float: none;
-    font-size: 11px;
+.grid-footer .select2-container--default {
+    margin-top: -2px;
 }
-.slick-pager .select2-container .select2-choice > .select2-chosen {
-    margin-right: 15px;
-}
-.slick-pager .select2-container .select2-choice{
+.grid-footer .select2-container--default .select2-selection--single {
+    border: none;
     height: 20px;
 }
-.slick-pager .select2-container .select2-arrow{
-    width:20px;
-}
-.slick-pager .select2-container .select2-chosen, .slick-pager .select2-container .select2-arrow{
+.grid-footer .select2-container--default .select2-selection--single .select2-selection__rendered {
     line-height: 20px;
+}
+.grid-footer .select2-container--default .select2-selection--single .select2-selection__arrow {
     height: 20px;
 }
+    /*.select2-container.csg-current-page {*/
+    /*float: none;*/
+    /*font-size: 11px;*/
+/*}*/
+/*.slick-pager .select2-container .select2-choice > .select2-chosen {*/
+    /*margin-right: 15px;*/
+/*}*/
+/*.slick-pager .select2-container .select2-choice{*/
+    /*height: 20px;*/
+/*}*/
+/*.slick-pager .select2-container .select2-arrow{*/
+    /*width:20px;*/
+/*}*/
+/*.slick-pager .select2-container .select2-chosen, .slick-pager .select2-container .select2-arrow{*/
+    /*line-height: 20px;*/
+    /*height: 20px;*/
+/*}*/
 .csg-pager-sizes {
     width: 90px;
     float: left;
@@ -351,9 +360,9 @@
     margin: 0 5px;
     float: left;
 }
-.select2-container.csg-pager-sizes {
-    float: none;
-}
+/*.select2-container.csg-pager-sizes {*/
+    /*float: none;*/
+/*}*/
 .slick-pager .slick-pager-settings * {
     vertical-align: middle;
 }

@@ -368,7 +368,7 @@ define([
             //Footer pager size default should equal page size in config
             footerTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_FOOTER_PAGER_SIZE, function () {
                 expect(1);
-                equal($(el).find('.slick-pager-sizes .select2-chosen').text().trim(),
+                equal($(el).find('.slick-pager-sizes .select2-selection__rendered').text().trim(),
                     viewConfigFooter.pager.options.pageSize + ' Records',
                     "page size selection should match default set");
             }, cotc.SEVERITY_HIGH));

@@ -897,12 +897,12 @@ define([
                 		<span class="slick-pager-nav"> \
                 			<span class="pager-control"><i class="icon-step-backward icon-disabled pager-control-first"></i></span>\
                 			<span class="pager-control"> <i class="icon-backward icon-disabled pager-control-prev"></i></span> \
-                			<span class="pager-page-info"><div class="csg-current-page"></div> of <span class="csg-total-page-count"></span></span> \
+                			<span class="pager-page-info"><select class="csg-current-page"></select> of <span class="csg-total-page-count"></span></span> \
                 			<span class="pager-control"> <i class="icon-forward icon-disabled pager-control-next"></i></span> \
                 			<span class="pager-control"> <i class="icon-step-forward icon-disabled pager-control-last"></i></span> \
                 		</span> \
                 		<span class="slick-pager-info"></span>\
-                		<span class="slick-pager-sizes"><div class="csg-pager-sizes"></div></span>\
+                		<span class="slick-pager-sizes"><select class="csg-pager-sizes"></select></span>\
                 	</div>');
 
                     if (dataView.getLength() != 0) {

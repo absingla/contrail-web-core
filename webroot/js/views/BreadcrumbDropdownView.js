@@ -128,17 +128,18 @@ define([
 
         breadcrumbElement.children('li').removeClass('active');
         breadcrumbElement.children('li:last').append('<span class="divider breadcrumb-divider"><i class="icon-angle-right"></i></span>');
-        breadcrumbElement.append('<li class="active breadcrumb-item"><div id="' + breadcrumbDropdownId + '" class="breadcrumb-dropdown"></div></li>');
+        breadcrumbElement.append('<li class="active breadcrumb-dropdown-item "><select id="' + breadcrumbDropdownId + '" class="breadcrumb-dropdown"></select></li>');
 
         return $('#' + breadcrumbDropdownId).contrailDropdown({
             dataTextField: "name",
             dataValueField: "value",
             data: dropdownData,
-            dropdownCssClass: 'min-width-150',
+            width: 'resolve',
+            dropdownCssClass: 'breadcrumb-dropdown-options',
             selecting: function (e) {
                 var selectedValueData = {
-                    name: e.object['name'],
-                    value: e.object['value']
+                    name: e.params.args.data['name'],
+                    value: e.params.args.data['value']
                 };
 
                 if(dropdownOptions.preSelectCB != null && typeof(dropdownOptions.preSelectCB) == 'function') {
@@ -172,7 +173,7 @@ define([
                 breadcrumbDivider = breadcrumbLiElement.prev().find('.divider');
 
             breadcrumbLiElement.find('.breadcrumb-divider').remove();
-            breadcrumbLiElement.nextAll('.breadcrumb-item').remove();
+            breadcrumbLiElement.nextAll('.breadcrumb-dropdown-item').remove();
 
             $('#' + breadcrumbDropdownId).data('contrailDropdown').destroy();
             if(breadcrumbLiElement.hasClass('active')) {
@@ -188,7 +189,7 @@ define([
 
             var breadcrumbLiElement = $('#' + breadcrumbDropdownId).parent();
             breadcrumbLiElement.find('.breadcrumb-divider').remove();
-            breadcrumbLiElement.nextAll('.breadcrumb-item').remove();
+            breadcrumbLiElement.nextAll('.breadcrumb-dropdown-item').remove();
         }
     };
 

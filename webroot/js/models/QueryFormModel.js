@@ -304,7 +304,7 @@ define([
                 attrs4Server = {},
                 ignoreKeyList = ['elementConfigMap', 'errors', 'locks', 'ui_added_parameters', 'where_or_clauses', 'select_data_object', 'where_data_object',
                                  'filter_data_object', 'filter_and_clauses', 'sort_by', 'sort_order', 'log_category', 'log_type', 'is_request_in_progress',
-                                 'show_advanced_options'];
+                                 'show_advanced_options', 'table_name_data_object'];
 
             for (var key in modelAttrs) {
                 if(modelAttrs.hasOwnProperty(key) && ignoreKeyList.indexOf(key) == -1) {
@@ -488,12 +488,17 @@ define([
                             whereFields = getWhereFields4NameDropdown(response, tableName, disableWhereFields);
 
                         model.select_data_object().requestState((selectFields.length > 0) ? cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY : cowc.DATA_REQUEST_STATE_SUCCESS_EMPTY);
+
+                        //TODO - Not set ui_added_parameters here, instead make it extend from qe.model.config.js
                         contrailViewModel.set({
                             'ui_added_parameters': {
                                 'table_schema': response,
-                                'table_schema_column_names_map' : getTableSchemaColumnMap(response)
+                                'table_schema_column_names_map' : getTableSchemaColumnMap(response),
+                                'time_range_options': cowc.TIMERANGE_DROPDOWN_VALUES,
+                                'direction_options': cowc.DIRECTION_DROPDOWN_VALUES
                             }
                         });
+
                         setEnable4SelectFields(selectFields, model.select_data_object().enable_map());
                         model.select_data_object().select_fields(selectFields);
 

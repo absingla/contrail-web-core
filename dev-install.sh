@@ -129,15 +129,15 @@ cp -af ./$THIRD_PARTY/handlebars-v1.3.0.js webroot/assets/handlebars/handlebars-
 rm -rf webroot/assets/select2
 mkdir -p webroot/assets/select2/js
 mkdir -p webroot/assets/select2/styles
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2.min.js webroot/assets/select2/js/select2.min.js
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2.css webroot/assets/select2/styles/select2.css
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2-bootstrap.css webroot/assets/select2/styles/select2-bootstrap.css
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2.png webroot/css/select2.png
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2x2.png webroot/css/select2x2.png
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2-spinner.gif webroot/css/select2-spinner.gif
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2.png webroot/assets/select2/styles/select2.png
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2x2.png webroot/assets/select2/styles/select2x2.png
-cp -af ./$THIRD_PARTY/select2-v3.4.6/select2-spinner.gif webroot/assets/select2/styles/select2-spinner.gif
+cp -af ./$THIRD_PARTY/select2-v4.0.2/dist/js/select2.full.js webroot/assets/select2/js/select2.js
+cp -af ./$THIRD_PARTY/select2-v4.0.2/dist/css/select2.css webroot/assets/select2/styles/select2.css
+#cp -af ./$THIRD_PARTY/select2-v4.0.2/select2-bootstrap.css webroot/assets/select2/styles/select2-bootstrap.css
+#cp -af ./$THIRD_PARTY/select2-v4.0.2/select2.png webroot/css/select2.png
+#cp -af ./$THIRD_PARTY/select2-v4.0.2/select2x2.png webroot/css/select2x2.png
+#cp -af ./$THIRD_PARTY/select2-v4.0.2/select2-spinner.gif webroot/css/select2-spinner.gif
+#cp -af ./$THIRD_PARTY/select2-v4.0.2/select2.png webroot/assets/select2/styles/select2.png
+#cp -af ./$THIRD_PARTY/select2-v4.0.2/select2x2.png webroot/assets/select2/styles/select2x2.png
+#cp -af ./$THIRD_PARTY/select2-v4.0.2/select2-spinner.gif webroot/assets/select2/styles/select2-spinner.gif
 #End - Copy Select2 from $THIRD_PARTY
 
 #Start - Copy Slickgrid from $THIRD_PARTY
@@ -273,7 +273,7 @@ MAINFILE[25]=webroot/assets/slickgrid/js/slick.dataview.js
 MAINFILE[26]=webroot/assets/slickgrid/js/slick.checkboxselectcolumn.js
 MAINFILE[27]=webroot/assets/slickgrid/js/slick.rowselectionmodel.js
 MAINFILE[28]=webroot/assets/datetimepicker/js/jquery.datetimepicker.js
-MAINFILE[29]=webroot/assets/select2/js/select2.min.js
+#MAINFILE[29]=webroot/assets/select2/js/select2.js
 MAINFILE[30]=webroot/assets/moment/moment.js
 MAINFILE[31]=webroot/assets/ip/jsbn-combined.js
 MAINFILE[32]=webroot/assets/ip/sprintf.js
@@ -325,7 +325,7 @@ cat ${MAINFILE[26]} >> webroot/js/common/contrail.unified.2.js
 cat ${MAINFILE[27]} >> webroot/js/common/contrail.unified.2.js
 cat ${MAINFILE[46]} >> webroot/js/common/contrail.unified.2.js
 cat ${MAINFILE[28]} >> webroot/js/common/contrail.unified.2.js
-cat ${MAINFILE[29]} >> webroot/js/common/contrail.unified.2.js
+#cat ${MAINFILE[29]} >> webroot/js/common/contrail.unified.2.js
 cat ${MAINFILE[30]} >> webroot/js/common/contrail.unified.2.js
 cat ${MAINFILE[31]} >> webroot/js/common/contrail.unified.2.js
 cat ${MAINFILE[32]} >> webroot/js/common/contrail.unified.2.js

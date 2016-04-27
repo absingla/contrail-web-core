@@ -1068,11 +1068,12 @@
         </div>
         {{/IfCompare}}
         <div class="row-fluid form-element">
-            <input id="{{id}}" name="{{name}}" class="{{class}}"
+            <select id="{{id}}" name="{{name}}" class="{{class}}"
                 data-bind="
                     {{#if viewConfig.disabled}}disable: {{viewConfig.disabled}}, {{/if}}{{#if lockAttr}}disable: locks().{{name}}_locked, {{/if}}
                     value: {{viewConfig.dataBindValue}},
-                    optionList: {{viewConfig.dataBindOptionList}},
+                    optionsValue: 'id',
+                    options: {{viewConfig.dataBindOptionList}},
                     event: { change: function() { validateAttr('{{viewConfig.path}}', '{{validation}}') } },
                     contrailDropdown: {}"
             />
@@ -1086,11 +1087,12 @@
         {{#if viewConfig.visible}} visible: {{viewConfig.visible}}, {{/if}}
         style: { {{#if viewConfig.width}} width: '{{viewConfig.width}}px' {{/if}} }
         ">
-        <input id="{{id}}" name="{{name}}" class="{{class}}"
+        <select id="{{id}}" name="{{name}}" class="{{class}}"
             data-bind="
                 {{#if viewConfig.disabled}}disable: {{viewConfig.disabled}}, {{/if}}{{#if lockAttr}}disable: locks().{{name}}_locked, {{/if}}
                 value: {{viewConfig.dataBindValue}},
-                optionList: {{viewConfig.dataBindOptionList}},
+                optionsValue: 'id',
+                options: {{viewConfig.dataBindOptionList}},
                 event: { change: function() { validateAttr()('{{viewConfig.path}}', '{{validation}}', $data); } },
                 contrailDropdown: {}"
         />
@@ -1146,11 +1148,12 @@
             </div>
         </div>
         <div class="row-fluid form-element">
-            <input id="{{id}}" name="{{name}}" class="{{class}}"
+            <select id="{{id}}" name="{{name}}" class="{{class}}"
                 data-bind="
                     {{#if viewConfig.disabled}}disable: {{viewConfig.disabled}}, {{/if}}{{#if lockAttr}}disable: locks().{{name}}_locked, {{/if}}
-                    value: {{viewConfig.dataBindValue}},
-                    optionList: {{viewConfig.dataBindOptionList}},
+                    selectedOptions: {{viewConfig.dataBindValue}},
+                    optionsValue: 'id',
+                    options: {{viewConfig.dataBindOptionList}},
                     event: { change: function() { validateAttr('{{viewConfig.path}}', '{{validation}}') } },
                     contrailMultiselect: {}"
             />
@@ -1164,7 +1167,7 @@
         {{#if viewConfig.visible}} visible: {{viewConfig.visible}}, {{/if}}
         style: { {{#if viewConfig.width}} width: '{{viewConfig.width}}px' {{/if}} }
     ">
-        <input id="{{id}}" name="{{name}}" class="{{class}}"
+        <select id="{{id}}" name="{{name}}" class="{{class}}"
             data-bind="
                 {{#if viewConfig.disabled}}disable: {{viewConfig.disabled}}, {{/if}}{{#if lockAttr}}disable: locks().{{name}}_locked, {{/if}}
                 value: {{viewConfig.dataBindValue}},

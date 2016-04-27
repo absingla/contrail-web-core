@@ -31,7 +31,7 @@ requirejs.config({
 
 var initDepFiles = [
     'validation', 'contrail-unified-1', 'contrail-unified-2', 'contrail-unified-3',
-    'joint.contrail', 'text'
+    'joint.contrail', 'text', 'select2'
 ];
 
 require(['jquery', 'knockout', 'bezier'], function ($, Knockout, Bezier) {

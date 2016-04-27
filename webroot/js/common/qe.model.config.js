@@ -33,7 +33,14 @@ define([
                 "where_data_object": {},
                 "filter_data_object": {},
                 "is_request_in_progress": false,
-                "show_advanced_options": false
+                "show_advanced_options": false,
+                "ui_added_parameters": {
+                    "table_schema": {},
+                    "table_schema_column_names_map":{},
+                    "time_range_options": cowc.TIMERANGE_DROPDOWN_VALUES,
+                    "direction_options": cowc.DIRECTION_DROPDOWN_VALUES
+
+                }
             };
 
             var modelConfig = $.extend(true, {}, defaultModelConfig, customModelConfig);

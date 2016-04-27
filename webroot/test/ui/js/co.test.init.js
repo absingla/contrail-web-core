@@ -27,7 +27,7 @@ var depArray = [
     'co-test-utils', 'co-test-constants',
 
     'layout-handler', 'joint.contrail', 'text', 'contrail-unified-1', 'contrail-unified-2', 'contrail-unified-3',
-
+    'select2', 'core-form-elements'
 ];
 
 var testAppConfig = {
