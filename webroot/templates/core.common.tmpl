@@ -1171,7 +1171,8 @@
             data-bind="
                 {{#if viewConfig.disabled}}disable: {{viewConfig.disabled}}, {{/if}}{{#if lockAttr}}disable: locks().{{name}}_locked, {{/if}}
                 value: {{viewConfig.dataBindValue}},
-                optionList: {{viewConfig.dataBindOptionList}},
+                optionsValue: 'id',
+                options: {{viewConfig.dataBindOptionList}},
                 event: { change: function() { validateAttr()('{{viewConfig.path}}', '{{validation}}', $data); } },
                 contrailMultiselect: {}"
         />

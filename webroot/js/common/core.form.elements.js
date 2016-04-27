@@ -146,7 +146,6 @@
             };
 
             var changeFunction = function(e) {
-                console.log('change')
                 if (contrail.checkIfFunction(config.change)) {
                     config.change(e);
                 }
@@ -168,18 +167,18 @@
                 option.data = formatData(option.data, option);
 
                 if (contrail.checkIfExist(self.data('select2'))) {
-                    self.select2("destroy");
-                    self.html('')
+                    self.select2("destroy")
+                        .html('')
+                        .off("change", changeFunction)
+                        .off("select2:selecting", selectingFunction)
+                        .off("select2:open", openFunction)
+                        .off("select2:close", closeFunction);
                 }
 
                 self.select2(option)
-                    .off("change", changeFunction)
                     .on("change", changeFunction)
-                    .off("select2:selecting", selectingFunction)
                     .on("select2:selecting", selectingFunction)
-                    .off("select2:open", openFunction)
                     .on("select2:open", openFunction)
-                    .off("select2:close", closeFunction)
                     .on("select2:close", closeFunction);
 
                 option.sourceMap = constructSourceMap(option.data, 'id');
