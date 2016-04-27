@@ -17,6 +17,20 @@
         return self;
     };
 
+    function  fetchSourceMapData(index, data){
+        var arr = index.split("."),
+            returnVal = data;
+
+        $.each(arr, function(key, value){
+            if('children' in returnVal){
+                returnVal = returnVal.children[value];
+            } else{
+                returnVal = returnVal[value];
+            }
+        });
+        return returnVal;
+    };
+
     function constructSelect2(self, customConfig, args) {
         if(typeof args !== 'undefined') {
             self.select2(customConfig, args);
@@ -132,6 +146,7 @@
             };
 
             var changeFunction = function(e) {
+                console.log('change')
                 if (contrail.checkIfFunction(config.change)) {
                     config.change(e);
                 }
