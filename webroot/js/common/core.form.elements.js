@@ -163,8 +163,8 @@
                 }
             };
 
-            function initSelect2(option) {
-                option.data = formatData(option.data, option);
+            function initSelect2() {
+                config.data = formatData(config.data, config);
 
                 if (contrail.checkIfExist(self.data('select2'))) {
                     self.select2("destroy")
@@ -175,13 +175,13 @@
                         .off("select2:close", closeFunction);
                 }
 
-                self.select2(option)
+                self.select2(config)
                     .on("change", changeFunction)
                     .on("select2:selecting", selectingFunction)
                     .on("select2:open", openFunction)
                     .on("select2:close", closeFunction);
 
-                option.sourceMap = constructSourceMap(option.data, 'id');
+                config.sourceMap = constructSourceMap(config.data, 'id');
 
                 // if (option.data.length > 0) {
                 //     if (contrail.checkIfExist(option.multiple)) {
@@ -237,7 +237,7 @@
                 config.data = source;
             }
             if (contrail.checkIfExist(config.data)) {
-                initSelect2(config);
+                initSelect2();
             }
 
             $.extend(true, dataObject, {
@@ -282,7 +282,8 @@
                         if (dataObject.isRequestInProgress == true) {
                             dataObject.cachedValue = value;
                         }
-                        self.val(value);
+                        self.val(value)
+                            .trigger('change');
                     } else {
                         return self.val();
                     }
@@ -293,7 +294,7 @@
                     }
 
                     config.data = data;
-                    initSelect2(config)
+                    initSelect2()
                 },
                 enableOptionList: function (flag, disableItemList) {
                     for (var j = 0; j < disableItemList.length; j++) {

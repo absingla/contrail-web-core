@@ -9,7 +9,7 @@ define([
         var pageSizeSelect = pagingInfo.pageSizeSelect,
             csgCurrentPageDropDown = null, csgPagerSizesDropdown = null,
             footerContainer = gridContainer.find('.grid-footer'),
-            currentPagingInfo = null;
+            currentPagingInfo = pagingInfo;
 
         this.init = function () {
             if (gridContainer.data('contrailGrid') == null) {
@@ -17,6 +17,7 @@ define([
             }
             var eventMap = gridContainer.data('contrailGrid')._eventHandlerMap.dataView;
             eventMap['onPagingInfoChanged'] = function (e, pagingInfo) {
+                console.log('onPagingInfoChanged')
                 var currentPageNum = null, currentPageSize = null;
 
                 if (contrail.checkIfExist(currentPagingInfo)) {
@@ -25,7 +26,7 @@ define([
                 }
 
                 pagingInfo.pageSizeSelect = pageSizeSelect;
-                updatePager(pagingInfo);
+                updatePager(currentPagingInfo, pagingInfo);
 
                 if (pagingInfo.totalPages - pagingInfo.pageNum <= 1 || currentPagingInfo == null || currentPageNum != pagingInfo.pageNum || currentPageSize != pagingInfo.pageSize) {
                     if (gridContainer.data('contrailGrid') != null && !gridContainer.data('contrailGrid')._gridStates.allPagesDataChecked) {
@@ -44,30 +45,25 @@ define([
             };
             dataView.onPagingInfoChanged.subscribe(eventMap['onPagingInfoChanged']);
             constructPagerUI();
-            updatePager(pagingInfo);
+            updatePager(currentPagingInfo, pagingInfo);
             setPageSize(pagingInfo.pageSize);
         };
 
-        function populatePagerSelect(data) {
-            var returnData = new Array();
-            $.each(data.pageSizeSelect, function (key, val) {
-                returnData.push({
-                    id: val,
-                    text: String(val) + ' Records'
-                });
+        function populatePagerSelect(pagingInfo) {
+            return $.map(pagingInfo.pageSizeSelect, function(value, key) {
+                return {id: value, text: String(value) + ' Records'};
             });
-            return returnData;
         }
 
         function populateCurrentPageSelect(n) {
-            var returnData = new Array();
-            for (var i = 0; i < n; i++) {
-                returnData.push({
-                    id: i,
-                    text: 'Page ' + String((i + 1))
-                });
+            if(!contrail.checkIfExist(n)) {
+                n = 1;
             }
-            return returnData;
+            var currenPageSizeArr = [];
+            for (var i = 0; i < n; i++) {
+                currenPageSizeArr.push({id: i, text: 'Page ' + String((i + 1))});
+            }
+            return currenPageSizeArr;
         };
 
         function constructPagerUI() {
@@ -78,34 +74,26 @@ define([
 
             csgCurrentPageDropDown = footerContainer.find('.csg-current-page').contrailDropdown({
                 placeholder: 'Select..',
-                data: [{id: 0, text: 'Page 1'}],
+                data: populateCurrentPageSelect(1),
                 change: function (e) {
-                    dataView.setPagingOptions({pageNum: e.val});
-                    csgCurrentPageDropDown.value(String(e.val));
-                },
-                formatResult: function (item) {
-                    return '<span class="grid-footer-dropdown-item">' + item.text + '</span>';
+                    dataView.setPagingOptions({pageNum: e.currentTarget.value});
                 }
             }).data('contrailDropdown');
-            csgCurrentPageDropDown.value('0');
 
             csgPagerSizesDropdown = footerContainer.find('.csg-pager-sizes').contrailDropdown({
                 data: populatePagerSelect(pagingInfo),
                 change: function (e) {
-                    dataView.setPagingOptions({pageSize: parseInt(e.val), pageNum: 0});
-                },
-                formatResult: function (item) {
-                    return '<span class="grid-footer-dropdown-item">' + item.text + '</span>';
+                    dataView.setPagingOptions({pageSize: e.currentTarget.value, pageNum: 0});
                 }
             }).data('contrailDropdown');
-            csgPagerSizesDropdown.value(String(pagingInfo.pageSize));
+            csgPagerSizesDropdown.value(pagingInfo.pageSize);
 
             footerContainer.find(".ui-icon-container").hover(function () {
                 $(this).toggleClass("ui-state-hover");
             });
         }
 
-        function updatePager(pagingInfo) {
+        function updatePager(currentPagingInfo, pagingInfo) {
             var state = getNavState();
             footerContainer.find(".slick-pager-nav i").addClass("icon-disabled");
             if (state.canGotoFirst) {
@@ -124,10 +112,12 @@ define([
             footerContainer.find(".slick-pager-info").text("Total: " + pagingInfo.totalRows + " records");
             footerContainer.find('.csg-total-page-count').text(pagingInfo.totalPages);
 
-            var currentPageSelectData = populateCurrentPageSelect(pagingInfo.totalPages);
-
-            csgCurrentPageDropDown.setData(currentPageSelectData);
-            csgCurrentPageDropDown.value('0');
+            console.log(currentPagingInfo.totalPages)
+            console.log(pagingInfo.totalPages)
+            if (currentPagingInfo.totalPages !== pagingInfo.totalPages) {
+                console.log('here')
+                csgCurrentPageDropDown.setData(populateCurrentPageSelect(pagingInfo.totalPages));
+            }
         }
 
         function getNavState() {
@@ -153,7 +143,7 @@ define([
         function gotoFirst() {
             if (getNavState().canGotoFirst) {
                 dataView.setPagingOptions({pageNum: 0});
-                csgCurrentPageDropDown.value('0');
+                csgCurrentPageDropDown.value(0);
             }
         }
 
@@ -161,7 +151,7 @@ define([
             var state = getNavState();
             if (state.canGotoLast) {
                 dataView.setPagingOptions({pageNum: state.pagingInfo.totalPages - 1});
-                csgCurrentPageDropDown.value(String(state.pagingInfo.totalPages - 1));
+                csgCurrentPageDropDown.value(state.pagingInfo.totalPages - 1);
             }
         }
 
@@ -169,7 +159,7 @@ define([
             var state = getNavState();
             if (state.canGotoPrev) {
                 dataView.setPagingOptions({pageNum: state.pagingInfo.pageNum - 1});
-                csgCurrentPageDropDown.value(String(state.pagingInfo.pageNum - 1));
+                csgCurrentPageDropDown.value(state.pagingInfo.pageNum - 1);
             }
         }
 
@@ -177,7 +167,7 @@ define([
             var state = getNavState();
             if (state.canGotoNext) {
                 dataView.setPagingOptions({pageNum: state.pagingInfo.pageNum + 1});
-                csgCurrentPageDropDown.value(String(state.pagingInfo.pageNum + 1));
+                csgCurrentPageDropDown.value(state.pagingInfo.pageNum + 1);
             }
         }
     };
