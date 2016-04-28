@@ -17,7 +17,6 @@ define([
             }
             var eventMap = gridContainer.data('contrailGrid')._eventHandlerMap.dataView;
             eventMap['onPagingInfoChanged'] = function (e, pagingInfo) {
-                console.log('onPagingInfoChanged')
                 var currentPageNum = null, currentPageSize = null;
 
                 if (contrail.checkIfExist(currentPagingInfo)) {
@@ -112,10 +111,7 @@ define([
             footerContainer.find(".slick-pager-info").text("Total: " + pagingInfo.totalRows + " records");
             footerContainer.find('.csg-total-page-count').text(pagingInfo.totalPages);
 
-            console.log(currentPagingInfo.totalPages)
-            console.log(pagingInfo.totalPages)
             if (currentPagingInfo.totalPages !== pagingInfo.totalPages) {
-                console.log('here')
                 csgCurrentPageDropDown.setData(populateCurrentPageSelect(pagingInfo.totalPages));
             }
         }
