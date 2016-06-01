@@ -159,7 +159,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'global-libs'                 : coreWebDir + '/js/common/global-libs',
             'jquery-dep-libs'             : coreWebDir + '/js/common/jquery.dep.libs',
             'nonamd-libs'                 : coreWebDir + '/js/common/nonamd.libs',
-            'contrail-element'            : coreWebDir + '/js/models/ContrailElement'
+            'contrail-element'            : coreWebDir + '/js/models/ContrailElement',
+            'coCharts'                    : coreWebDir + '/js/charts/coreCharts'
         };
     } else if(env == "prod") {
         return {
