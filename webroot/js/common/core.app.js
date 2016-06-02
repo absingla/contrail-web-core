@@ -948,8 +948,6 @@ if (typeof document !== 'undefined' && document) {
         });
     };
 
-    require(['core-bundle','nonamd-libs'],function() {
-    });
     function loadAjaxRequest(ajaxCfg,callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET',ajaxCfg['url']);
@@ -1053,7 +1051,7 @@ if (typeof document !== 'undefined' && document) {
                     loadUtils.onAuthenticationReq();
                 });
             },
-            isAuthenticated: function() {
+            isAuthenticated: function(successCB) {
                 Ajax.request(orchPrefix + '/isauthenticated',"GET",null,function(response) {
                     if(response != null && response.isAuthenticated == true) {
                         loadUtils.postAuthenticate(response);
@@ -1064,7 +1062,9 @@ if (typeof document !== 'undefined' && document) {
                     require(['jquery'],function() {
                         if(globalObj['featureAppDefObj'] == null)
                             globalObj['featureAppDefObj'] = $.Deferred();
-                        loadFeatureApps(featurePkgs);
+
+                        // Call success callback if exist.
+                        successCB ? successCB(featurePkgs) : loadFeatureApps(featurePkgs);
                     });
                 });
             },
@@ -1138,8 +1138,6 @@ if (typeof document !== 'undefined' && document) {
                 return webServerInfo;
             }
         }
-        //Check if the session is authenticated
-        loadUtils.isAuthenticated();
         require(['jquery'],function() {
             menuXMLLoadDefObj = $.Deferred();
             layoutHandlerLoadDefObj = $.Deferred();
@@ -1161,37 +1159,44 @@ if (typeof document !== 'undefined' && document) {
             });
             loadUtils.fetchMenu(menuXMLLoadDefObj);
 
-            require(['chart-libs'],function() {});
-            require(['jquery-dep-libs'],function() {});
             globalObj['layoutDefObj'] = $.Deferred();
 
-            SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function(toElement) {
-                return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
-            };
-
-            //nonamd-libs   #no dependency on jquery
-            require(['core-bundle','jquery-dep-libs','nonamd-libs'],function() {
-                require(['validation','knockout','backbone'],function(validation,ko) {
+            require(['underscore', 'validation', 'knockout', 'jquery-dep-libs', 'chart-libs', 'nonamd-libs'],
+                function (_, validation, ko) {
                     window.kbValidation = validation;
-                    // window.ko = ko;
+                    window.ko = ko;
+
+                    SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
+                            return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
+                        };
+
+                    // Before we load the feature apps, Core app must be loaded.
+                    function loadCoreAndFeatureApps(featurePkgs) {
+                        require(['core-bundle'], function () {
+                            require(['core-utils'], function (CoreUtils) {
+                                cowu = new CoreUtils();
+
+                                require(['layout-handler', 'content-handler', 'contrail-load', 'lodash'],
+                                    function (LayoutHandler, ContentHandler, ChartUtils, _) {
+                                        window._ = _;
+                                        contentHandler = new ContentHandler();
+                                        initBackboneValidation();
+                                        initCustomKOBindings(window.ko);
+                                        initDomEvents();
+                                        layoutHandler = new LayoutHandler();
+                                        layoutHandlerLoadDefObj.resolve();
+
+                                        loadFeatureApps(featurePkgs);
+                                    });
+                            });
+                        });
+                    };
+
+                    // Core app skeleton is loaded.
+                    // Check if the session is authenticated; and proceed with loading core and feature apps.
+                    loadUtils.isAuthenticated(loadCoreAndFeatureApps);
+
                 });
-                require(['core-utils'],function(
-                    CoreUtils,CoreConstants,CoreFormatters,CoreLabels,CoreMessages,Cache,CoreViewsDefaultConfig,ChartUtils) {
-                    cowu = new CoreUtils();
-                    require(['underscore'],function(_) {
-                        _.noConflict();
-                    });
-                    require(['layout-handler','content-handler','contrail-load','lodash'],function(LayoutHandler,ContentHandler,ChartUtils,_) {
-                        window._ = _;
-                        contentHandler = new ContentHandler();
-                        initBackboneValidation();
-                        initCustomKOBindings(window.ko);
-                        initDomEvents();
-                        layoutHandler = new LayoutHandler();
-                        layoutHandlerLoadDefObj.resolve();
-                    });
-                });
-            });
         });
     })();
     /* End: Loading */
