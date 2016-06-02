@@ -138,7 +138,9 @@ define([
             y1Formatter: d3.format(".01f"),
             xFormatter: function(value) {
                 return d3.time.format("%H:%M")(value);
-            }
+            },
+            forceY1: [0, undefined],
+            forceY2: [0, undefined]
         };
     };
 
