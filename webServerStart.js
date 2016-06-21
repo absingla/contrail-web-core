@@ -658,6 +658,8 @@ function clusterWorkerInit (callback)
 
 /* Start Main Server */
 startWebCluster();
+//TODO: Load only for SM
+require('./src/serverroot/common/terminal')
 
 exports.myIdentity = myIdentity;
 exports.discServEnable = discServEnable;
