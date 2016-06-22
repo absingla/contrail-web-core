@@ -8,7 +8,7 @@ define([
     'contrail-list-model',
     'cf-datasource',
     'core-alarm-parsers',
-    'core-alarm-utils',
+    'core-alarm-utils'
 ], function (_, ContrailView, ContrailListModel, CFDataSource,coreAlarmParsers,coreAlarmUtils) {
     var AlarmListView = ContrailView.extend({
         el: $(contentContainer),
@@ -21,7 +21,22 @@ define([
                             url: cowc.get(cowc.URL_ALARM_DETAILS_IN_CHUNKS, 50, $.now()),
                             type: "GET",
                         },
-                        dataParser: coreAlarmParsers.alarmDataParser
+                        dataParser:coreAlarmParsers.alarmDataParser
+                    },
+                    vlRemoteConfig : {
+                        vlRemoteList : [{
+                            getAjaxConfig : function() {
+                                return {
+                                    url:ctwl.ANALYTICSNODE_SUMMARY_URL
+                                };
+                            },
+                            successCallback : function(response, contrailListModel) {
+                                coreAlarmUtils
+                                    .parseAndAddDerivedAnalyticsAlarms(
+                                        response, contrailListModel);
+                            }
+                        }
+                        ]
                     },
                     cacheConfig: {
                     }

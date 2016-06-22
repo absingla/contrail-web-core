@@ -292,126 +292,128 @@ function testAppInit(testAppConfig) {
 
             globalObj['layoutDefObj'] = $.Deferred();
 
-            require(['underscore', 'validation', 'knockout', 'jquery-dep-libs', 'chart-libs', 'nonamd-libs'],
-                function (_, validation, ko) {
-                    window.kbValidation = validation;
-                    window.ko = ko;
+            require([
+                'underscore', 'validation', 'knockout', 'jquery-dep-libs', 'chart-libs', 'nonamd-libs'
+            ], function (_, validation, ko) {
+                //_ is already noConflict with require config init.
+                window.kbValidation = validation;
+                window.ko = ko;
 
-                    SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
-                            return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
-                        };
-
-                    // Before we load the feature apps, Core app must be loaded.
-                    function loadCoreAndFeatureApps(featurePkgs) {
-                        require(['core-bundle'], function () {
-                            require(['core-utils'], function (CoreUtils) {
-                                cowu = new CoreUtils();
-
-                                require(['layout-handler', 'content-handler', 'contrail-load', 'lodash'],
-                                    function (LayoutHandler, ContentHandler, ChartUtils, _) {
-                                        window._ = _;
-                                        contentHandler = new ContentHandler();
-                                        initBackboneValidation();
-                                        initCustomKOBindings(window.ko);
-                                        initDomEvents();
-
-                                        $("body").addClass('navbar-fixed');
-                                        $("body").append(cotu.getPageHeaderHTML());
-                                        $("body").append(cotu.getSidebarHTML());
-                                        $("body").append(CoreCommonTmpl);
-
-                                        layoutHandler = new LayoutHandler();
-                                        layoutHandlerLoadDefObj.resolve();
-                                        layoutHandler.load(menuXML);
-
-                                        var cssList = cotu.getCSSList();
-                                        for (var i = 0; i < cssList.length; i++) {
-                                            $("body").append(cssList[i]);
-                                        }
-
-                                        loadFeatureApps(featurePkgs);
-
-                                        requirejs(['contrail-layout'], function () {
-                                            //TODO: Timeout is currently required to ensure menu is loaed i.e feature app is initialized
-
-                                            var logAllTestFiles = "Test files: ";
-                                            for (var i = 0; i < allTestFiles.length; i++) {
-                                                logAllTestFiles += "\n";
-                                                logAllTestFiles +=  i + 1 + ") " + allTestFiles[i];
-                                            }
-                                            console.log(logAllTestFiles);
-
-                                            var testFilesIndex = 0,
-                                                loadTestRunner = true,
-                                                testFile = allTestFiles[testFilesIndex],
-                                                defObj = $.Deferred();
-
-                                            function loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner) {
-                                                var startKarmaCB = function (defObj, loadTestRunner) {
-                                                    console.log("Loaded test file: " + testFile.split('/').pop());
-                                                    return window.__karma__.start(defObj, loadTestRunner);
-                                                };
-                                                //Clear Cookies if any exist
-                                                if (document.cookie != '') {
-                                                    var cookies = document.cookie.split(";");
-                                                    for (var i = 0; i < cookies.length; i++){
-                                                        var cookie =  cookies[i].split("=");
-                                                        document.cookie = cookie[0] + "=;expires=Tue, 02 Dec 1890 00:00:01 UTC;";
-                                                    }
-                                                }
-
-                                                //clear the core cache
-                                                cowch.reset();
-
-                                                require([testFile], function () {
-                                                    requirejs.config({
-                                                        deps: [testFile],
-                                                        callback: startKarmaCB(defObj, loadTestRunner)
-                                                    });
-                                                });
-
-                                            }
-
-                                            function loadNextFileOrStartCoverage() {
-                                                requirejs.undef(allTestFiles[testFilesIndex]);
-                                                console.log("Execution complete. Unloaded test file: " + allTestFiles[testFilesIndex].split('/').pop());
-                                                console.log("----------------------------------------------------------------------------");
-                                                window.QUnit.config.current = {semaphore: 1};
-                                                window.QUnit.config.blocking = true;
-                                                //window.QUnit.stop();
-                                                testFilesIndex += 1;
-                                                loadTestRunner = false;
-                                                if (testFilesIndex < allTestFiles.length) {
-                                                    //console.log("Initializing QUnit and proceeding to next test.");
-                                                    window.QUnit.init();
-                                                    var defObj = $.Deferred();
-                                                    defObj.done(loadNextFileOrStartCoverage);
-                                                    loadSingleFileAndStartKarma(allTestFiles[testFilesIndex], defObj, loadTestRunner);
-                                                }
-                                                else if (testFilesIndex == allTestFiles.length) {
-                                                    console.log("Completed; Starting Coverage.")
-                                                    window.__karma__.complete({
-                                                        coverage: window.__coverage__
-                                                    });
-                                                }
-                                            };
-
-                                            defObj.done(loadNextFileOrStartCoverage);
-
-                                            loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner);
-
-                                        });
-                                    });
-                            });
-                        });
+                SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
+                        return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
                     };
 
-                    // For test-env we will not authenticate.
-                    // Now the Core app skeleton is loaded.
-                    // Check if the session is authenticated; and proceed with loading core and feature apps.
-                    // loadUtils.isAuthenticated(loadCoreAndFeatureApps);
-                    loadCoreAndFeatureApps(globalObj['webServerInfo']['featurePkg']);
-                });
+                // Before we load the feature apps, Core app skeleton and helpers must be loaded.
+                function loadCoreAndFeatureApps(featurePkgs) {
+                    require(['core-bundle'], function () {
+                        require(['core-utils'], function (CoreUtils) {
+                            cowu = new CoreUtils();
+                            //Proceed with loading layout.
+                            require([
+                                'layout-handler', 'content-handler', 'contrail-load', 'lodash'
+                            ], function (LayoutHandler, ContentHandler, ChartUtils, _) {
+                                window._ = _;
+                                contentHandler = new ContentHandler();
+                                initBackboneValidation();
+                                initCustomKOBindings(window.ko);
+                                initDomEvents();
+
+                                $("body").addClass('navbar-fixed');
+                                $("body").append(cotu.getPageHeaderHTML());
+                                $("body").append(cotu.getSidebarHTML());
+                                $("body").append(CoreCommonTmpl);
+
+                                layoutHandler = new LayoutHandler();
+                                layoutHandlerLoadDefObj.resolve();
+                                layoutHandler.load(menuXML);
+
+                                var cssList = cotu.getCSSList();
+                                for (var i = 0; i < cssList.length; i++) {
+                                    $("body").append(cssList[i]);
+                                }
+                                //Load all feature apps now.
+                                loadFeatureApps(featurePkgs);
+
+                                requirejs(['contrail-layout'], function () {
+
+                                    var logAllTestFiles = "Test files: ";
+                                    for (var i = 0; i < allTestFiles.length; i++) {
+                                        logAllTestFiles += "\n";
+                                        logAllTestFiles +=  i + 1 + ") " + allTestFiles[i];
+                                    }
+                                    console.log(logAllTestFiles);
+
+                                    var testFilesIndex = 0,
+                                        loadTestRunner = true,
+                                        testFile = allTestFiles[testFilesIndex],
+                                        defObj = $.Deferred();
+
+                                    function loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner) {
+                                        var startKarmaCB = function (defObj, loadTestRunner) {
+                                            console.log("Loaded test file: " + testFile.split('/').pop());
+                                            return window.__karma__.start(defObj, loadTestRunner);
+                                        };
+                                        //Clear Cookies if any exist
+                                        if (document.cookie != '') {
+                                            var cookies = document.cookie.split(";");
+                                            for (var i = 0; i < cookies.length; i++){
+                                                var cookie =  cookies[i].split("=");
+                                                document.cookie = cookie[0] + "=;expires=Tue, 02 Dec 1890 00:00:01 UTC;";
+                                            }
+                                        }
+
+                                        //clear the core cache
+                                        cowch.reset();
+
+                                        require([testFile], function () {
+                                            requirejs.config({
+                                                deps: [testFile],
+                                                callback: startKarmaCB(defObj, loadTestRunner)
+                                            });
+                                        });
+
+                                    }
+
+                                    function loadNextFileOrStartCoverage() {
+                                        requirejs.undef(allTestFiles[testFilesIndex]);
+                                        console.log("Execution complete. Unloaded test file: " + allTestFiles[testFilesIndex].split('/').pop());
+                                        console.log("----------------------------------------------------------------------------");
+                                        window.QUnit.config.current = {semaphore: 1};
+                                        window.QUnit.config.blocking = true;
+                                        //window.QUnit.stop();
+                                        testFilesIndex += 1;
+                                        loadTestRunner = false;
+                                        if (testFilesIndex < allTestFiles.length) {
+                                            //console.log("Initializing QUnit and proceeding to next test.");
+                                            window.QUnit.init();
+                                            var defObj = $.Deferred();
+                                            defObj.done(loadNextFileOrStartCoverage);
+                                            loadSingleFileAndStartKarma(allTestFiles[testFilesIndex], defObj, loadTestRunner);
+                                        }
+                                        else if (testFilesIndex == allTestFiles.length) {
+                                            console.log("Completed; Starting Coverage.")
+                                            window.__karma__.complete({
+                                                coverage: window.__coverage__
+                                            });
+                                        }
+                                    };
+
+                                    defObj.done(loadNextFileOrStartCoverage);
+
+                                    loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner);
+
+                                });
+                            });
+                        });
+                    });
+                };
+
+                // For test-env we will not authenticate.
+                // Now the Core app skeleton is loaded.
+                // Check if the session is authenticated; and proceed with loading core and feature apps.
+                // loadUtils.isAuthenticated(loadCoreAndFeatureApps);
+                loadCoreAndFeatureApps(globalObj['webServerInfo']['featurePkg']);
+            });
         });
     })();
 }

@@ -34,6 +34,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'jquery'                      : coreWebDir + '/assets/jquery/js/jquery-1.8.3.min',
             'jquery-ui'                 : coreWebDir + '/assets/jquery-ui/js/jquery-ui',
             'jquery.xml2json'           : coreWebDir + '/assets/jquery/js/jquery.xml2json',
+            'xml2json'                  : coreWebDir + '/assets/jquery/js/xml2json',
             'jquery.ba-bbq'             : coreWebDir + '/assets/jquery/js/jquery.ba-bbq.min',
             'jquery.timer'              : coreWebDir + '/assets/jquery/js/jquery.timer',
             'jquery.ui.touch-punch'     : coreWebDir + '/assets/jquery/js/jquery.ui.touch-punch.min',
@@ -71,11 +72,12 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'xdate'                     : coreWebDir + "/assets/xdate/js/xdate",
             'contrail-common'           : coreWebDir + "/js/contrail-common",
             'slick.enhancementpager'    : coreWebDir + "/assets/slickgrid/js/slick.enhancementpager",
+            'slick.groupmetadata'       : coreWebDir + "/assets/slickgrid/js/slick.groupitemmetadataprovider",
             // 'slickgrid-utils'          coreWebDir +  : "js/slickgrid-utils",
             'web-utils'                 : coreWebDir + "/js/web-utils",
             'config_global'             : coreWebDir + "/js/config_global",
             'contrail-load'             : coreWebDir + '/js/contrail-load',
-            // 'analyzer-utils'            : "js/analyzer-utils",
+            'analyzer-utils'            : coreWebDir + "/js/analyzer-utils",
             // 'dashboard-utils'           : "js/dashboard-utils",
 
             'knockout'                    : coreWebDir + '/assets/knockout/knockout-3.0.0',
@@ -181,8 +183,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'vis-node-model'              : coreWebDir + '/js/models/VisNodeModel',
             'vis-edge-model'              : coreWebDir + '/js/models/VisEdgeModel',
             'vis-tooltip-model'           : coreWebDir + '/js/models/VisTooltipModel',
-            // 'graph-view'                  : coreWebDir + '/js/views/GraphView',
-            // 'contrail-graph-model'        : coreWebDir + '/js/models/ContrailGraphModel',
+            'graph-view'                  : coreWebDir + '/js/views/GraphView',
+            'contrail-graph-model'        : coreWebDir + '/js/models/ContrailGraphModel',
             'dagre'                       : coreWebDir + '/assets/joint/js/dagre',
             'geometry'                    : coreWebDir + '/assets/joint/js/geometry',
             'vectorizer'                  : coreWebDir + '/assets/joint/js/vectorizer',
@@ -190,6 +192,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'joint'                       : coreWebDir + '/assets/joint/js/joint.clean',
             'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
 
+            'core-alarm-utils'           :  coreWebDir + '/js/common/core.alarms.utils',
             'core-alarm-parsers'         :  coreWebDir + '/js/common/core.alarms.parsers',
             'contrail-element'            : coreWebDir + '/js/models/ContrailElement'
         }
@@ -246,6 +249,9 @@ var coreAppShim =  {
     'jquery.xml2json' : {
         deps: ["jquery"]
     },
+    'xml2json' : {
+        deps: ["jquery"]
+    },
     "jquery.ba-bbq" : {
         deps: ['jquery']
     },
@@ -299,7 +305,7 @@ var coreAppShim =  {
         deps: ['jquery']
     },
     'slick.dataview': {
-        deps: ['jquery']
+        deps: ['jquery','slick.groupmetadata']
     },
     // 'slickgrid-utils': {
     //     deps: ['jquery','slick.grid','slick.dataview']
@@ -377,21 +383,92 @@ var coreAppShim =  {
 
 var coreBundles = {
         //chart-libs,thirdparty-libs,contrail-core-views are loaded lazily
-        'chart-libs'        : ['d3','nv.d3'],
+        'chart-libs'        : [
+            'd3',
+            'nv.d3'
+        ],
         'thirdparty-libs'   : [
-                'slick.checkboxselectcolumn',
-                'slick.rowselectionmodel',
-                'select2',
-                'slick.grid'],
+            'slick.grid',
+            'slick.checkboxselectcolumn',
+            'slick.groupmetadata',
+            'slick.rowselectionmodel',
+            'slick.enhancementpager',
+            'jsbn-combined',
+            'sprintf',
+            'ipv6',
+            'xdate',
+            'knockback',
+            'validation',
+        ],
+        'jquery-dep-libs': [
+            'jquery.xml2json',
+            'xml2json',
+            'jquery.ba-bbq',
+            'jquery.json',
+            'bootstrap',
+            'select2',
+            'slick.core',
+            'slick.dataview',
+            'jquery-ui',
+            'contrail-elements',
+            'jquery.timer',
+            'jquery.ui.touch-punch',
+            'jquery.validate',
+            'jquery.tristate',
+            'jquery.multiselect',
+            'jquery.multiselect.filter',
+            'jquery.steps.min',
+            'jquery.panzoom',
+            'jquery-contextmenu',
+            'jquery.event.drag',
+            'jquery.droppick',
+            'jquery.datetimepicker'
+        ],
         'core-bundle'       : [
-                'controller-view-model',
-                'crossfilter',
-                'backbone',
-                'knockout',
-                'validation',
-                'underscore',
-                'core-alarm-utils',
-                'lodash'],
+            'underscore',
+            'core-utils',
+            'core-constants',
+            'core-formatters',
+            'core-cache',
+            'core-labels',
+            'core-messages',
+            'core-views-default-config',
+            'chart-utils',
+            'text!core-basedir/templates/core.common.tmpl',
+            'contrail-remote-data-handler',
+            'cf-datasource',
+            'contrail-view',
+            'contrail-model',
+            'contrail-view-model',
+            'contrail-list-model',
+            'lodash',
+            'crossfilter',
+            'backbone',
+            'text',
+            'knockout',
+            'moment',
+            'layout-handler',
+            'menu-handler',
+            'content-handler',
+            'validation',
+            'core-basedir/js/views/BarChartInfoView',
+            'core-basedir/js/views/BreadcrumbDropdownView',
+            'core-basedir/js/views/BreadcrumbTextView',
+            'core-basedir/js/views/ChartView',
+            'core-basedir/js/views/ControlPanelView',
+            'core-basedir/js/views/InfoboxesView',
+            'core-basedir/js/views/SectionView',
+            'core-basedir/js/views/WidgetView',
+            'core-basedir/js/views/ZoomScatterChartView',
+            //Dashboard
+            'mon-infra-node-list-model',
+            'mon-infra-log-list-model',    
+            'mon-infra-alert-list-view',   
+            'mon-infra-alert-grid-view',   
+            'mon-infra-log-list-view',     
+            'mon-infra-sysinfo-view',      
+            'mon-infra-dashboard-view'   
+        ],
         'contrail-core-views': [
             'core-basedir/js/views/GridView',
             'core-basedir/js/views/AccordianView',
@@ -431,21 +508,8 @@ var coreBundles = {
             'core-basedir/js/views/QueryWhereView',
             'core-basedir/js/views/SparklineView',
             'core-basedir/js/views/TabsView',
-            'core-basedir/js/views/WizardView'],
-        'jquery-dep-libs'      : [
-                'jquery-ui',
-                'jquery.timer',
-                'jquery.ui.touch-punch',
-                'jquery.validate',
-                'jquery.tristate',
-                'jquery.multiselect',
-                'jquery.multiselect.filter',
-                'jquery.steps.min',
-                'jquery.panzoom',
-                'jquery-contextmenu',
-                'jquery.event.drag',
-                'jquery.droppick',
-                'jquery.datetimepicker']
+            'core-basedir/js/views/WizardView'
+        ]
     };
 
 
@@ -827,6 +891,18 @@ function initCustomKOBindings(Knockout) {
     });
 };
 
+function changeRegion (e)
+{
+    var oldRegion = contrail.getCookie('region');
+    var region = e.added.text;
+    if ((null != region) && (oldRegion != region) &&
+        ('null' != region) && ('undefined' != region)) {
+        contrail.setCookie('region', region);
+        /* And issue logout request */
+        loadUtils.logout()
+    }
+}
+
 function initDomEvents() {
     $(document)
         .off('click', '.group-detail-advanced-action-item')
@@ -888,6 +964,7 @@ if (typeof document !== 'undefined' && document) {
         smBaseDir = defaultBaseDir, strgBaseDir = defaultBaseDir,
         pkgBaseDir = defaultBaseDir;
 
+    var webServerInfoDefObj;
     requirejs.config({
         bundles:bundles,
         baseUrl: coreBaseDir,
@@ -908,46 +985,41 @@ if (typeof document !== 'undefined' && document) {
             initAppDefObj, url;
         
         for (var key in featurePackages) {
+            if(globalObj['initFeatureAppDefObjMap'][key] == null) {
+                if(featurePackages[key] && 
+                        [FEATURE_PCK_WEB_CONTROLLER,FEATURE_PCK_WEB_SERVER_MANAGER,FEATURE_PCK_WEB_STORAGE].indexOf(key) > -1) {
+                    globalObj['initFeatureAppDefObjMap'][key] = $.Deferred();
+                    featureAppDefObjList.push(globalObj['initFeatureAppDefObjMap'][key]);
+                }
+            }
             if(featurePackages[key] && key == FEATURE_PCK_WEB_CONTROLLER) {
-                url = ctBaseDir + '/common/ui/js/controller.app.js';
-                if(globalObj['loadedScripts'].indexOf(url) == -1) {
-                    initAppDefObj = $.Deferred();
-                    featureAppDefObjList.push(initAppDefObj);
-                    globalObj['initFeatureAppDefObjMap'][key] = initAppDefObj;
-                    featureAppDefObjList.push(loadUtils.getScript(url));
+                var ctrlUrl = ctBaseDir + '/common/ui/js/controller.app.js';
+                if(globalObj['loadedScripts'].indexOf(ctrlUrl) == -1) {
+                    loadUtils.getScript(ctrlUrl);
                 }
             } else if (featurePackages[key] && key == FEATURE_PCK_WEB_SERVER_MANAGER) {
-                url = smBaseDir + '/common/ui/js/sm.app.js';
-                if(globalObj['loadedScripts'].indexOf(url) == -1) {
-                    initAppDefObj = $.Deferred();
-                    featureAppDefObjList.push(initAppDefObj);
-                    globalObj['initFeatureAppDefObjMap'][key] = initAppDefObj;
-                    featureAppDefObjList.push(loadUtils.getScript(url));
+                var smUrl = smBaseDir + '/common/ui/js/sm.app.js';
+                if(globalObj['loadedScripts'].indexOf(smUrl) == -1) {
+                    //Post-Authentication
+                    webServerInfoDefObj.done(function() {
+                        loadUtils.getScript(smUrl);
+                    });
                 }
             }  else if (featurePackages[key] && key == FEATURE_PCK_WEB_STORAGE) {
-                url = strgBaseDir + '/common/ui/js/storage.app.js';
-                if(globalObj['loadedScripts'].indexOf(url) == -1) {
-                    initAppDefObj = $.Deferred();
-                    featureAppDefObjList.push(initAppDefObj);
-                    globalObj['initFeatureAppDefObjMap'][key] = initAppDefObj;
-                    featureAppDefObjList.push(loadUtils.getScript(url));
+                var strgUrl = strgBaseDir + '/common/ui/js/storage.app.js';
+                if(globalObj['loadedScripts'].indexOf(strgUrl) == -1) {
+                    loadUtils.getScript(strgUrl);
                 }
             }
         }
 
-        //Where isInitFeatureAppInProgress used
-        if(featureAppDefObjList.length > 0) {
-            globalObj['isInitFeatureAppInProgress'] = true;
-        }
-
         $.when.apply(window, featureAppDefObjList).done(function () {
-            globalObj['isInitFeatureAppInProgress'] = false;
-            globalObj['isInitFeatureAppComplete'] = true;
             globalObj['featureAppDefObj'].resolve();
-            // self.featureAppDefObj.resolve();
         });
     };
 
+    require(['core-bundle','nonamd-libs'],function() {
+    });
     function loadAjaxRequest(ajaxCfg,callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET',ajaxCfg['url']);
@@ -1000,6 +1072,8 @@ if (typeof document !== 'undefined' && document) {
                         $('#app-container').removeClass('hide');
                     } else 
                         $('#app-container').removeClass('hide');
+                        //Reset content-container
+                        $('#content-container').html('');
                     $.ajaxSetup({
                         beforeSend: function (xhr, settings) {
                             if (globalObj['webServerInfo'] != null && globalObj['webServerInfo']['loggedInOrchestrationMode'] != null)
@@ -1009,6 +1083,30 @@ if (typeof document !== 'undefined' && document) {
                         }
                     });
                     globalObj['webServerInfo'] = loadUtils.parseWebServerInfo(response);
+
+                    //For Region drop-down
+                    require(['jquery', 'jquery-dep-libs'], function() {
+                        var regionList =
+                            globalObj.webServerInfo.regionList;
+                        var cnt = 0;
+                        if (null != regionList) {
+                            cnt = regionList.length;
+                        }
+                        var ddRegionList = [];
+                        for (var i = 0; i < cnt; i++) {
+                            ddRegionList.push({id: regionList[i], text: regionList[i]});
+                        }
+                        var isServiceEndPointFromConfig =
+                            globalObj.webServerInfo.serviceEndPointFromConfig;
+                        if ((cnt > 0) && (false == isServiceEndPointFromConfig)) {
+                            $('#regionDD').contrailDropdown({dataTextField:"text",
+                                                            dataValueField:"id",
+                                                            width: '100px',
+                                                            change: changeRegion});
+                            $('#regionDD').data("contrailDropdown").setData(ddRegionList);
+                            $("#regionDD").data("contrailDropdown").value(contrail.getCookie('region'));
+                        }
+                    });
                     webServerInfoDefObj.resolve();
 
                     if (loadUtils.getCookie('username') != null) {
@@ -1025,17 +1123,38 @@ if (typeof document !== 'undefined' && document) {
                     });
                 });
             },
-            onAuthenticationReq: function() {
+            onAuthenticationReq: function(loadCfg) {
                 document.getElementById('signin-container').innerHTML = document.getElementById('signin-container-tmpl').innerHTML;
+                require(['jquery','jquery-dep-libs'], function() {
+                    var isRegionsFromConfig = false;
+                    if (null != loadCfg) {
+                        isRegionsFromConfig = loadCfg.isRegionListFromConfig;
+                        configRegionList = loadCfg.configRegionList;
+                    }
+                    var regionList = [];
+                    if (true == isRegionsFromConfig) {
+                        for (var key in configRegionList) {
+                            regionList.push({id: key, text: key});
+                        }
+                        $('#region_id_cont').show();
+                        $("#region_id").select2({placeholder: "Select the Region",
+                                                data: regionList,
+                                                width: "283px"})
+                        var cookieRegion = contrail.getCookie('region');
+                        if (regionList.length > 0) {
+                            if (null == cookieRegion) {
+                                cookieRegion = regionList[0]['key'];
+                            }
+                            $("#region_id").select2("val", cookieRegion);
+                        }
+                    }
+                });
                 var appContEl = document.getElementById('app-container');
                 if(appContEl.classList) {
                     appContEl.classList.add('hide');
                 } else {
                     appContEl.className += ' ' + className;
                 }
-                // $('#signin-container').html($('#signin-container-tmpl').text());
-                // $('#app-container').addClass('hide');
-                // $('#app-container').empty();
                 loadUtils.bindSignInListeners();
             },
             fetchMenu: function(menuXMLLoadDefObj) {
@@ -1048,10 +1167,10 @@ if (typeof document !== 'undefined' && document) {
                     menuXMLLoadDefObj.resolve(menuXML);
                 }).fail(function(response) {
                     console.info(response);
-                    loadUtils.onAuthenticationReq();
+                    loadUtils.onAuthenticationReq(null);
                 });
             },
-            isAuthenticated: function(successCB) {
+            isAuthenticated: function() {
                 Ajax.request(orchPrefix + '/isauthenticated',"GET",null,function(response) {
                     if(response != null && response.isAuthenticated == true) {
                         loadUtils.postAuthenticate(response);
@@ -1062,9 +1181,9 @@ if (typeof document !== 'undefined' && document) {
                     require(['jquery'],function() {
                         if(globalObj['featureAppDefObj'] == null)
                             globalObj['featureAppDefObj'] = $.Deferred();
-
-                        // Call success callback if exist.
-                        successCB ? successCB(featurePkgs) : loadFeatureApps(featurePkgs);
+                        if(webServerInfoDefObj == null) 
+                            webServerInfoDefObj = $.Deferred();
+                        loadFeatureApps(featurePkgs);
                     });
                 });
             },
@@ -1072,7 +1191,7 @@ if (typeof document !== 'undefined' && document) {
                 document.getElementById('signin').onclick = loadUtils.authenticate;
                 // $('#signin').click(authenticate);
                 require(['jquery'],function() {
-                    $('body').on('keypress', '.login-container', function(args) {
+                    $('body').off('keypress.signInEnter').on('keypress.signInEnter', '.login-container', function(args) {
                         if (args.keyCode == 13) {
                             $('#signin').click();
                             return false;
@@ -1087,13 +1206,18 @@ if (typeof document !== 'undefined' && document) {
             authenticate: function() {
                 require(['jquery'],function() {
                     //Compares client UTC time with the server UTC time and display alert if mismatch exceeds the threshold
+                    var postData = {
+                        username: $("[name='username']").val(),
+                        password: $("[name='password']").val()
+                    };
+                    var regionName = $("[name='regionname']").val();
+                    if ((null != regionName) && (regionName.length > 0)) {
+                        postData['regionname'] = regionName;
+                    }
                     $.ajax({
                         url: orchPrefix + '/authenticate',
                         type: "POST",
-                        data: JSON.stringify({
-                            username: $("[name='username']").val(),
-                            password: $("[name='password']").val()
-                        }),
+                        data: JSON.stringify(postData),
                         contentType: "application/json; charset=utf-8",
                         dataType: "json"
                     }).done(function (response) {
@@ -1115,7 +1239,7 @@ if (typeof document !== 'undefined' && document) {
                     type: "GET",
                     dataType: "json"
                 }).done(function (response) {
-                    loadUtils.onAuthenticationReq();
+                    loadUtils.onAuthenticationReq(response);
                 });
             },
             parseWebServerInfo: function(webServerInfo) {
@@ -1138,10 +1262,13 @@ if (typeof document !== 'undefined' && document) {
                 return webServerInfo;
             }
         }
+        //Check if the session is authenticated
+        loadUtils.isAuthenticated();
         require(['jquery'],function() {
             menuXMLLoadDefObj = $.Deferred();
             layoutHandlerLoadDefObj = $.Deferred();
-            webServerInfoDefObj = $.Deferred();
+            if(webServerInfoDefObj == null) 
+                webServerInfoDefObj = $.Deferred();
             $.ajaxSetup({
                 cache: false,
                 crossDomain: true,
@@ -1159,44 +1286,36 @@ if (typeof document !== 'undefined' && document) {
             });
             loadUtils.fetchMenu(menuXMLLoadDefObj);
 
+            require(['chart-libs'],function() {});
+            require(['jquery-dep-libs'],function() {});
             globalObj['layoutDefObj'] = $.Deferred();
 
-            require(['underscore', 'validation', 'knockout', 'jquery-dep-libs', 'chart-libs', 'nonamd-libs'],
-                function (_, validation, ko) {
+            SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function(toElement) {
+                return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
+            };
+
+            //nonamd-libs   #no dependency on jquery
+            require(['core-bundle','jquery-dep-libs','nonamd-libs'],function() {
+                require(['validation','knockout','backbone'],function(validation,ko) {
                     window.kbValidation = validation;
-                    window.ko = ko;
-
-                    SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function (toElement) {
-                            return toElement.getScreenCTM().inverse().multiply(this.getScreenCTM());
-                        };
-
-                    // Before we load the feature apps, Core app must be loaded.
-                    function loadCoreAndFeatureApps(featurePkgs) {
-                        require(['core-bundle'], function () {
-                            require(['core-utils'], function (CoreUtils) {
-                                cowu = new CoreUtils();
-
-                                require(['layout-handler', 'content-handler', 'contrail-load', 'lodash'],
-                                    function (LayoutHandler, ContentHandler, ChartUtils, _) {
-                                        window._ = _;
-                                        contentHandler = new ContentHandler();
-                                        initBackboneValidation();
-                                        initCustomKOBindings(window.ko);
-                                        initDomEvents();
-                                        layoutHandler = new LayoutHandler();
-                                        layoutHandlerLoadDefObj.resolve();
-
-                                        loadFeatureApps(featurePkgs);
-                                    });
-                            });
-                        });
-                    };
-
-                    // Core app skeleton is loaded.
-                    // Check if the session is authenticated; and proceed with loading core and feature apps.
-                    loadUtils.isAuthenticated(loadCoreAndFeatureApps);
-
+                    // window.ko = ko;
                 });
+                require(['core-utils'],function(CoreUtils) {
+                    cowu = new CoreUtils();
+                    require(['underscore'],function(_) {
+                        _.noConflict();
+                    });
+                    require(['layout-handler','content-handler','contrail-load','lodash'],function(LayoutHandler,ContentHandler,ChartUtils,_) {
+                        window._ = _;
+                        contentHandler = new ContentHandler();
+                        initBackboneValidation();
+                        initCustomKOBindings(window.ko);
+                        initDomEvents();
+                        layoutHandler = new LayoutHandler();
+                        layoutHandlerLoadDefObj.resolve();
+                    });
+                });
+            });
         });
     })();
     /* End: Loading */
