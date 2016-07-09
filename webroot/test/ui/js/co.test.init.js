@@ -123,6 +123,12 @@ var loadFeatureApps = function (featurePackages) {
     });
 };
 
+function addCode(code){
+    var JS= document.createElement('script');
+    JS.text= code;
+    document.body.appendChild(JS);
+}
+
 function testAppInit(testAppConfig) {
 
     function loadAjaxRequest(ajaxCfg,callback) {
@@ -349,6 +355,14 @@ function testAppInit(testAppConfig) {
                                         defObj = $.Deferred();
 
                                     function loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner) {
+
+                                        var s=  'var jsError = false;\n' +
+                                                'window.onerror = function(error, url, line) {\n'+
+                                                'jsError = true;\n'+
+                                                'console.log(jsError+"error......"+error);\n'+
+                                                '$("body").attr("JSError",error);};';
+
+                                        addCode(s);
                                         var startKarmaCB = function (defObj, loadTestRunner) {
                                             console.log("Loaded test file: " + testFile.split('/').pop());
                                             return window.__karma__.start(defObj, loadTestRunner);
