@@ -10,7 +10,6 @@ define([
     'co-test-runner'
 ], function (_, cotu, cotm, cotc, cotr) {
 
-
     var testSuiteClass = function (viewObj, suiteConfig){
 
         var viewConfig = cotu.getViewConfigObj(viewObj),
@@ -250,26 +249,24 @@ define([
             }
 
         }, cotc.SEVERITY_HIGH));
-        */
 
-        // if (contrail.checkIfExist(viewConfigColHeader.columns[0].sortable)){
-        //     headerTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_HEADER_COLUMN_SORTABLE, function () {
-        //         for(var i =0 ; i< viewConfigColHeader.columns.length; i++ ) {
-        //             expect(viewConfigColHeader.columns.length);
-        //             notEqual(viewConfigColHeader.columns[i].sortable ,false, "Columns should always be sortable");
-        //         }
-        //     }, cotc.SEVERITY_HIGH));
-        // }
 
+        if (contrail.checkIfExist(viewConfigColHeader.columns[0].sortable)){
+            headerTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_HEADER_COLUMN_SORTABLE, function () {
+                for(var i =0 ; i< viewConfigColHeader.columns.length; i++ ) {
+                    expect(viewConfigColHeader.columns.length);
+                    notEqual(viewConfigColHeader.columns[i].sortable ,false, "Columns should always be sortable");
+                }
+            }, cotc.SEVERITY_HIGH));
+        }
+         */
 
         /**
          * Grid Body group test cases
          */
 
-
         var pageSize = viewConfigFooter ? viewConfigFooter.pager.options.pageSize : 0;
         var bodyTestGroup = gridViewTestSuite.createTestGroup('body');
-
         if(viewConfigFooter) {
             /**
              * Check the loaded rows
@@ -474,11 +471,12 @@ define([
             }, cotc.SEVERITY_HIGH));
 
 
-            //Footer should have correct number of pages for a given Page size, based on the number of rows.
+            /**
+             * Footer should have correct number of pages for a given Page size, based on the number of rows.
+            */
             footerTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_FOOTER_TOTAL_PAGES, function () {
                 expect(1);
                 var expectedCount = Math.floor(gridItems.length/viewConfigFooter.pager.options.pageSize +1);
-                console.log("size:"+gridItems.length +"def rec"+viewConfigFooter.pager.options.pageSize);
                 equal($(el).find('.csg-total-page-count').text().trim(),
                     expectedCount,
                     "The total number of pages should be according to page size");
@@ -494,10 +492,6 @@ define([
 
             }, cotc.SEVERITY_HIGH));
         }
-        else {
-            console.log("***********doesn't exist");
-        }
-
 
         gridViewTestSuite.run(suiteConfig.groups, suiteConfig.severity);
 
