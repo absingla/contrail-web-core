@@ -276,9 +276,6 @@ define([
         var deferredList = [];
 
         _.each(testConfigObj, function (testConfig) {
-            _.each(testConfig.suites, function(key){
-                console.log("TestSuite "+ JSON.stringify(key));
-        });
             var defMockDataConfig = {dataGenerator: function(){return;},dataParsers:{}},
                 primaryMockDataConfig;
 

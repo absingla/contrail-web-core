@@ -43,7 +43,9 @@ define([
         //Invalid URL in case of remote ajax datasource scenario
         bodyTestGroup.registerTest(cotr.test("Invalid URL in case of remote ajax datasource scenario", function () {
             expect(1);
-            equal($(el).find('.slick-viewport .grid-canvas').text().trim().includes("Error:"), true, "Error message should be present");
+            var isPresent = $($(el).find('.slick-viewport .grid-canvas')).text().trim().indexOf("Error") > -1 ?true:false;
+
+            equal(isPresent, true, "Error message should be present");
 
         }, cotc.SEVERITY_HIGH));
 
