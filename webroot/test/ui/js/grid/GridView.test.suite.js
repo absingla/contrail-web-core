@@ -299,6 +299,7 @@ define([
 
         bodyTestGroup.registerTest(cotr.test("Test if the data source is present", function () {
             expect(1);
+            console.log("Datasource is "+viewConfigBody.dataSource.remote.ajaxConfig.type);
             notEqual(viewConfigBody.dataSource ,undefined, "Data source should always be present");
 
         }, cotc.SEVERITY_HIGH));
@@ -306,10 +307,9 @@ define([
 
         if(viewConfigBody.dataSource.remote!=null) {
             bodyTestGroup.registerTest(cotr.test("Test if the ajax config is valid", function () {
-                expect(4);
+                expect(3);
                 notEqual(viewConfigBody.dataSource.remote.ajaxConfig.url, undefined, "datasource url should not be undefined");
                 notEqual(viewConfigBody.dataSource.remote.ajaxConfig.url, "",  "datasource url should not be empty");
-                notEqual(viewConfigBody.dataSource.remote.ajaxConfig.type, undefined,  "datasource type should not be undefined");
                 notEqual(viewConfigBody.dataSource.remote.ajaxConfig.type, "",  "datasource type cannot be empty");
 
             }, cotc.SEVERITY_HIGH));
