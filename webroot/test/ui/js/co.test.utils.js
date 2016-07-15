@@ -137,18 +137,15 @@ define([
     };
 
     this.getViewConfigObj = function (viewObj) {
-
         if ((viewObj != null) &&
             contrail.checkIfExist(viewObj.attributes) &&
             contrail.checkIfExist(viewObj.attributes.viewConfig)) {
-
             return viewObj.attributes.viewConfig;
         }
     };
 
     this.setViewObjAndViewConfig4All = function (rootViewObj, testConfig) {
         _.each(testConfig, function (viewIdConfig) {
-
             viewIdConfig.viewObj = rootViewObj.viewMap[viewIdConfig.viewId];
             viewIdConfig.viewConfigObj = this.getViewConfigObj(viewIdConfig.viewObj);
         })
@@ -274,7 +271,6 @@ define([
 
     this.createMockData = function (rootViewObj, testConfigObj, deferredObj) {
         var deferredList = [];
-
         _.each(testConfigObj, function (testConfig) {
             var defMockDataConfig = {dataGenerator: function(){return;},dataParsers:{}},
                 primaryMockDataConfig;

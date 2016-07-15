@@ -250,7 +250,6 @@ define([
 
         }, cotc.SEVERITY_HIGH));
 
-
         if (contrail.checkIfExist(viewConfigColHeader.columns[0].sortable)){
             headerTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_HEADER_COLUMN_SORTABLE, function () {
                 for(var i =0 ; i< viewConfigColHeader.columns.length; i++ ) {
@@ -481,16 +480,7 @@ define([
                     expectedCount,
                     "The total number of pages should be according to page size");
             }, cotc.SEVERITY_HIGH));
-
-            //Capture console logs.
-            footerTestGroup.registerTest(cotr.test("Error scenario", function () {
-                expect(0);
-
-                 //   console.log("JS error is"+ jsError+" ..."+$(el).find('.navbar-fixed').attr('JSError'));
-                //
-                // equal(jsError, false, "Console errors should not exist");
-
-            }, cotc.SEVERITY_HIGH));
+            
         }
 
         gridViewTestSuite.run(suiteConfig.groups, suiteConfig.severity);
