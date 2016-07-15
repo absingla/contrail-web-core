@@ -299,7 +299,6 @@ define([
 
         bodyTestGroup.registerTest(cotr.test("Test if the data source is present", function () {
             expect(1);
-            console.log("Datasource is "+viewConfigBody.dataSource.remote.ajaxConfig.type);
             notEqual(viewConfigBody.dataSource ,undefined, "Data source should always be present");
 
         }, cotc.SEVERITY_HIGH));
