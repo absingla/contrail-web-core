@@ -28,6 +28,7 @@ define([], function () {
         this.PAGE_LOAD_TIMEOUT = testConfig.page_load_timeout ? testConfig.page_load_timeout : 1000;
         this.PAGE_INIT_TIMEOUT = testConfig.page_init_timeout ? testConfig.page_init_timeout : 50; // keep 50 or more.
         this.ASSERT_TIMEOUT = testConfig.assert_timeout ? testConfig.assert_timeout : 1000;
+        this.FORM_ACTIONS_TIMEOUT = testConfig.assert_timeout ? testConfig.assert_timeout : 1000;
 
         this.MONITOR_NETWORKING_PAGE_LOADER = 'mnPageLoader';
         this.MONITOR_NETWORKING_ROOT_VIEW = this.MONITOR_NETWORKING_PAGE_LOADER + '.mnView';
