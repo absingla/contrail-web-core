@@ -368,12 +368,9 @@ define([
 
     //check the presence of comparedToMessage within message param
     this.compareIfMessageExists = function( message , comparedToMessage){
-        if(message != null && comparedToMessage != null){
+        if(message != null && message != undefined){
             var value = message.indexOf(comparedToMessage) > -1 ? true : false;
             return value;
-        }
-        else{
-            console.log("ERROR : Not a valid element")
         }
     };
 
