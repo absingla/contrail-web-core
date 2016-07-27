@@ -336,24 +336,79 @@ define([
         });
     };
 
+    //focusout the element passed in the parameters
+    this.focusOutElement = function(element){
+        if(element != null && element != undefined){
+            $(element).focusout();
+        }
+        else{
+            console.log("ERROR : Not a valid element")
+        }
+    };
+
+    //trigger the click on the element passed in the parameters
+    this.triggerClickOnElement = function(element){
+        if(element != null && element != undefined){
+            $(element).trigger('click');
+        }
+        else{
+            console.log("ERROR : Not a valid element")
+        }
+    };
+
+    //set the value in the element passed and call jquery change method
+    this.setElementValueAndInvokeChange = function(element, value){
+        if(element != null && element != undefined){
+            $(element).val(value).change();
+        }
+        else{
+            console.log("ERROR : Not a valid element")
+        }
+    };
+
+    //check the presence of comparedToMessage within message param
+    this.compareIfMessageExists = function( message , comparedToMessage){
+        if(message != null && comparedToMessage != null){
+            var value = message.indexOf(comparedToMessage) > -1 ? true : false;
+            return value;
+        }
+        else{
+            console.log("ERROR : Not a valid element")
+        }
+    };
+
+    //get the trimmed text from the element.
+    this.getTextInElement = function(element){
+        if(element != null && element != undefined){
+            return $(element).text().trim();
+        }
+        else{
+            console.log("ERROR : Not a valid element")
+        }
+    };
 
     return {
-        getRegExForUrl: getRegExForUrl,
-        getNumberOfColumnsForGrid: getNumberOfColumnsForGrid,
-        startQunitWithTimeout: startQunitWithTimeout,
-        getCSSList: getCSSList,
-        getSidebarHTML: getSidebarHTML,
-        getPageHeaderHTML: getPageHeaderHTML,
-        getFakeServer: getFakeServer,
-        getViewConfigObj: getViewConfigObj,
-        setViewObjAndViewConfig4All: setViewObjAndViewConfig4All,
-        setModelObj4All: setModelObj4All,
-        setModuleObj4All: setModuleObj4All,
-        formatTestModuleMessage: formatTestModuleMessage,
+        getRegExForUrl                  : getRegExForUrl,
+        getNumberOfColumnsForGrid       : getNumberOfColumnsForGrid,
+        startQunitWithTimeout           : startQunitWithTimeout,
+        getCSSList                      : getCSSList,
+        getSidebarHTML                  : getSidebarHTML,
+        getPageHeaderHTML               : getPageHeaderHTML,
+        getFakeServer                   : getFakeServer,
+        getViewConfigObj                : getViewConfigObj,
+        setViewObjAndViewConfig4All     : setViewObjAndViewConfig4All,
+        setModelObj4All                 : setModelObj4All,
+        setModuleObj4All                : setModuleObj4All,
+        formatTestModuleMessage         : formatTestModuleMessage,
         getGridDataSourceWithOnlyRemotes: getGridDataSourceWithOnlyRemotes,
-        createMockData: createMockData,
-        initFeatureModule: initFeatureModule,
-        initFeatureApp: initFeatureApp
+        createMockData                  : createMockData,
+        initFeatureModule               : initFeatureModule,
+        initFeatureApp                  : initFeatureApp,
+        focusOutElement                 : focusOutElement,
+        triggerClickOnElement           : triggerClickOnElement,
+        setElementValueAndInvokeChange  : setElementValueAndInvokeChange,
+        compareIfMessageExists          : compareIfMessageExists,
+        getTextInElement                : getTextInElement
     };
 
 });
