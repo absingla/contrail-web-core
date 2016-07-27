@@ -30,7 +30,6 @@ define([], function () {
         this.ASSERT_TIMEOUT = testConfig.assert_timeout ? testConfig.assert_timeout : 1000;
         this.FORM_ACTIONS_TIMEOUT = testConfig.assert_timeout ? testConfig.assert_timeout : 1000;
 
-
         this.MONITOR_NETWORKING_PAGE_LOADER = 'mnPageLoader';
         this.MONITOR_NETWORKING_ROOT_VIEW = this.MONITOR_NETWORKING_PAGE_LOADER + '.mnView';
         this.MONITOR_STORAGE_PAGE_LOADER = 'msPageLoader';

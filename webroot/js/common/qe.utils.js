@@ -394,7 +394,7 @@ define([
 
             return nameSuffixKey;
         };
-        
+
         //format aggregate field names for grids
         self.formatNameForGrid = function(columnName) {
             var firstIndex = columnName.indexOf('('),

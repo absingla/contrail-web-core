@@ -23,7 +23,11 @@ define(['underscore'], function (_) {
             var featurePkgsInfo =
                 getValueByJsonPath(globalObj, 'webServerInfo;featurePkgsInfo',
                                    null);
+            //processXMLJSON populates siteMapsearchStrings
+            globalObj['siteMapSearchStrings'] = [];
             processXMLJSON(menuObj, optFeatureList);
+            //populate the autocomplete dropdown for siteMap
+            enableSearchAhead();
             var menuShortcuts = contrail.getTemplate4Id('menu-shortcuts')(menuHandler.filterMenuItems(menuObj['items']['item'], 'menushortcut', featurePkgsInfo));
             $("#sidebar-shortcuts").html(menuShortcuts);
             menuHandler.filterMenuItems(menuObj['items']['item']);
@@ -118,7 +122,7 @@ define(['underscore'], function (_) {
                     var rolesArr = value.access.roles.role;
                     var allowedRolesList = [];
 
-                    //If logged-in user has superAdmin role,then allow all features
+                    //If logged-in user has cloudAdmin role,then allow all features
                     if ($.inArray(globalObj['roles']['ADMIN'], loggedInUserRoles) > -1) {
                         roleExists = true;
                     } else {
@@ -164,7 +168,10 @@ define(['underscore'], function (_) {
             if (menuButton == null) {
                 currPageHashArray = currPageHash.split('_');
                 //Looks scalable only till 2nd level menu
-                linkId = '#' + currPageHashArray[0] + '_' + currPageHashArray[1] + '_' + currPageHashArray[2];
+                linkId = '#' + currPageHashArray[0] + '_' + currPageHashArray[1];
+                if(currPageHashArray[2] != null) {
+                    linkId += '_' + currPageHashArray[2];
+                }
                 subMenuId = $(linkId).parent('ul.submenu');
                 menuButton = getMenuButtonName(currPageHashArray[0]);
                 //If user has switched between top-level menu
@@ -211,6 +218,11 @@ define(['underscore'], function (_) {
                         href: $(linkId).parents('li').parents('ul').children('li:first').children('a:first').attr('data-link').trim(),
                         link: $(linkId).parents('li').parents('ul').children('li:first').children('a:first').text().trim()
                     });
+                } else if ($(linkId).parents('ul').length == 1){
+                    breadcrumbsArr.unshift({
+                        href: $(linkId).parents('ul').children('li:first').children('a:first').attr('data-link').trim(),
+                        link: $(linkId).parents('ul').children('li:first').children('a:first').text().trim()
+                    });
                 } else {
                     breadcrumbsArr.unshift({
                         href: $(linkId).parents('li').parents('ul').children('li:first').children('a:first').attr('data-link').trim(),
@@ -238,6 +250,16 @@ define(['underscore'], function (_) {
                 return true;
             else
                 return false;
+        }
+
+        this.getRenderFnFromMenuObj = function(currMenuObj) {
+            var renderFn;
+            $.each(getValueByJsonPath(currMenuObj, 'resources;resource', []), function (idx, currResourceObj) {
+                if (currResourceObj['class'] != null && window[currResourceObj['class']] != null) {
+                    renderFn = currResourceObj['function'];
+                }
+            });
+            return renderFn;
         }
 
         /*
@@ -427,6 +449,9 @@ define(['underscore'], function (_) {
         }
         if (linkId != null) {
             $('.submenu > li').each(function () {
+                $(this).removeClass('active');
+            });
+            $('.mainMenu').each(function () {
                 $(this).removeClass('active');
             });
             $(linkId).addClass('active');

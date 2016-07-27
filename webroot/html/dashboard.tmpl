@@ -145,6 +145,11 @@
 </script>
 <script type="text/x-handlebars-template" id="app-container-tmpl">
     <div id="pageHeader" class="navbar navbar-inverse navbar-fixed-top">
+        <div id="error-container" class="alert-error">
+           <div id="msg-container"><span class="error-font-weight">Error : </span><span id="error-msg-container"></span></div>
+           <div id="error-close-icon"><button id="close-error-popup" class="btn btn-mini"><i class="icon-remove"></i></button></div>
+        </div>
+        <div id="success-msg-container"><div id="success-text-container"></div></div>
         <div class="navbar-inner">
             <div class="container-fluid">
                 <a href="#" class="brand">
@@ -209,11 +214,6 @@
             <div id="breadcrumbs" class="fixed">
                 <ul id="breadcrumb" class="breadcrumb">
                 </ul> <!--.breadcrumb-->
-                <div class="hardrefresh breadcrumb" style="display:none">
-                    <span> <i class="icon-time" style="cursor:default"></i></span><span data-bind="text:timeObj.timeStr"></span>
-                    <span class="loading"><i class="icon-spinner icon-spin"></i></span>
-                    <span class="refresh" title="refresh" style="color: #3182bd;cursor:pointer">Refresh</i></span>
-                </div>
             </div>
             <div id="page-content" class="clearfix">
                 <div id='content-container'></div>
