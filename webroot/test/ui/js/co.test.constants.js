@@ -37,6 +37,9 @@ define([], function () {
         this.MONITOR_SERVER_MANAGER_PAGE_LOADER = 'smPageLoader';
         this.MONITOR_SERVER_MANAGER_ROOT_VIEW = this.MONITOR_SERVER_MANAGER_PAGE_LOADER + '.smView';
 
+        this.URL_QE_QUERY = '/api/qe/query';
+        this.URL_COLUMN_VALUES = '/api/qe/table/column/values';
+
     };
     return new COTestConstants();
 });
