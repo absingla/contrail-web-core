@@ -11,19 +11,20 @@ define([
         this.ERROR_SUFFIX_ID = "_error";
         this.LOCKED_SUFFIX_ID = "_locked";
         this.FORM_SUFFIX_ID = "_form";
+        this.JSON_SUFFIX_ID = "_json";
 
         this.SEV_LEVELS = {
-                ERROR   : 3, //Red
-                WARNING : 4, //Orange
-//                NOTICE  : 2, //Blue
-//                INFO    : 3, //Green
-            }
-       this.COLOR_SEVERITY_MAP = {
-                red : 'error',
-                orange : 'warning',
-                blue : 'default',
-                green : 'okay'
-           };
+            ERROR   : 3, //Red
+            WARNING : 4, //Orange
+//          NOTICE  : 2, //Blue
+//          INFO    : 3, //Green
+        };
+        this.COLOR_SEVERITY_MAP = {
+            red : 'error',
+            orange : 'warning',
+            blue : 'default',
+            green : 'okay'
+        };
         this.PATTERN_IP_ADDRESS  = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
         this.PATTERN_SUBNET_MASK = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(\d|[1-2]\d|3[0-2]))?$/;
         this.PATTERN_MAC_ADDRESS = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
@@ -58,10 +59,17 @@ define([
         this.OBJECT_TYPE_MODEL = 'model';
         this.OBJECT_TYPE_COLLECTION_OF_COLLECTION = "collection_of_collection";
 
+        this.ID_JSON_EDITOR = "json-editor";
+        this.JSON_EDITOR_MODE_TREE = "tree";
+        this.JSON_EDITOR_MODE_CODE = "code";
+        this.JSON_EDITOR_MODE_FORM = "form";
+        this.JSON_EDITOR_MODE_TEXT = "text";
+
         this.TMPL_2ROW_CONTENT_VIEW = "core-2-row-content-template";
         this.TMPL_2COLUMN_1ROW_2ROW_CONTENT_VIEW = "core-2-column-1-row-2row-content-template";
 
         this.TMPL_ACCORDIAN_VIEW = "core-accordian-view-template";
+        this.TMPL_JSON_EDITOR_VIEW = "core-json-editor-view-template";
         this.TMPL_INPUT_VIEW = "core-input-view-template";
         this.TMPL_EDITABLE_GRID_INPUT_VIEW = "core-editable-grid-input-view-template";
         this.TMP_EDITABLE_GRID_ACTION_VIEW = "core-editable-grid-action-view-template";
@@ -99,6 +107,7 @@ define([
         this.TMPL_COLLECTION_GRIDACTION_HEADING_VIEW = "core-collection-view-grid-action-heading-template";
         this.TMPL_SECTION_VIEW = "core-section-view-template";
         this.TMPL_EDIT_FORM = "core-edit-form-template";
+        this.TMPL_EDIT_JSON = "core-edit-json-template";
         this.TMPL_GENERIC_EDIT_FORM = "core-generic-edit-form-template";
         this.TMPL_2ROW_GROUP_DETAIL = "core-grid-2-row-group-detail-template";
         // this.TMPL_DETAIL_PAGE = "core-detail-page-template";
@@ -175,7 +184,7 @@ define([
         this.DEFAULT_CONFIG_NOT_FOUND_PAGE = {
             title: 'Page not found.',
             iconClass: 'icon-warning-sign',
-            defaultNavLinks: false,
+            defaultNavLinks: false
         };
 
         this.DEFAULT_CONFIG_ERROR_PAGE = {
@@ -230,6 +239,12 @@ define([
 
         this.QE_DEFAULT_LIMIT_150K = "150000";
         this.QE_DEFAULT_LIMIT_50K = "50000";
+
+        this.DEFAULT_FR_SELECT_FIELDS = "vrouter, sourcevn, sourceip, destvn, destip, protocol, sport, dport, setup_time, agg-packets, agg-bytes, action";
+        this.DEFAULT_FS_SELECT_FIELDS = "vrouter, sourcevn, sourceip, destvn, destip, protocol, sport, dport, T=, sum(packets), sum(bytes)";
+        this.DEFAULT_SL_SELECT_FIELDS = "MessageTS, Source, ModuleId, Category, Level, NodeType, Messagetype, Xmlmessage";
+
+        this.QE_DEFAULT_FILTER = "limit: 150000 & sort_fields:  & sort: asc";
 
         this.QE_DEFAULT_SORT_ORDER = "asc";
         this.QE_TITLE_SORT_ORDER = "Sort Order";
@@ -794,10 +809,6 @@ define([
             "MIN(disk_usage_info.partition_space_available_1k)": "kilo-byte"
         };
 
-        this.DEFAULT_FR_SELECT_FIELDS = "vrouter, sourcevn, sourceip, destvn, destip, protocol, sport, dport, setup_time, agg-packets, agg-bytes, action";
-        this.DEFAULT_FS_SELECT_FIELDS = "vrouter, sourcevn, sourceip, destvn, destip, protocol, sport, dport, T=, sum(packets), sum(bytes)";
-        this.DEFAULT_SL_SELECT_FIELDS = "MessageTS, Source, ModuleId, Category, Level, NodeType, Messagetype, Xmlmessage";
-
         this.D3_COLOR_CATEGORY2 = [ "#1f77b4", "#2ca02c"];
         this.D3_COLOR_CATEGORY5 = [ '#1f77b4', '#6baed6' , '#ff7f0e', '#2ca02c', '#9e9ac8'];
         this.D3_COLOR_CATEGORY7 = [ '#1f77b4' , '#ff7f0e', '#2ca02c', '#a55194', '#9e9ac8', '#6baed6', '#bcbd22'];
@@ -805,8 +816,7 @@ define([
         // QE Constants - End
 
         //Alarm constants
-        this.URL_ALARM_DETAILS_IN_CHUNKS =
-            '/api/tenant/monitoring/alarms?count={0}&startAt={1}';
+        this.URL_ALARM_DETAILS = '/api/tenant/monitoring/alarms';
         this.ALARM_REFRESH_DURATION = 300000;//5 MINUTES
         this.ALARM_BUCKET_DURATION = 300000000;//5 MINUTES
         this.TMPL_ALARM_SEVERITY = 'alarm-severity-template';
@@ -843,11 +853,13 @@ define([
         this.ALARM_GEN_DOWN_ALARM_TEXT = 'Alarms Generator Down. Alarms may not be reported correctly.';
         this.ANALYTICS_API_DOWN_ALARM_TEXT = 'Analytics API Down. Alarms may not be reported correctly.';
         this.ANALYTICS_PROCESSES_DOWN_ALARM_TEXT = 'Analytics Processes Down. Alarms may not be reported correctly.';
-        this.USER_GENERATED_ALARM = 'UserGeneratedAlarm';
+        this.UI_GENERATED_ALARM = 'UIGeneratedAlarm';
         this.get = function () {
             var args = arguments;
             return cowu.getValueFromTemplate(args);
         };
     };
-    return CoreConstants;
+    //Export to global scope
+    cowc = new CoreConstants();
+    return cowc;
 });

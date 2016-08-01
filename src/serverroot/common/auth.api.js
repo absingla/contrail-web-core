@@ -96,6 +96,13 @@ function getDomainList (req, callback)
     });
 }
 
+function getRoleList (req, callback)
+{
+    getAuthMethod[req.session.loggedInOrchestrationMode].getRoleList(req, function(err, data) {
+        callback(err, data);
+    });
+}
+
 function getNewTokenObjByToken (authObj, callback) {
     var req = authObj.req 
     getAuthMethod[req.session.loggedInOrchestrationMode].getUserAuthDataByAuthObj(authObj,
@@ -205,9 +212,9 @@ function getServiceAPIVersionByReqObj (request, svcType, callback, reqBy)
                                                                 callback, reqBy);
 }
 
-var adminRoleProjects = ['admin'];
 function getAdminProjectList (req)
 {
+    var adminRoleProjects = config.roleMaps['cloudAdmin'];
     var adminProjectList = [];
     var adminRoleProjectsCnt = adminRoleProjects.length;
     var userRoles = req.session.userRoles;
@@ -322,3 +329,4 @@ exports.isMultiRegionSupported = isMultiRegionSupported;
 exports.getRegionList = getRegionList;
 exports.getCurrentRegion = getCurrentRegion;
 exports.shiftServiceEndpointList = shiftServiceEndpointList;
+exports.getRoleList = getRoleList;

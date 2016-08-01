@@ -320,12 +320,12 @@ define([
 
         self.parseWhereString2Collection = function(queryFormModel) {
             queryFormModel.where_json(self.parseWhereString2JSON(queryFormModel));
-            qewu.parseWhereJSON2Collection(queryFormModel)
+            self.parseWhereJSON2Collection(queryFormModel)
         };
 
         self.parseFilterString2Collection = function(queryFormModel) {
             queryFormModel.filter_json(self.parseFilterString2JSON(queryFormModel));
-            qewu.parseFilterJSON2Collection(queryFormModel);
+            self.parseFilterJSON2Collection(queryFormModel);
         };
 
         self.parseWhereJSON2Collection = function(queryFormModel) {
@@ -393,6 +393,20 @@ define([
             });
 
             return nameSuffixKey;
+        };
+
+        //format aggregate field names for grids
+        self.formatNameForGrid = function(columnName) {
+            var firstIndex = columnName.indexOf('('),
+                lastIndex = columnName.indexOf(')'),
+                aggregateType = columnName.substr(0,firstIndex),
+                aggregateColumnName = columnName.substr(firstIndex + 1,lastIndex - firstIndex - 1);
+
+            if(qewu.isAggregateField(columnName) || aggregateType == "AVG" || aggregateType == "PERCENTILES") {
+                return aggregateType.toUpperCase() + " (" + cowl.get(aggregateColumnName) + ")";
+            } else {
+                return cowl.get(columnName).replace(')', '');
+            }
         };
 
         self.isAggregateField = function(fieldName) {
@@ -719,7 +733,7 @@ define([
     };
 
     function parseSortFields(sortFields){
-        var sortFieldsArr = sort_fields.split(',');
+        var sortFieldsArr = sortFields.split(',');
         for(var i=0; i< sortFieldsArr.length; i++) {
             sortFieldsArr[i] = sortFieldsArr[i].trim();
         }

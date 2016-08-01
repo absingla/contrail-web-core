@@ -4,7 +4,9 @@
  */
 
 .slick-column-name {
-    white-space: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .slick-header-column.ui-state-default {
     height: 100%;
@@ -137,12 +139,13 @@
 .slick-header {
     border: none;
     background: none;
+    height: 26px;
 }
 .slick-header .slick-header-column {
     border: none;
     background: none;
 }
-.slick-header-column.ui-state-default {
+.slick-header .slick-header-column.ui-state-default {
     min-height: 18px;
     line-height: 18px;
     color: #3182bd;
@@ -159,7 +162,7 @@
     opacity: 0.6;
 }
 .slick-row {
-    border:none;
+    border: none;
 }
 .slick-row-master.even {
     background: none;
@@ -249,6 +252,8 @@
     color: #393939;
     font-size: 13px;
     padding: 5px;
+    height: inherit;
+    box-sizing: border-box;
     overflow-y: hidden;
     word-break:break-all;
     white-space: normal;

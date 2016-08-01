@@ -203,7 +203,7 @@ config.files.download_path = '/tmp';
 /* Cassandra Server */
 config.cassandra = {};
 config.cassandra.server_ips = ['127.0.0.1'];
-config.cassandra.server_port = '9160';
+config.cassandra.server_port = '9042';
 config.cassandra.enable_edit = false;
 
 /* KUE Job Scheduler */
@@ -285,7 +285,7 @@ config.getDomainProjectsFromApiServer = false;
  *
  * username - This username required while login.
  * password - This password required while login.
- * roles    - User role, options are 'superAdmin' and 'member';
+ * roles    - User role, options are 'cloudAdmin' and 'member';
  *
  * NOTE: This username and password is not used to authenticate using some
  *       identity manager.
@@ -297,9 +297,24 @@ config.staticAuth = [];
 config.staticAuth[0] = {};
 config.staticAuth[0].username = 'admin';
 config.staticAuth[0].password = 'contrail123';
-config.staticAuth[0].roles = ['superAdmin'];
+config.staticAuth[0].roles = ['cloudAdmin'];
 
-
+/*****************************************************************************
+ * Below are the mappings from external roles provided by identity manager
+ * to UI roles. Currently from UI, we have only cloudAdmin role.
+ *
+ * If any of the external role matches with the list as mapped with cloudAdmin,
+ * the user is treated as cloudAdmin, else if any of the external member role
+ * matches with the UI member role, user is treated as member.
+ *
+ * Please note that for orchestration model, no-orch, vcenter and cloudstack, we
+ * assume UI role as cloudAdmin
+ *
+ *****************************************************************************/
+config.roleMaps = {};
+config.roleMaps.cloudAdmin = ['admin', 'KeystoneAdmin',
+    'KeystoneServiceAdmin', 'netadmin', 'sysadmin'];
+config.roleMaps.member = ['Member', '_member_'];
 
 /*****************************************************************************
 * Below are the delimiter list for physical/logical interface creation.
@@ -309,10 +324,13 @@ config.physicaldevices = {};
 config.physicaldevices.interface_delimiters = ['.', ':'];
 
 /*****************************************************************************
-* Below are the disabled list of UI features.
+* Below are the optional feature list which can be enabled/disabled from
+* UI Menu.
+*
 *****************************************************************************/
-config.features = {};
-config.features.disabled = ['mon_infra_underlay','mon_infra_mx'];
+config.optFeatureList = {};
+config.optFeatureList.mon_infra_underlay = false;
+config.optFeatureList.mon_infra_mx = false;
 
 /*****************************************************************************
 * Below are the configurations used only for ui

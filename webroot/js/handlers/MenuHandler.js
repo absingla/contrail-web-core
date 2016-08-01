@@ -17,11 +17,20 @@ define(['underscore'], function (_) {
 
         this.loadMenu = function (xml) {
             menuObj = $.xml2json(xml);
-            var disabledFeatures = {disabled:globalObj['webServerInfo']['disabledFeatures']};
-            var featurePkgsInfo = globalObj['webServerInfo']['featurePkgsInfo'];
-            processXMLJSON(menuObj, disabledFeatures);
+            var optFeatureList =
+                getValueByJsonPath(globalObj, 'webServerInfo;optFeatureList',
+                                   null);
+            var featurePkgsInfo =
+                getValueByJsonPath(globalObj, 'webServerInfo;featurePkgsInfo',
+                                   null);
+            //processXMLJSON populates siteMapsearchStrings
+            globalObj['siteMapSearchStrings'] = [];
+            processXMLJSON(menuObj, optFeatureList);
+            //populate the autocomplete dropdown for siteMap
+            enableSearchAhead();
             var menuShortcuts = contrail.getTemplate4Id('menu-shortcuts')(menuHandler.filterMenuItems(menuObj['items']['item'], 'menushortcut', featurePkgsInfo));
             $("#sidebar-shortcuts").html(menuShortcuts);
+            menuHandler.filterMenuItems(menuObj['items']['item']);
 
             //Add an event listener for clicking on menu items
             $('#menu').off('click').on('click', 'ul > li > a', function (e) {
@@ -33,12 +42,11 @@ define(['underscore'], function (_) {
             });
 
             //Intialize the alarm flag
-            var disabledFeatures = ifNull(globalObj['webServerInfo']['disabledFeatures']['disabled'],[]);
-            $.each(disabledFeatures, function (i,d) {
-                if(d == 'monitor_alarms') {
-                    cowu.getAlarmsFromAnalytics = false;
-                }
-            });
+            var isMonAlarmsEnabled =
+                getValueByJsonPath(optFeatureList, 'mon_alarms', true);
+            if (false == isMonAlarmsEnabled) {
+                cowu.getAlarmsFromAnalytics = false;
+            }
         }
 
         //Filter the menu items based
@@ -114,7 +122,7 @@ define(['underscore'], function (_) {
                     var rolesArr = value.access.roles.role;
                     var allowedRolesList = [];
 
-                    //If logged-in user has superAdmin role,then allow all features
+                    //If logged-in user has cloudAdmin role,then allow all features
                     if ($.inArray(globalObj['roles']['ADMIN'], loggedInUserRoles) > -1) {
                         roleExists = true;
                     } else {
@@ -160,7 +168,10 @@ define(['underscore'], function (_) {
             if (menuButton == null) {
                 currPageHashArray = currPageHash.split('_');
                 //Looks scalable only till 2nd level menu
-                linkId = '#' + currPageHashArray[0] + '_' + currPageHashArray[1] + '_' + currPageHashArray[2];
+                linkId = '#' + currPageHashArray[0] + '_' + currPageHashArray[1];
+                if(currPageHashArray[2] != null) {
+                    linkId += '_' + currPageHashArray[2];
+                }
                 subMenuId = $(linkId).parent('ul.submenu');
                 menuButton = getMenuButtonName(currPageHashArray[0]);
                 //If user has switched between top-level menu
@@ -207,6 +218,11 @@ define(['underscore'], function (_) {
                         href: $(linkId).parents('li').parents('ul').children('li:first').children('a:first').attr('data-link').trim(),
                         link: $(linkId).parents('li').parents('ul').children('li:first').children('a:first').text().trim()
                     });
+                } else if ($(linkId).parents('ul').length == 1){
+                    breadcrumbsArr.unshift({
+                        href: $(linkId).parents('ul').children('li:first').children('a:first').attr('data-link').trim(),
+                        link: $(linkId).parents('ul').children('li:first').children('a:first').text().trim()
+                    });
                 } else {
                     breadcrumbsArr.unshift({
                         href: $(linkId).parents('li').parents('ul').children('li:first').children('a:first').attr('data-link').trim(),
@@ -236,11 +252,21 @@ define(['underscore'], function (_) {
                 return false;
         }
 
+        this.getRenderFnFromMenuObj = function(currMenuObj) {
+            var renderFn;
+            $.each(getValueByJsonPath(currMenuObj, 'resources;resource', []), function (idx, currResourceObj) {
+                if (currResourceObj['class'] != null && window[currResourceObj['class']] != null) {
+                    renderFn = currResourceObj['function'];
+                }
+            });
+            return renderFn;
+        }
+
         /*
          * post-processing of menu XML JSON
          * JSON expectes item to be an array,but xml2json make item as an object if there is only one instance
          */
-        function processXMLJSON(json, disabledFeatures) {
+        function processXMLJSON(json, optFeatureList) {
             if ((json['resources'] != null) && json['resources']['resource'] != null) {
                 if (!(json['resources']['resource'] instanceof Array))
                     json['resources']['resource'] = [json['resources']['resource']];
@@ -250,18 +276,25 @@ define(['underscore'], function (_) {
                     var currItem = json['items']['item'];
                     for (var i = (currItem.length - 1); i > -1; i--) {
                         //remove diabled features from the menu obeject
-                        if (currItem[i]['hash'] != undefined
-                            && disabledFeatures.disabled != null && disabledFeatures.disabled.indexOf(currItem[i]['hash']) !== -1) {
+                        var isOptional =
+                            getValueByJsonPath(currItem, i +
+                                               ';menuAttr;optional', false);
+                        var hash =
+                            getValueByJsonPath(currItem, i + ';hash', null);
+                        var ifFeatureEnabled =
+                            getValueByJsonPath(optFeatureList, hash, false);
+                        if (("true" == isOptional) &&
+                            (false == ifFeatureEnabled)) {
                             currItem.splice(i, 1);
                         } else {
                             if (currItem[i] != undefined) {
-                                processXMLJSON(currItem[i], disabledFeatures);
+                                processXMLJSON(currItem[i], optFeatureList);
                                 add2SiteMap(currItem[i]);
                             }
                         }
                     }
                 } else {
-                    processXMLJSON(json['items']['item'], disabledFeatures);
+                    processXMLJSON(json['items']['item'], optFeatureList);
                     add2SiteMap(json['items']['item']);
                     json['items']['item'] = [json['items']['item']];
                 }
@@ -416,6 +449,9 @@ define(['underscore'], function (_) {
         }
         if (linkId != null) {
             $('.submenu > li').each(function () {
+                $(this).removeClass('active');
+            });
+            $('.mainMenu').each(function () {
                 $(this).removeClass('active');
             });
             $(linkId).addClass('active');

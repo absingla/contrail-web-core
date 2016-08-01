@@ -38,8 +38,6 @@ if (!module.parent) {
     process.exit(1);
 }
 
-var parser = new xml2js.Parser();
-
 var redisClientCreateEvent = new eventEmitter();
 
 function putJsonViaInternalApi (api, ignoreError,
@@ -1058,8 +1056,7 @@ function createJSONByUVEResponseArr (resultArr, responseArr, lastIndex)
  *    which ignores all XML attributes and only creates text nodes
  */
 function getRestAPIServer (ip, port, apiName) {
-    var api = apiName || global.label.API_SERVER;
-    return rest.getAPIServer({apiName: api, server:ip, port: port,
+    return rest.getAPIServer({apiName: apiName, server:ip, port: port,
                              xml2jsSettings:
                                 {ignoreAttrs: true,
                                  explicitArray: false
@@ -1397,7 +1394,7 @@ function getWebServerInfo (req, res, appData)
             'cnfg;server_ip',
              null);
 
-    serverObj['disabledFeatures'] = getValueByJsonPath(config,'features;disabled',[]);
+    serverObj['optFeatureList'] = getValueByJsonPath(config,'optFeatureList',{});
     serverObj['featurePkgsInfo'] = getValueByJsonPath(config,'featurePkg',[]);
     serverObj['sessionTimeout'] = getValueByJsonPath(config,'session;timeout', 3600000);
     serverObj['_csrf'] = req.session._csrf;
@@ -1573,6 +1570,8 @@ function mergeAllPackageList (serverType)
 
 function getAllJsons (menuDir, callback)
 {
+    var options = {attrkey: 'menuAttr'};
+    var parser = new xml2js.Parser(options);
     var fileName = menuDir + '/menu.xml';
     fs.readFile(fileName, function(err, content) {
         parser.parseString(content, function(err, content) {
@@ -1909,6 +1908,7 @@ function mergeFeatureMenuXMLFiles (pkgList, mergePath, mFileName, callback)
         callback();
         return;
     }
+    /*
     if (2 == pkgLen) {
         pkgDir = config.featurePkg[pkgList[1]['pkgName']].path;
         cmd = 'cp -af ' + pkgDir + '/webroot/menu.xml' + ' ' +
@@ -1920,6 +1920,7 @@ function mergeFeatureMenuXMLFiles (pkgList, mergePath, mFileName, callback)
         });
         return;
     }
+    */
     for (var i = 1; i < pkgLen; i++) {
         pkgDir = config.featurePkg[pkgList[i]['pkgName']].path;
         menuDirs.push(pkgDir + '/webroot/');
