@@ -251,6 +251,13 @@ cp -af ./$THIRD_PARTY/ajv-4.1.0/ajv.min.js webroot/assets/ajv/ajv.min.js
 rm -rf webroot/assets/jsoneditor
 mkdir -p webroot/assets/jsoneditor/js
 mkdir -p webroot/assets/jsoneditor/css/img
+#END - Copy jsoneditor from $THIRD_PARTY
+
+#Start - Copy d3-v4 from $THIRD_PARTY
+rm -rf webroot/assets/d3-v4.1.1
+mkdir -p webroot/assets/d3-v4.1.1
+cp -af ./$THIRD_PARTY/d3-v4.min.js webroot/assets/d3-v4.1.1/js/d3-v4.min.js
+#End - Copy d3-v4 from $THIRD_PARTY
 
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/dist/jsoneditor.min.js webroot/assets/jsoneditor/js/jsoneditor.min.js
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/dist/jsoneditor.js webroot/assets/jsoneditor/js/jsoneditor.js

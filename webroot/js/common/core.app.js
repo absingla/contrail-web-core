@@ -156,6 +156,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             //End - thirdparty-libs aliases
             //Start - chart-libs aliases
             'd3'                        : coreWebDir + '/assets/d3-v3.5.6/js/d3',
+            'd3-v4'                     : coreWebDir + '/assets/d3-v4.1.1/js/d3-v4.min',
             'nv.d3'                     : coreWebDir + '/assets/nvd3-v1.8.1/js/nv.d3',
             //End - chart-libs aliases
             //Start - nonamd-libs aliases

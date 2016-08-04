@@ -2498,7 +2498,17 @@
 </script>
 
 <script type="text/x-handlebars-template" id="coCharts-chart-template">
-    <div id="coCharts-{{chartId}}" class="coCharts-container row-fluid" style="height:{{height}}px;"></div>
+    <div class="row-fluid">
+        {{#if controlPanelConfig.enable}}
+            <div id="controlPanel" class="span3 coCharts-control-panel"></div>
+        {{/if}}
+        <div id="coCharts-{{chartId}}" class="coCharts-container row-fluid" style="height:{{height}}px;"></div>
+    </div>
+    <div class="row-fluid">
+        {{#if navigationPanelConfig.enable}}
+            <div id="navigationPanel" class="coCharts-navigation-panel"></div>
+        {{/if}}
+    </div>
 </script>
 
 <script type="text/x-handlebars-template" id="d3-linebar-chart-controls">

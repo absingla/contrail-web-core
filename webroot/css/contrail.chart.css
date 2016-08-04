@@ -435,3 +435,100 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     cursor: pointer;
     padding: 0 10px;
 }
+
+.coCharts-container .axis.x-axis .domain {
+    display: none
+}
+
+.coCharts-container .axis.x-axis .tick line {
+    stroke: #ddd;
+    stroke-width: 1
+}
+
+.coCharts-container .axis.x-axis .tick text {
+    font-size: 11px;
+    fill: #666
+}
+
+.coCharts-container .axis.y-axis .domain {
+    display: none
+}
+
+.coCharts-container .axis.y-axis .tick line {
+    stroke: #ddd;
+    stroke-width: 1
+}
+
+.coCharts-container .axis.y-axis .tick text {
+    font-size: 11px;
+    fill: #666
+}
+
+.coCharts-container .bubble {
+    fill: #6baed6;
+    stroke-width: 1;
+    stroke: #a7cfe7;
+    opacity: 0.75
+}
+
+.coCharts-container .bubble.active {
+    stroke: #358cbf;
+    cursor: pointer
+}
+
+.line-chart .axis.x-axis .domain {
+    display: none
+}
+
+.line-chart .axis.x-axis .tick line {
+    stroke: #ddd;
+    stroke-width: 1
+}
+
+.line-chart .axis.x-axis .tick text {
+    font-size: 11px;
+    fill: #666
+}
+
+.line-chart .axis.y-axis .domain {
+    display: none
+}
+
+.line-chart .axis.y-axis .tick line {
+    stroke: #ddd;
+    stroke-width: 1
+}
+
+.line-chart .axis.y-axis .tick text {
+    font-size: 11px;
+    fill: #666
+}
+
+.line-chart .line {
+    fill: none;
+    stroke: #6baed6;
+    stroke-width: 2
+}
+
+.navigation-view .page-links {
+    height: 33px
+}
+
+.navigation-view div.prev {
+    float: left;
+    text-align: left
+}
+
+.navigation-view div.next {
+    float: right;
+    text-align: right
+}
+
+.tooltip-view {
+    position: absolute;
+    width: 300px;
+    height: 50px;
+    background-color: #fff;
+    border: 1px solid #888;
+    padding: 10px
+}
