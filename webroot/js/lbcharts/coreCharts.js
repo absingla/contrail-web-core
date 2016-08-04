@@ -3,22 +3,22 @@
  */
 
 define([
-    'core-basedir/js/charts/base/utils/ClassUtil',
-    'core-basedir/js/charts/base/utils/StringUtil',
-    'core-basedir/js/charts/base/utils/ConfigUtil',
-    'core-basedir/js/charts/base/Component',
-    'core-basedir/js/charts/base/Container',
-    'core-basedir/js/charts/base/Chart',
-    'core-basedir/js/charts/base/BarChartStrategy',
+    'core-basedir/js/lbcharts/base/utils/ClassUtil',
+    'core-basedir/js/lbcharts/base/utils/StringUtil',
+    'core-basedir/js/lbcharts/base/utils/ConfigUtil',
+    'core-basedir/js/lbcharts/base/Component',
+    'core-basedir/js/lbcharts/base/Container',
+    'core-basedir/js/lbcharts/base/Chart',
+    'core-basedir/js/lbcharts/base/BarChartStrategy',
     
-    'core-basedir/js/charts/BarChart',
-    'core-basedir/js/charts/LineChart',
-    'core-basedir/js/charts/BarChartManager',
-    'core-basedir/js/charts/components/BrushMask',
-    'core-basedir/js/charts/components/Tooltip',
-    'core-basedir/js/charts/components/Crosshair',
-    'core-basedir/js/charts/strategy/BarChartGroupedStrategy',
-    'core-basedir/js/charts/strategy/BarChartStackedStrategy'
+    'core-basedir/js/lbcharts/BarChart',
+    'core-basedir/js/lbcharts/LineChart',
+    'core-basedir/js/lbcharts/BarChartManager',
+    'core-basedir/js/lbcharts/components/BrushMask',
+    'core-basedir/js/lbcharts/components/Tooltip',
+    'core-basedir/js/lbcharts/components/Crosshair',
+    'core-basedir/js/lbcharts/strategy/BarChartGroupedStrategy',
+    'core-basedir/js/lbcharts/strategy/BarChartStackedStrategy'
     
 ], function (ClassUtil, StringUtil, ConfigUtil, Component, Container, Chart, BarChartStrategy,
              BarChart, LineChart, BarChartManager, BrushMask, Tooltip, Crosshair,

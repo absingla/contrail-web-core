@@ -8,7 +8,7 @@
  */
 define([
     'coCharts',
-    'core-basedir/js/charts/NavigationChart'
+    'core-basedir/js/lbcharts/NavigationChart'
 ], function(coCharts, NavigationChart) {
 
     //Add NavigationChart part of namespace.

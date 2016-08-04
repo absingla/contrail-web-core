@@ -5,7 +5,7 @@
 define([
     'underscore',
     'contrail-view',
-    'core-basedir/js/charts/LineBarChart',
+    'core-basedir/js/lbcharts/LineBarChart',
     'contrail-list-model'
 ], function (_, ContrailView, LineBarChartContainer, ContrailListModel) {
     var LineBarChartView = ContrailView.extend({

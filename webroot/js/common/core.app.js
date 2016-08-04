@@ -181,7 +181,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
              //'core.app.utils'              : coreWebDir + "/js/common/core.app.utils",
             'storage-init'                : 'empty:',
             'contrail-element'            : coreWebDir + '/js/models/ContrailElement',
-            'coCharts'                    : coreWebDir + '/js/charts/coreCharts'
+            'coCharts'                    : coreWebDir + '/js/lbcharts/coreCharts'
         };
         //Merge common (for both prod & dev) alias
         for(var currAlias in devAliasMap)

@@ -3,7 +3,7 @@
  */
 
 define([
-    'core-basedir/js/charts/base/Chart'
+    'core-basedir/js/lbcharts/base/Chart'
 ], function (Chart) {
 
     /**
