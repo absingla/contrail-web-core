@@ -119,7 +119,8 @@ define([
                               {
                                   field: 'severity',
                                   name: '',
-                                  width: 1,
+                                  minWidth: 20,
+                                  maxWidth: 20,
                                   searchFn: function (d) {
                                       return d['severity'];
                                   },
@@ -132,7 +133,7 @@ define([
                               {
                                   field: 'timestamp',
                                   name: 'Time',
-                                  minWidth: 50,
+                                  minWidth: 130,
                                   formatter : function (r,c,v,cd,dc) {
                                       return getFormattedDate(v/1000);
                                   }
@@ -140,7 +141,7 @@ define([
                               {
                                   field: 'alarm_msg',
                                   name: 'Alarm',
-                                  minWidth: 200,
+                                  minWidth: 200
                               },
                               {
                                   field: 'display_name',
@@ -153,14 +154,15 @@ define([
                                   formatter : function (r,c,v,cd,dc) {
                                       var formattedDiv = '';
                                       if(!dc['ack'] && dc['type'] != cowc.USER_GENERATED_ALARM) {
-                                          formattedDiv = '<span title="Acknowledge" style="float:right"><i class="fa fa-check-circle-o"></i></span>';
+                                          formattedDiv = '<span title="Acknowledge"><i class="fa fa-check-circle-o"></i></span>';
                                       }
                                       return formattedDiv;
                                   },
                                   events: {
                                       onClick: onAcknowledgeActionClicked
                                   },
-                                  width:1
+                                  minWidth: 20,
+                                  maxWidth: 20
                               }
                           ];
         var gridElementConfig = {
