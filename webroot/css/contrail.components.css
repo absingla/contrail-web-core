@@ -461,7 +461,7 @@
  * Extends Jquery UI Accordion
  */
 .ui-state-default.ui-accordion-header {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #eee !important;
     outline: none;
 }
 .ui-accordion-content.ui-widget-content {

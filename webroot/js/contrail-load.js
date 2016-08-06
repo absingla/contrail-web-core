@@ -66,7 +66,7 @@ $(document).ready(function () {
         }
     });
 
-    $('#back-to-top').live('click',function (event) {
+    $(document).on('click', '#back-to-top', function (event) {
         event.preventDefault();
         $('html, body').animate({scrollTop: 0}, 500);
         return false;
