@@ -360,7 +360,3 @@ input.datetimepicker{
     .ui-multiselect-menu {display: none;}
 
 }
-
-#helpModal {
-    z-index: 100001;
-}

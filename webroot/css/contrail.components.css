@@ -1039,6 +1039,7 @@ div.jsoneditor-value.jsoneditor-string { color: #2ca02c; }
 div.jsoneditor-value.jsoneditor-number { color: #ff7f0e; }
 div.jsoneditor-value.jsoneditor-boolean { color: #3182bd; }
 div.jsoneditor-value.jsoneditor-null { color: #9467bd; }
+
 /*
  * jQuery Validation
  */
@@ -1047,6 +1048,23 @@ label.jqInvalid {
     color: #e6550d;
     font-family: 'Open Sans';
     font-size: 13px;
+}
+
+/*
+ * Help
+ */
+
+#helpModal {
+    z-index: 100001;
+}
+.help-title {
+    padding-bottom: 10px;
+    font-weight: bold;
+    color: grey;
+}
+
+.help-img {
+    padding-bottom: 20px;
 }
 
 li {
@@ -1083,26 +1101,4 @@ li {
 
 .group-detail-advanced-json {
     padding-left: 30px;
-}
-
-.help-box {
-    padding: 10px 15px 0px;
-    margin: 0 -15px 15px;
-    border-style: solid;
-    margin-right: 0;
-    margin-left: 0;
-    border-color: #ddd;
-    border-width: 1px;
-    border-radius: 4px 4px 0 0;
-}
-
-.help-title {
-    padding-bottom: 10px;
-    font-weight: bold;
-    color: grey;
-}
-
-.help-img {
-    text-align: center;
-    padding-bottom: 20px;
 }

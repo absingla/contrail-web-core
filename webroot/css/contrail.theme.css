@@ -7200,8 +7200,8 @@ fieldset[disabled] .btn-white.btn-grey.active {
 
 .btn.btn-app.btn-xs {
     width: 64px;
-    font-size: 15px;
-    border-radius: 8px;
+    font-size: 13px;
+    border-radius: 0;
     padding-bottom: 7px;
     padding-top: 8px;
     line-height: 1.45; }
@@ -18401,7 +18401,6 @@ input.typeahead.scrollable ~ .tt-menu {
     float: left;
     display: block;
     text-align: center;
-    border-radius: 6px 0 0 6px;
     opacity: 0.55;
     vertical-align: top;
     margin: 0; }
@@ -18411,7 +18410,11 @@ input.typeahead.scrollable ~ .tt-menu {
     opacity: 1; }
 
 .btn.btn-app.ace-settings-btn.btn-xs {
-    width: 42px; }
+    width: 30px;
+    font-size: 13px;
+    padding-bottom: 3px;
+    padding-top: 3px;
+}
 
 .ace-settings-box {
     display: block;

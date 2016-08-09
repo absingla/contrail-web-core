@@ -29,6 +29,7 @@ define([
         'moment',
         'layout-handler',
         'menu-handler',
+        'help-handler',
         'content-handler',
         'validation',
         'core-basedir/js/views/BarChartInfoView',
