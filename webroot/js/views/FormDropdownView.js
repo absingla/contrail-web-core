@@ -20,6 +20,7 @@ define([
                 lockEditingByDefault = this.attributes.lockEditingByDefault,
                 label = viewConfig.label,
                 labelValue = (label != null)? label :((elId != null)? cowl.get(elId, app) : cowl.get(path, app)),
+                helpUrl = viewConfig['help'],
                 tmplParameters;
 
             if (!(contrail.checkIfExist(lockEditingByDefault) && lockEditingByDefault)) {
@@ -30,7 +31,8 @@ define([
             }
             tmplParameters = {
                 id: elId + '_dropdown', class: "", name: elId, label: labelValue,
-                viewConfig: viewConfig, lockAttr: lockEditingByDefault, validation: validation
+                viewConfig: viewConfig, lockAttr: lockEditingByDefault, validation: validation,
+                help: helpUrl
             };
 
             /* Save the elementConfig for the dropdown in elementConfigMap in the model

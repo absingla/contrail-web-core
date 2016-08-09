@@ -1084,3 +1084,25 @@ li {
 .group-detail-advanced-json {
     padding-left: 30px;
 }
+
+.help-box {
+    padding: 10px 15px 0px;
+    margin: 0 -15px 15px;
+    border-style: solid;
+    margin-right: 0;
+    margin-left: 0;
+    border-color: #ddd;
+    border-width: 1px;
+    border-radius: 4px 4px 0 0;
+}
+
+.help-title {
+    padding-bottom: 10px;
+    font-weight: bold;
+    color: grey;
+}
+
+.help-img {
+    text-align: center;
+    padding-bottom: 20px;
+}

@@ -82,6 +82,11 @@ $(document).ready(function () {
     // delete_cookie('_csrf');
 
     $(window).on('hashchange', function () {
+        //update sections on url change
+        if (help != null) {
+            help.update_sections();
+        }
+
         currHash = cowhu.getState();
         //Don't trigger hashChange if URL hash is updated from code
         //As the corresponding view has already been loaded from the place where hash is updated
@@ -102,6 +107,82 @@ $(document).ready(function () {
 
     //bootstrap v 2.3.1 prevents this event which firefox's middle mouse button "new tab link" action, so we off it!
     $(document).off('click.dropdown-menu');
+
+    //on page help
+    var help = null;//Onpage_Help instance
+
+    //for ace demo pages, we temporarily disable fixed navbar, etc ... when help is enabled
+    //because when an element is fixed, its highlighted help section should also become fixed!
+    var before_enable_help = function() {
+        $('#btn-scroll-up').css('z-index', 1000000);//bring btn-scroll-up  higher , to be over our help area
+
+        //now disable fixed navbar, which automatically disabled fixes sidebar and breadcrumbs
+        try {
+            ace.settingFunction.navbar_fixed(null, false , false);
+        } catch(ex) {}
+    }
+
+    var after_disable_help = function() {
+        $('#btn-scroll-up').css('z-index', '');
+    }
+
+    var get_file_url = function(url, language) {
+        //function that return the real path to a file which is being loaded
+        return this.settings.base + '/' + url;
+    }
+
+    var get_section_url = function(section_name) {
+        return '/docs/'+ section_name + '.html';
+    }
+    
+    function startHelp() {
+        if(help !== null) return;//already created?
+
+        help = new Onpage_Help({
+            'section_url': get_section_url,
+            'before_enable': before_enable_help,
+            'after_disable': after_disable_help
+        });
+
+        var help_container = $('#onpage-help-container');
+        //add a custom button to enable/disable help
+        help_container.append('<div class="ace-settings-container onpage-help-toggle-container">\
+			<div id="onpage-help-toggle-btn" class="btn btn-app btn-xs btn-info ace-settings-btn onpage-help-toggle-btn">\
+				<i class="onpage-help-toggle-text ace-icon fa fa-question bigger-150"></i>\
+			</div>\
+		</div>');
+
+        $('#onpage-help-toggle-btn').on('click', function(event) {
+            console.log("here");
+            event.preventDefault();
+            toggleHelp();
+        });
+
+        //add .container class to help container div when our content is put inside a ".container"
+        $(document).on('settings.ace.help', function(ev, event_name, fixed) {
+            if(event_name == 'main_container_fixed') {
+                if(fixed) help_container.addClass('container');
+                else help_container.removeClass('container');
+            }
+        }).triggerHandler('settings.ace.help', ['main_container_fixed', $('.main-container').hasClass('container')])
+
+        //in ajax mode when a content is loaded via ajax, we may want to update help sections
+        $(document).on('ajaxloadcomplete.ace.help', function() {
+            startHelp();
+            help.update_sections();
+        });
+    }
+
+    //create the help var 
+    startHelp();
+
+    function toggleHelp() {
+        help.toggle();
+
+        var toggle_btn = $('#onpage-help-toggle-btn');
+        toggle_btn.find('.onpage-help-toggle-text').removeClass('onpage-help-toggle-text');
+        toggle_btn.toggleClass('btn-grey btn-info').parent().toggleClass('active');
+    }
 });
 
 // $.fn.modal.Constructor.prototype.enforceFocus = function () {

@@ -30,7 +30,7 @@
         </a>
     </li>
     {{#each this.items.item}}
-        <li class="item mainMenu" {{#if this.hash}}id="{{this.hash}}"{{/if}}>
+        <li class="item mainMenu" {{#if this.hash}}id="{{this.hash}}"{{/if}} data-help="{{#if this.help}} {{this.help}} {{/if}}">
             <a href='{{#getHashFromMenuItem this}}{{/getHashFromMenuItem}}' data-link='{{#getHashFromMenuItem this}}{{/getHashFromMenuItem}}'>
                 <i class="{{this.iconClass}}"></i>
                 <span>{{this.label}}</span>
@@ -38,7 +38,7 @@
             {{#IfCompare this.items null operator='!='}}
                 <ul class="submenu">
                     {{#each this.items.item}}
-                        <li id="{{this.hash}}">
+                        <li id="{{this.hash}}" data-help="{{#if this.help}} {{this.help}} {{/if}}">
                             <a href='{{#getHashFromMenuItem this}}{{/getHashFromMenuItem}}'>
                                 {{this.label}}
                             </a>
@@ -1057,7 +1057,7 @@
 </script>
 
 <script type="text/x-handlebars-template" id="core-dropdown-view-template">
-   <div class="form-group" data-bind="{{#if viewConfig.visible}} visible: {{viewConfig.visible}} {{/if}}">
+   <div class="form-group" data-bind="{{#if viewConfig.visible}} visible: {{viewConfig.visible}} {{/if}}" data-help="{{#if viewConfig.help}} {{viewConfig.help}} {{/if}}">
         {{#IfCompare label false operator='!=' }}
             <label for="{{id}}">
                 {{label}}
@@ -1235,7 +1235,7 @@
 </script>
 
 <script type="text/x-handlebars-template" id="core-textarea-view-template">
-    <div class="form-group" data-bind="{{#if viewConfig.visible}} visible: {{viewConfig.visible}} {{/if}}" >
+    <div class="form-group" data-bind="{{#if viewConfig.visible}} visible: {{viewConfig.visible}} {{/if}}" data-help="{{#if viewConfig.help}} {{viewConfig.help}} {{/if}}">
         <label for="{{id}}">
             {{label}}
             <span class="pull-right" style="display:none;" data-bind="visible: {{lockAttr}}, event: { click: function() { toggleLockAttr('{{name}}') }}">

@@ -19374,10 +19374,10 @@ input.typeahead.scrollable ~ .tt-menu {
     border-radius: 8px; }
 
 .onpage-help-section > .help-icon-2 {
-    position: absolute;
+    /*position: absolute;*/
     z-index: 2;
-    left: -4px;
-    top: -4px;
+    left: -20px;
+    top: -8px;
     width: 18px;
     height: 18px;
     line-height: 16px;

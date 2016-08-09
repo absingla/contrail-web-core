@@ -21,6 +21,7 @@ define([
                 label = viewConfig.label,
                 labelValue = (label != null)? label :((elId != null)? cowl.get(elId, app) : cowl.get(path, app)),
                 showEditIcon = contrail.checkIfExist(viewConfig['editPopupConfig']) ? true : false,
+                helpUrl = viewConfig['help'],
                 tmplParameters;
 
             if (!(contrail.checkIfExist(lockEditingByDefault) && lockEditingByDefault)) {
@@ -31,7 +32,8 @@ define([
             tmplParameters = {
                 label: labelValue, id: elId, name: elId, placeHolder: placeHolder, viewConfig: viewConfig,
                 dataBindValue: viewConfig[cowc.KEY_DATABIND_VALUE], lockAttr: lockEditingByDefault, type: type,
-                path: path, validation: validation, showEditIcon: showEditIcon
+                path: path, validation: validation, showEditIcon: showEditIcon,
+                help: helpUrl
             };
 
             self.$el.html(textAreaTemplate(tmplParameters));
