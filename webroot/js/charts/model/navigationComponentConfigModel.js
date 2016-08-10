@@ -40,9 +40,9 @@ define([
             titleRight: undefined,
 
             // Variable names to use
-            rVariableName: "r",
-            xVariableName: "x",
-            yVariableName: "y"
+            sizeAccessor: "size",
+            xAccessor: "x",
+            yAccessor: "y"
         }
     });
 

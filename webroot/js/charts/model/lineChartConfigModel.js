@@ -48,8 +48,8 @@ define([
             titleRight: undefined,
 
             // Variable names to use
-            xVariableName: "x",
-            yVariableName: "y"
+            xAccessor: "x",
+            yAccessor: "y"
         }
     });
 

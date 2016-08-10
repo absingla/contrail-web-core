@@ -57,9 +57,9 @@ define([
          */
         calculateScales: function() {
             var self = this;
-            var rangeR = self.model.getRangeFor( this.params.rVariableName );
-            var rangeX = self.model.getRangeFor( this.params.xVariableName );
-            var rangeY = self.model.getRangeFor( this.params.yVariableName );
+            var rangeR = self.model.getRangeFor( this.params.sizeAccessor );
+            var rangeX = self.model.getRangeFor( this.params.xAccessor );
+            var rangeY = self.model.getRangeFor( this.params.yAccessor );
             if( !self.params.rScale ) {
                 var rMinpx = 2;
                 var rMaxpx = Math.max( rMinpx, Math.min( self.params.chartWidth, self.params.chartHeight ) ) / 25;
@@ -130,8 +130,8 @@ define([
             var svgBubblesEnter = svgBubbles.enter();
             svgBubblesEnter.append( "circle" )
                 .attr( "class", "bubble" )
-                .attr( "cx", function( d ) { return self.params.xScale( d[self.params.xVariableName] ); } )
-                .attr( "cy", function( d ) { return self.params.yScale( d[self.params.yVariableName] ); } )
+                .attr( "cx", function( d ) { return self.params.xScale( d[self.params.xAccessor] ); } )
+                .attr( "cy", function( d ) { return self.params.yScale( d[self.params.yAccessor] ); } )
                 .attr( "r", 0 )
                 .on( "mouseover", function( d ) {
                     var pos = $( this ).offset();
@@ -145,9 +145,9 @@ define([
                 });
             var svgBubblesEdit = svg.selectAll( ".bubble" ).transition().ease( d3.easeLinear ).duration( self.params.duration );
             svgBubblesEdit
-                .attr( "cx", function( d ) { return self.params.xScale( d[self.params.xVariableName] ); } )
-                .attr( "cy", function( d ) { return self.params.yScale( d[self.params.yVariableName] ); } )
-                .attr( "r",  function( d ) { return self.params.rScale( d[self.params.rVariableName] ); } );
+                .attr( "cx", function( d ) { return self.params.xScale( d[self.params.xAccessor] ); } )
+                .attr( "cy", function( d ) { return self.params.yScale( d[self.params.yAccessor] ); } )
+                .attr( "r",  function( d ) { return self.params.rScale( d[self.params.sizeAccessor] ); } );
             svgBubbles.exit().transition().ease( d3.easeLinear ).duration( self.params.duration )
                 .attr( "r", 0 )
                 .remove();

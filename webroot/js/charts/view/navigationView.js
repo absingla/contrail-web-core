@@ -35,7 +35,7 @@ define([
 
         modelChanged: function( e ) {
             var self = this;
-            var x = this.params.xVariableName;
+            var x = this.params.xAccessor;
             var rangeX = self.model.getRangeFor( x );
             // Fetch the previous data window position
             var prevWindowXMin = self.params.windowXMin;
@@ -74,7 +74,7 @@ define([
 
         prevChunkSelected: function() {
             var range = this.model.getRange();
-            var x = this.params.xVariableName;
+            var x = this.params.xAccessor;
             var rangeDiff = range[x][1] - range[x][0];
             var queryLimit = {};
             queryLimit[x] = [range[x][0] - rangeDiff * 0.5, range[x][1] - rangeDiff * 0.5]
@@ -84,7 +84,7 @@ define([
 
         nextChunkSelected: function() {
             var range = this.model.getRange();
-            var x = this.params.xVariableName;
+            var x = this.params.xAccessor;
             var rangeDiff = range[x][1] - range[x][0];
             var queryLimit = {};
             queryLimit[x] = [range[x][0] + rangeDiff * 0.5, range[x][1] + rangeDiff * 0.5];
@@ -98,7 +98,7 @@ define([
 
         renderBrush: function() {
             var self = this;
-            var x = self.params.xVariableName;
+            var x = self.params.xAccessor;
             if( !self.brush ) {
                 var svg = self.svgSelection();
                 self.brush = d3.brushX()

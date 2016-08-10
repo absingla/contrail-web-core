@@ -60,8 +60,8 @@ define([
          */
         calculateScales: function() {
             var self = this;
-            var rangeX = self.model.getRangeFor( this.params.xVariableName );
-            var rangeY = self.model.getRangeFor( this.params.yVariableName );
+            var rangeX = self.model.getRangeFor( this.params.xAccessor );
+            var rangeY = self.model.getRangeFor( this.params.yAccessor );
             if( !self.params.xScale ) {
                 var xMinpx = self.params.marginLeft;
                 var xMaxpx = self.params.chartWidth - self.params.marginRight;
@@ -123,8 +123,8 @@ define([
             var data = self.getData();
             console.log( "Rendering data in (" + self.id + "): ", data, self.params );
             var line = d3.line()
-                .x( function( d ) { return self.params.xScale( d[self.params.xVariableName] ); } )
-                .y( function( d ) { return self.params.yScale( d[self.params.yVariableName] ); } );
+                .x( function( d ) { return self.params.xScale( d[self.params.xAccessor] ); } )
+                .y( function( d ) { return self.params.yScale( d[self.params.yAccessor] ); } );
             var svg = self.svgSelection();
             var svgLine = svg.select( ".lines" ).selectAll( ".line" ).datum( data );
             svgLine.attr( "d", line );

@@ -255,7 +255,7 @@ mkdir -p webroot/assets/jsoneditor/css/img
 
 #Start - Copy d3-v4 from $THIRD_PARTY
 rm -rf webroot/assets/d3-v4.1.1
-mkdir -p webroot/assets/d3-v4.1.1
+mkdir -p webroot/assets/d3-v4.1.1/js
 cp -af ./$THIRD_PARTY/d3-v4.min.js webroot/assets/d3-v4.1.1/js/d3-v4.min.js
 #End - Copy d3-v4 from $THIRD_PARTY
 

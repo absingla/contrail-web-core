@@ -37,16 +37,10 @@ define([
                 self.model = new ContrailListModel(viewConfig['modelConfig']);
             }
 
-            self.chartConfig = getChartConfig(selector, viewConfig['chartOptions']);
-            
             if (self.model !== null) {
 
                 self.chartDataModel = new DataModel();
-
-                // if (self.model.loadedFromCache || !(self.model.isRequestInProgress())) {
-                //     self.renderChart(selector, viewConfig, self.model);
-                // }
-
+                
                 self.model.onAllRequestsComplete.subscribe(function () {
                     self.updateChartDataModel();
                     self.renderChart(selector);
@@ -60,10 +54,10 @@ define([
 
                 self.renderChart(selector);
             }
-            
+
         },
 
-        updateChartDataModel: function() {
+        updateChartDataModel: function () {
             var self = this,
                 viewConfig = self.attributes.viewConfig,
                 data = self.model.getItems();
@@ -76,151 +70,123 @@ define([
                 data = self.chartConfig['dataParser'](data);
             }
 
-            //self.chartDataModel.set({data: data});
+            self.chartDataModel.set({data: data});
+
+            console.log(data);
         },
-        
-        applyStaticData: function() {
+
+        applyStaticData: function () {
             var self = this,
                 staticData = {
-                /**
-                 * Small initial dataset. It will be replaced by a bigger random dataset after a timeout.
-                 */
-                dataset: [
-                    { id: 1, a1: 1, b1: 1, c1: 1 },
-                    { id: 2, a1: 2, b1: 1, c1: 2 },
-                    { id: 3, a1: 3, b1: 2, c1: 5 },
-                    { id: 4, a1: 4, b1: 3, c1: 2 },
-                    { id: 5, a1: 5, b1: 9, c1: 2 },
-                    { id: 6, a1: 6, b1: 7, c1: 3 },
-                    { id: 7, a1: 7, b1: 2, c1: 2 },
-                    { id: 8, a1: 8, b1: 3, c1: 2 },
-                    { id: 9, a1: 9, b1: 9, c1: 9 },
-                    { id: 10, a1: 10, b1: 6, c1: 2 }
-                ],
+                    /**
+                     * Small initial dataset. It will be replaced by a bigger random dataset after a timeout.
+                     */
+                    dataset: [
+                        {id: 1, a1: 1, b1: 1, c1: 1},
+                        {id: 2, a1: 2, b1: 1, c1: 2},
+                        {id: 3, a1: 3, b1: 2, c1: 5},
+                        {id: 4, a1: 4, b1: 3, c1: 2},
+                        {id: 5, a1: 5, b1: 9, c1: 2},
+                        {id: 6, a1: 6, b1: 7, c1: 3},
+                        {id: 7, a1: 7, b1: 2, c1: 2},
+                        {id: 8, a1: 8, b1: 3, c1: 2},
+                        {id: 9, a1: 9, b1: 9, c1: 9},
+                        {id: 10, a1: 10, b1: 6, c1: 2}
+                    ],
 
-                randomDataSet: function( n, rangeMin, rangeMax ) {
-                    var dataset = [];
-                    for( var i = 0; i < n; i++ ) {
-                        dataset.push( {
-                            id: i,
-                            a1: i,
-                            b1: 100 * Math.random(),
-                            b2: 100 * Math.random(),
-                            c1: 10 * Math.random(),
-                            c2: 10 * Math.random()
-                        });
+                    randomDataSet: function (n, rangeMin, rangeMax) {
+                        var dataset = [];
+                        for (var i = 0; i < n; i++) {
+                            dataset.push({
+                                id: i,
+                                name: i,
+                                x: i,
+                                y: 100 * Math.random(),
+                                flowCnt: 10 * Math.random(),
+                                c1: 10 * Math.random(),
+                                c2: 10 * Math.random()
+                            });
+                        }
+                        return dataset;
                     }
-                    return dataset;
-                }
-            };
+                };
 
             self.chartDataModel.set({
-                data: staticData.randomDataSet( 250, 0, 1000 ), limit: { a1: [0, 100], a2: [0, 100] }
+                data: staticData.randomDataSet(250, 0, 1000), limit: {a1: [0, 100], a2: [0, 100]}
             });
         },
 
         renderChart: function (selector) {
             var self = this,
                 viewConfig = self.attributes.viewConfig,
-                chartTemplate = contrail.getTemplate4Id("coCharts-chart-template"),
-                widgetConfig = contrail.checkIfExist(viewConfig.widgetConfig) ? viewConfig.widgetConfig : null;
-
-
+                chartTemplate = contrail.getTemplate4Id("coCharts-chart-template");
+            
             var data = self.chartDataModel.get('data'),
                 checkEmptyDataCB = function (data) {
-                    return (!data || data.length === 0 || !data.filter(function (d) { return d.values.length; }).length);
+                    return (!data || data.length === 0 || !data.filter(function (d) {
+                        return d.length;
+                    }).length);
                 },
                 chartDataRequestState = cowu.getRequestState4Model(self.model, data, checkEmptyDataCB);
 
+            //Todo create a message view and register model and data providers for error
+            //render the message view.
 
             // if (self.chartConfig.defaultDataStatusMessage && !(data.length > 0 && data[0].values.length > 0)) {
             //     var messageHandler = self.chartConfig.statusMessageHandler;
             //     self.renderMessage(messageHandler(chartDataRequestState), selector);
-            // } else {
-            //     self.removeMessage();
-                $(selector).find(".coCharts-container").remove();
-                $(selector).append(chartTemplate(self.chartConfig));
+            // } 
             
-            self.applyStaticData();
-            
-            var variableSelectorConfigModel = new VariableSelectorComponentConfigModel( {
-                variables: [
-                    { key: "x", name: "a1", options: [ { name: "a1", description: "time" } ] },
-                    { key: "y", name: "b1", options: [ { name: "b1", description: "input bytes" }, { name: "b2", description: "output bytes" } ] },
-                    { key: "r", name: "c1", options: [ { name: "c1", description: "input bytes" }, { name: "c2", description: "output bytes" } ] }
-                ]
+            $(selector).find(".coCharts-container").remove();
+            $(selector).append(chartTemplate(self.chartConfig));
+            self.chartConfig = getChartConfig(selector, viewConfig['chartOptions']);
+
+            //self.applyStaticData();
+
+            //var chartConfigDataOptions = generateChartConfigModelOptions(self.chartConfig);
+            var dataProvider = new DataProvider({parentDataModel: self.chartDataModel});
+
+            //Todo Instead of variable selector view we will render a control panel with actions
+            //One of the action will be filter/variable selection
+            //each action will be defined using config
+            // var variableSelectorConfigModel = new VariableSelectorComponentConfigModel(chartConfigDataOptions);
+            // var variableSelectorView = new VariableSelectorView({config: variableSelectorConfigModel});
+            // $(selector).find("#controlPanel").append(variableSelectorView.render().el);
+
+            // NavigationView
+            var navigationComponentConfigModel = new NavigationComponentConfigModel(self.chartConfig.navigation);
+            var navigationView = new NavigationView({
+                model: dataProvider,
+                config: navigationComponentConfigModel,
+                id: "navigationView"
             });
-                var dataProvider = new DataProvider({parentDataModel: self.chartDataModel});
+            $(selector).find(".coCharts-navigation-container").append(navigationView.render().el);
 
-                // Create variable selector.
-                // var variableSelectorConfigModel = new VariableSelectorComponentConfigModel( {
-                //     variables: [
-                //         { key: "x", name: "x", options: [ { name: "x", description: "time" } ] },
-                //         { key: "y", name: "y", options: [ { name: "y", description: "input bytes" }] },
-                //         { key: "r", name: "size", options: [ { name: "size", description: "input bytes" }] }
-                //     ]
-                // });
+            // Create a chartView providing an available DOM element to render in.
+            var mainChartDataProvider = navigationView.getFocusDataProvider();
+            var mainChartViewConfigModel = new ScatterBubbleChartConfigModel(self.chartConfig.mainChart);
+            var mainChartView = new ScatterBubbleChartView({
+                model: mainChartDataProvider,
+                config: mainChartViewConfigModel,
+                el: $(selector).find(".coCharts-main-container"),
+                id: self.chartConfig.chartId
+            });
+            mainChartView.render();
 
-                var variableSelectorView = new VariableSelectorView( { config: variableSelectorConfigModel } );
-                $(selector).find( "#controlPanel" ).append( variableSelectorView.render().el );
-
-                /*
-                 var lineChartConfigModel = new LineChartConfigModel( { xVariableName: "a1", yVariableName: "b1" } );
-                 var lineChartView = new LineChartView( {
-                 model: dataProvider,
-                 config: lineChartConfigModel,
-                 id: "lineChart"
-                 });
-                 $( "#variableSelectorContainer" ).append( lineChartView.render().el );
-                 */
-
-                // Create a chartView and append in anywhere in the DOM later.
-                // TODO: The data must be available in the model when rendering a view.
-                
-                // var viewInSideBarConfigModel = new ScatterBubbleChartConfigModel( { xVariableName: "a1", yVariableName: "b1", rVariableName: "c1" } );
-                // var viewInSideBar = new ScatterBubbleChartView( {
-                //     model: dataProvider,
-                //     config: viewInSideBarConfigModel,
-                //     id: "sideBarScatterChart"
-                // });
-                // $(selector).find( "#navigationView" ).append( viewInSideBar.render().el );
-
-                // NavigationView
-                var navigationComponentConfigModel = new NavigationComponentConfigModel( { xVariableName: "a1", yVariableName: "b1" } );
-                var navigationView = new NavigationView( {
-                    model: dataProvider,
-                    config: navigationComponentConfigModel,
-                    id: "navigationView"
-                });
-                $(selector).find( "#navigationPanel" ).append( navigationView.render().el );
-
-                // Create a chartView providing an available DOM element to render in.
-                var mainChartDataProvider = navigationView.getFocusDataProvider();
-                var mainChartViewConfigModel = new ScatterBubbleChartConfigModel( { xVariableName: "a1", yVariableName: "b1", rVariableName: "c1" } );
-                var mainChartView = new ScatterBubbleChartView( {
-                    model: mainChartDataProvider,
-                    config: mainChartViewConfigModel,
-                    el: $(selector).find(".coCharts-container"),
-                    id: self.chartConfig.chartId
-                });
-                mainChartView.render();
-
-                // TooltipView
-                var tooltipConfig = new TooltipComponentConfigModel();
-                var tooltipView = new TooltipView( { config: tooltipConfig } );
-                tooltipView.registerTriggerEvent( mainChartView.eventObject, "mouseover", "mouseout" );
-
-            //}
+            // TooltipView
+            var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
+            var tooltipView = new TooltipView({config: tooltipConfig});
+            tooltipView.registerTriggerEvent(mainChartView.eventObject, "mouseover", "mouseout");
         },
 
-        renderMessage: function(message, selector, chartOptions) {
+        renderMessage: function (message, selector, chartOptions) {
             var self = this,
                 message = contrail.handleIfNull(message, ""),
                 selector = contrail.handleIfNull(selector, $(self.$el)),
                 chartOptions = contrail.handleIfNull(chartOptions, self.chartConfig);
 
             var svgElement = $(selector).find('svg');
-            if(!svgElement.length)
+            if (!svgElement.length)
                 $('<svg style="height:300px;" class="row-fluid"></svg>').appendTo(selector);
 
             var container = d3.select($(selector).find("svg")[0]),
@@ -237,10 +203,12 @@ define([
             requestStateText
                 .attr('x', textPositionX)
                 .attr('y', textPositionY)
-                .text(function(t){ return t; });
+                .text(function (t) {
+                    return t;
+                });
         },
 
-        removeMessage: function(selector) {
+        removeMessage: function (selector) {
             var self = this,
                 selector = contrail.handleIfNull(selector, $(self.$el));
             $(selector).find('svg').remove();
@@ -248,76 +216,60 @@ define([
     });
 
     function getChartConfig(selector, chartOptions) {
-        var chartSelector = $(selector).find('.chart-container');
+        var chartSelector = $(selector).find('.coCharts-container');
 
-        chartOptions.width = $(chartSelector).width() - 10;
-
-        var defaultConfig = {
+        var defaultZoomScatterConfig = {
             chartId: 'zoomScatterChart',
-            navigationPanelConfig: {
+            navigation: {
+                enable: false,
+                xAccessor: 'x',
+                accessorData: {}
+            },
+            controlPanel: {
                 enable: false
             },
-            controlPanelConfig: {
-                enable: false
+            mainChart: {
+                chartHeight: 270,
+                chartWidth: $(chartSelector).width() - 10,
+                marginTop: 20,
+                marginRight: 5,
+                marginBottom: 50,
+                marginLeft: 50,
+                maxCircleRadius: 10,
+                maxScale: 5,
+                minScale: 1 / 5,
+                yLabel: 'Y Axis',
+                xLabel: 'X Axis',
+                yLabelFormat: d3.format(','),
+                xLabelFormat: d3.format(','),
+                xAccessor: 'x',
+                sizeAccessor: 'size',
+                forceX: [undefined, undefined],
+                forceY: [undefined, undefined],
+                accessorData: {}
             },
-            maxCircleRadius: 10,
-            maxScale: 5,
-            minScale: 1 / 5,
-            yLabel: 'Y Axis',
-            xLabel: 'X Axis',
-            yLabelFormat: chartOptions.yLabelFormat,
-            xLabelFormat: chartOptions.xLabelFormat,
-            xField: 'x',
-            yField: 'y',
-            forceX: [undefined, undefined],
-            forceY: [undefined, undefined],
-            colorFilterFields: 'color',
-            titleKey: 'title',
-            categoryKey: 'project',
-            margin: {top: 20, right: 5, bottom: 50, left: 50},
-            height: 275,
+            marginTop: 20, 
+            marginRight: 5, 
+            marginBottom: 50,
+            marginLeft: 50,
+            height: 350,
             width: '100%',
             dataParser: null,
-            sizeFieldName: 'size',
             noDataMessage: 'No Data Found',
-            doBucketize : false,
-            bubbleSizeFn: null,
             defaultDataStatusMessage: true,
-            statusMessageHandler: cowm.getRequestMessage
-        }
+            statusMessageHandler: cowm.getRequestMessage,
+        };
 
-        var chartViewConfig = $.extend(true, {}, defaultConfig, chartOptions);
-        // var chartViewConfig = {
-        //     chartId: chartOptions.chartId ? chartOptions.chartId : 'zoomScatterChart',
-        //     showMenu: chartOptions.showMenu ? chartOptions.showMenu : false,
-        //     maxCircleRadius: 10,
-        //     maxScale: 5,
-        //     minScale: 1 / 5,
-        //     yLabel: chartOptions.yLabel,
-        //     xLabel: chartOptions.xLabel,
-        //     yLabelFormat: chartOptions.yLabelFormat,
-        //     xLabelFormat: chartOptions.xLabelFormat,
-        //     xField: 'x',
-        //     yField: 'y',
-        //     forceX: chartOptions.forceX,
-        //     forceY: chartOptions.forceY,
-        //     colorFilterFields: 'color',
-        //     titleKey: chartOptions.titleField,
-        //     categoryKey: 'project',
-        //     margin: margin,
-        //     height: height,
-        //     width: width,
-        //     dataParser: chartOptions['dataParser'],
-        //     sizeFieldName: chartOptions['sizeFieldName'],
-        //     noDataMessage: chartOptions['noDataMessage'],
-        //     doBucketize : chartOptions['doBucketize'],
-        //     bubbleSizeFn: chartOptions['bubbleSizeFn'],
-        //     defaultDataStatusMessage: true,
-        //     statusMessageHandler: cowm.getRequestMessage
-        // };
+        var chartConfig = $.extend(true, {}, defaultZoomScatterConfig, chartOptions);
 
-        return chartViewConfig;
+        //For now we will deduce yAccessor from the accessorData.
+        //Todo multiple accessor support on each Y axis: Y1 & Y2
+        chartConfig.navigation.yAccessor = Object.keys(chartConfig.navigation.accessorData)[0];
+        chartConfig.mainChart.yAccessor = Object.keys(chartConfig.mainChart.accessorData)[0];
+        chartConfig.mainChart.sizeAccessor = chartConfig.mainChart.accessorData[chartConfig.mainChart.yAccessor]["sizeAccessor"];
+        
+        return chartConfig;
     };
-
+    
     return ZoomScatterChartView;
 });

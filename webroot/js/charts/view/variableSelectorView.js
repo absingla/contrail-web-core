@@ -3,7 +3,7 @@
  */
 
 define( [
-    'jquery', 'underscore', 'backbone', 'd3',
+    'jquery', 'underscore', 'backbone', 'd3-v4',
     'core-basedir/js/charts/view/dataView',
     'text!core-basedir/js/charts/view//variableSelectorView.html'
 ], function( $, _, Backbone, d3, DataView, htmlTemplate ) {
