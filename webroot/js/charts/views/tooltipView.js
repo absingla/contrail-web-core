@@ -4,9 +4,8 @@
 
 define( [
     'jquery', 'underscore', 'backbone', 'd3-v4',
-    'core-basedir/js/charts/view/dataView', 
-    'text!core-basedir/js/charts/view/tooltipView.html'
-], function( $, _, Backbone, d3, DataView, htmlTemplate ) {
+    'core-basedir/js/charts/views/dataView'
+], function( $, _, Backbone, d3, DataView) {
     var TooltipView = DataView.extend( {
         tagName: "div",
         className: "tooltip-view",
@@ -14,7 +13,7 @@ define( [
         initialize: function( options ) {
             this.config = options.config;
             this.resetParams();
-            this.template = _.template( htmlTemplate );
+            this.template = contrail.getTemplate4Id("coCharts-tooltip");
         },
 
         registerTriggerEvent: function( eventObject, showEventType, hideEventType ) {

@@ -6,16 +6,16 @@ define([
     'contrail-list-model',
     'contrail-view',
     'd3-v4',
-    'core-basedir/js/charts/model/dataModel',
-    'core-basedir/js/charts/model/dataProvider',
-    'core-basedir/js/charts/model/scatterBubbleChartConfigModel',
-    'core-basedir/js/charts/view/scatterBubbleChartView',
-    'core-basedir/js/charts/model/navigationComponentConfigModel',
-    'core-basedir/js/charts/view/navigationView',
-    'core-basedir/js/charts/model/tooltipComponentConfigModel',
-    'core-basedir/js/charts/view/tooltipView',
-    'core-basedir/js/charts/model/variableSelectorComponentConfigModel',
-    'core-basedir/js/charts/view/variableSelectorView'
+    'core-basedir/js/charts/models/dataModel',
+    'core-basedir/js/charts/models/dataProvider',
+    'core-basedir/js/charts/models/scatterBubbleChartConfigModel',
+    'core-basedir/js/charts/views/scatterBubbleChartView',
+    'core-basedir/js/charts/models/navigationComponentConfigModel',
+    'core-basedir/js/charts/views/navigationView',
+    'core-basedir/js/charts/models/tooltipComponentConfigModel',
+    'core-basedir/js/charts/views/tooltipView',
+    'core-basedir/js/charts/models/variableSelectorComponentConfigModel',
+    'core-basedir/js/charts/views/variableSelectorView'
 ], function (ContrailListModel, ContrailView, d3, DataModel, DataProvider,
              ScatterBubbleChartConfigModel, ScatterBubbleChartView,
              NavigationComponentConfigModel, NavigationView,
@@ -149,9 +149,9 @@ define([
             //Todo Instead of variable selector view we will render a control panel with actions
             //One of the action will be filter/variable selection
             //each action will be defined using config
-            // var variableSelectorConfigModel = new VariableSelectorComponentConfigModel(chartConfigDataOptions);
-            // var variableSelectorView = new VariableSelectorView({config: variableSelectorConfigModel});
-            // $(selector).find("#controlPanel").append(variableSelectorView.render().el);
+            var variableSelectorConfigModel = new VariableSelectorComponentConfigModel(self.chartConfig.controlPanel.filter);
+            var variableSelectorView = new VariableSelectorView({config: variableSelectorConfigModel});
+            $(selector).find(".coCharts-control-panel-container").append(variableSelectorView.render().el);
 
             // NavigationView
             var navigationComponentConfigModel = new NavigationComponentConfigModel(self.chartConfig.navigation);

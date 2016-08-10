@@ -4,9 +4,8 @@
 
 define( [
     'jquery', 'underscore', 'backbone', 'd3-v4',
-    'core-basedir/js/charts/view/dataView',
-    'text!core-basedir/js/charts/view//variableSelectorView.html'
-], function( $, _, Backbone, d3, DataView, htmlTemplate ) {
+    'core-basedir/js/charts/views/dataView'
+], function( $, _, Backbone, d3, DataView ) {
     var VariableSelectorView = DataView.extend( {
         tagName: "div",
         className: "variableSelector-view",
@@ -14,7 +13,7 @@ define( [
         initialize: function( options ) {
             this.config = options.config;
             this.resetParams();
-            this.template = _.template( htmlTemplate );
+            this.template = contrail.getTemplate4Id("coCharts-variable-selector");
 
             this.listenTo( this.config, 'change', this.configurationChanged );
             this.eventObject = _.extend( {}, Backbone.Events );

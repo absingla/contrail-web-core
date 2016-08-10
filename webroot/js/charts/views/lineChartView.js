@@ -7,7 +7,7 @@ define([
     "underscore",
     "backbone",
     "d3-v4",
-    'core-basedir/js/charts/view/dataView'
+    'core-basedir/js/charts/views/dataView'
 ], function( $, _, Backbone, d3, DataView ) {
     var LineChartView = DataView.extend({
         tagName: "div",
@@ -28,9 +28,9 @@ define([
         },
 
         /**
-         * Calculates the chart dimmensions and margins.
-         * Use the dimmensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
-         * This method should be called before rendering because the available dimmensions could have changed.
+         * Calculates the chart dimensions and margins.
+         * Use the dimensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
+         * This method should be called before rendering because the available dimensions could have changed.
          */
         calculateDimmensions: function() {
             var self = this;
@@ -56,7 +56,7 @@ define([
 
         /**
          * Use the scales provided in the config or calculate them to fit data in view.
-         * Assumes to have the range values available in the DataProvider (model) and the chart dimmensions available in params.
+         * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
          */
         calculateScales: function() {
             var self = this;
@@ -76,7 +76,7 @@ define([
 
         /**
          * Renders an empty chart.
-         * Changes chart dimmensions if it already exists.
+         * Changes chart dimensions if it already exists.
          */
         renderSVG: function() {
             var self = this;

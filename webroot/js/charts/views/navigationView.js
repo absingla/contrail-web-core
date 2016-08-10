@@ -7,10 +7,9 @@ define([
     'underscore',
     'backbone',
     'd3-v4',
-    'core-basedir/js/charts/view/lineChartView',
-    'text!core-basedir/js/charts/view/navigationView.html',
-    'core-basedir/js/charts/model/dataProvider'
-], function($, _, Backbone, d3, LineChartView, htmlTemplate, DataProvider ) {
+    'core-basedir/js/charts/views/lineChartView',
+    'core-basedir/js/charts/models/dataProvider'
+], function($, _, Backbone, d3, LineChartView, DataProvider ) {
 
     var NavigationView = LineChartView.extend({
         tagName: "div",
@@ -19,7 +18,7 @@ define([
         initialize: function( options ) {
             this.config = options.config;
             this.resetParams();
-            this.template = _.template( htmlTemplate );
+            this.template = contrail.getTemplate4Id("coCharts-navigation-panel");
             this.listenTo( this.model, 'change', this.modelChanged );
             this.listenTo( this.config, 'change', this.render );
             this.eventObject = _.extend( {}, Backbone.Events );

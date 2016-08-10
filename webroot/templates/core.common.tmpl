@@ -2514,6 +2514,33 @@
     </div>
 </script>
 
+<script type="text/x-handlebars-template" id="coCharts-navigation-panel">
+    <div class="prev"><a data-action="page-{{chunkNum}}">&lt;&lt;</a></div>
+    <div class="next"><a data-action="page-{{chunkNum}}">&gt;&gt;</a></div>
+</script>
+
+<script type="text/x-handlebars-template" id="coCharts-tooltip">
+    <span>name={{name}}</span>
+</script>
+
+<script type="text/x-handlebars-template" id="coCharts-variable-selector">
+    <div>
+        <span>Choose a variable</span>
+        {{#each variables}}
+        <label>{{this.key}}</label>
+        <select class="variable-selector" data-variable-key="{{this.key}}">
+            {{#each this.options}}
+                {{#IfCompare this.name ../this.name operator="=="}}
+                    <option value="{{this.name}}" selected>{{this.description}}</option>
+                {{else}}
+                    <option value="{{this.name}}">{{this.description}}</option>
+                {{/IfCompare}}
+            {{/each}}
+        </select>
+        {{/each}}
+    </div>
+</script>
+
 <script type="text/x-handlebars-template" id="d3-linebar-chart-controls">
     <div class="controls-left-side">
         <div><div class="controls-button" data-x-axis="1" data-chart="coCharts.charts.LineChart">to lines</div></div>
