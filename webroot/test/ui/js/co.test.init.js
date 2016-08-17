@@ -344,7 +344,7 @@ function testAppInit(testAppConfig) {
                             for (var i = 0; i < cssList.length; i++) {
                                 $("body").append(cssList[i]);
                             }
-                            requirejs(['contrail-layout'], function () {
+                            requirejs(['co-test-runner', 'contrail-layout'], function (cotr) {
                                 //TODO: Timeout is currently required to ensure menu is loaed i.e feature app is initialized
 
                                 var logAllTestFiles = "Test files: ";
@@ -360,10 +360,8 @@ function testAppInit(testAppConfig) {
                                     defObj = $.Deferred();
 
                                 function loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner) {
-                                    var startKarmaCB = function (defObj, loadTestRunner) {
-                                        console.log("Loaded test file: " + testFile.split('/').pop());
-                                        return window.__karma__.start(defObj, loadTestRunner);
-                                    };
+                                    var startKarmaCB = window.__karma__.start(defObj, loadTestRunner);
+
                                     //Clear Cookies if any exist
                                     if (document.cookie != '') {
                                         var cookies = document.cookie.split(";");
@@ -376,11 +374,24 @@ function testAppInit(testAppConfig) {
                                     //clear the core cache
                                     cowch.reset();
 
-                                    require([testFile], function () {
-                                        requirejs.config({
-                                            deps: [testFile],
-                                            callback: startKarmaCB(defObj, loadTestRunner)
-                                        });
+                                    require([testFile], function (pageTestConfig) {
+                                        var testSetupDefObj = $.Deferred();
+
+                                        console.log("Loaded test file: " + testFile.split('/').pop());
+
+                                        if (pageTestConfig) {
+                                            testSetupDefObj.done(function() {
+                                                startKarmaCB();
+                                            });
+
+                                            //Promise gets resolved once the test setup initialization is done.
+                                            //Start the Karma once setup init is done.
+                                            cotr.startTestRunner(pageTestConfig, testSetupDefObj);
+
+                                        } else { // For backward compatibility.
+                                            startKarmaCB();
+                                        }
+
                                     });
 
                                 }

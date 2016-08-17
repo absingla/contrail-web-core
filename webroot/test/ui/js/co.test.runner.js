@@ -237,7 +237,15 @@ define([
             });
         });
 
-    }
+    };
+
+    this.registerTestServerRoutes = function(registerDone) {
+        //Sample delay for server response registrations.
+        setTimeout(function() {
+            if (registerDone) registerDone.resolve();
+        }, 500);
+
+    };
 
     /**
      * moduleId
@@ -249,7 +257,7 @@ define([
      * testConfig.getTestConfig()
      * @param PageTestConfig
      */
-    this.startTestRunner = function (pageTestConfig) {
+    this.startTestRunner = function (pageTestConfig, setupDone) {
         var self = this,
             fakeServer = null,
             fakeServerConfig = ifNull(pageTestConfig.fakeServer, self.getDefaultFakeServerConfig());
@@ -269,32 +277,30 @@ define([
                 delete fakeServer;
             }
         });
+        
+        asyncTest("Load and Run Test Suite: ", function (assert) {
+            expect(0);
+            // commenting out for now. once UT lib update get the async working.
+            var done = assert.async();
 
-        var menuHandlerDoneCB = function () {
-            asyncTest("Load and Run Test Suite: ", function (assert) {
-                expect(0);
-                // commenting out for now. once UT lib update get the async working.
-                var done = assert.async();
-
-                switch (pageTestConfig.testType) {
-                    case cotc.VIEW_TEST:
-                        self.startViewTestRunner(pageTestConfig, fakeServer, assert, done);
-                        break;
-                    case cotc.MODEL_TEST:
-                        self.startModelTestRunner(pageTestConfig, fakeServer, done);
-                        break;
-                    case cotc.UNIT_TEST:
-                        self.startUnitTestRunner(pageTestConfig, done);
-                        break;
-                    case cotc.LIB_API_TEST:
-                        self.startLibTestRunner(pageTestConfig, done);
-                    default:
-                        console.log("Specify test type in your page test config. eg: cotc.VIEW_TEST or cotc.MODEL_TEST");
-                }
-            });
-        };
-
-        menuHandlerDoneCB();
+            switch (pageTestConfig.testType) {
+                case cotc.VIEW_TEST:
+                    self.startViewTestRunner(pageTestConfig, fakeServer, assert, done);
+                    break;
+                case cotc.MODEL_TEST:
+                    self.startModelTestRunner(pageTestConfig, fakeServer, done);
+                    break;
+                case cotc.UNIT_TEST:
+                    self.startUnitTestRunner(pageTestConfig, done);
+                    break;
+                case cotc.LIB_API_TEST:
+                    self.startLibTestRunner(pageTestConfig, done);
+                default:
+                    console.log("Specify test type in your page test config. eg: cotc.VIEW_TEST or cotc.MODEL_TEST");
+            }
+        });
+        
+        self.registerTestServerRoutes(setupDone);
     };
 
     this.startViewTestRunner = function(viewTestConfig, fakeServer, assert, done) {
@@ -503,6 +509,7 @@ define([
         startViewTestRunner: startViewTestRunner,
         startModelTestRunner: startModelTestRunner,
         startLibTestRunner: startLibTestRunner,
-        startUnitTestRunner: startUnitTestRunner
+        startUnitTestRunner: startUnitTestRunner,
+        registerTestServerRoutes: registerTestServerRoutes,
     };
 });
