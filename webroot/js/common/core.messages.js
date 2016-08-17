@@ -45,6 +45,8 @@ define([
                 return cowm.DATA_ERROR;
             } else if (requestState === cowc.DATA_REQUEST_STATE_SUCCESS_EMPTY) {
                 return cowm.DATA_SUCCESS_EMPTY
+            } else if (requestState === cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY) {
+                return "Updating new data..";
             }
         };
 

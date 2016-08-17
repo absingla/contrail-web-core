@@ -2501,7 +2501,7 @@
     <div id="coCharts-{{chartId}}" class="coCharts-container" style="height:{{height}}px;">
         <div class="colleft">
             <div class="col1wrap">
-                <div class="col1 coCharts-main-container"></div>
+                <div class="col1 coCharts-main-container" style="height: 275px; width:100%"></div>
             </div>
             {{#if controlPanel.enable}}
                 <div id="controlPanel" class="col2 coCharts-control-panel-container"></div>
@@ -2521,6 +2521,20 @@
 
 <script type="text/x-handlebars-template" id="coCharts-tooltip">
     <span>name={{name}}</span>
+</script>
+
+<script type="text/x-handlebars-template" id="coCharts-message">
+    <div class="message-container">
+        {{#each data}}
+            <div id="{{this.id}}" class="message-{{this.type}}-container">
+                {{#each this.messages}}
+                    <div>
+                        <span class="message-{{this.level}}">{{this.message}}</span>
+                    </div>
+                {{/each}}
+            </div>
+        {{/each}}
+    </div>
 </script>
 
 <script type="text/x-handlebars-template" id="coCharts-variable-selector">

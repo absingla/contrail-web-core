@@ -10,6 +10,10 @@ define( ["jquery", "underscore", "backbone", "d3-v4"],
         */
     	var DataView = Backbone.View.extend({
             
+            defaults: {
+                _type: 'DataView'
+            },
+            
     		initialize: function( options ) {
                 this.config = options.config;
             },

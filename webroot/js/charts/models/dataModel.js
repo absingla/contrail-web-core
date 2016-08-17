@@ -13,6 +13,13 @@ define( ["underscore", "backbone"],
                 /// The formatted data
             	data: [],
 
+                //Function to parse the data. Act as formatter
+                dataParser: undefined,
+                
+                //to Save the current state of data fetching
+                //Todo: integrate properly with ContrailListModel remoteDataHandler.
+                dataStatus: undefined,
+
                 /// The current data query limits. For example the data limits set on a query that returned this data.
                 /// example: limit: { x: [0, 100] }
                 limit: {}
@@ -20,6 +27,13 @@ define( ["underscore", "backbone"],
 
             getData: function() {
                 return this.get( "data" );
+            },
+            
+            setData: function(data) {
+                if (_.isFunction(this.dataParser)) {
+                    data = this.dataParser(data);
+                }
+                this.set({data: data});
             },
 
             getQueryLimit: function() {
@@ -46,7 +60,8 @@ define( ["underscore", "backbone"],
             // However an actual DataModel would require some functions to fetch data.
 
             setDataAndLimit: function( data, limit ) {
-                this.set( { data: data, limit: limt } );
+                this.setData(data);
+                this.set( { limit: limt } );
             }
         });
 

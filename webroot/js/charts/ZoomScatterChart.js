@@ -14,13 +14,13 @@ define([
     'core-basedir/js/charts/views/navigationView',
     'core-basedir/js/charts/models/tooltipComponentConfigModel',
     'core-basedir/js/charts/views/tooltipView',
-    'core-basedir/js/charts/models/variableSelectorComponentConfigModel',
-    'core-basedir/js/charts/views/variableSelectorView'
+    'core-basedir/js/charts/models/messageComponentConfigModel',
+    'core-basedir/js/charts/views/messageView',
 ], function (ContrailListModel, ContrailView, d3, DataModel, DataProvider,
              ScatterBubbleChartConfigModel, ScatterBubbleChartView,
              NavigationComponentConfigModel, NavigationView,
              TooltipComponentConfigModel, TooltipView,
-             VariableSelectorComponentConfigModel, VariableSelectorView) {
+             MessageComponentConfigModel, MessageView) {
 
     var ZoomScatterChartView = ContrailView.extend({
         render: function () {
@@ -37,12 +37,15 @@ define([
                 self.model = new ContrailListModel(viewConfig['modelConfig']);
             }
 
+            self.chartConfig = getChartConfig(selector, viewConfig['chartOptions']);
+
             if (self.model !== null) {
 
-                self.chartDataModel = new DataModel();
+                self.chartDataModel = new DataModel({dataParser: self.chartConfig.dataParser});
+                self.updateChartDataStatus();
                 
                 self.model.onAllRequestsComplete.subscribe(function () {
-                    self.updateChartDataModel();
+                    self.updateChartDataModel({status: "requestComplete"});
                     self.renderChart(selector);
                 });
 
@@ -57,7 +60,7 @@ define([
 
         },
 
-        updateChartDataModel: function () {
+        updateChartDataModel: function (status) {
             var self = this,
                 viewConfig = self.attributes.viewConfig,
                 data = self.model.getItems();
@@ -70,9 +73,25 @@ define([
                 data = self.chartConfig['dataParser'](data);
             }
 
-            self.chartDataModel.set({data: data});
+            self.chartDataModel.setData(data);
+            self.updateChartDataStatus(status);
 
-            console.log(data);
+        },
+
+        updateChartDataStatus: function(modelStatus) {
+            var self = this,
+                status;
+            if (self.model.isRequestInProgress()) {
+                status = cowc.DATA_REQUEST_STATE_FETCHING;
+            } else if (self.model.error === true) {
+                status = cowc.DATA_REQUEST_STATE_ERROR;
+            } else if (self.model.empty === true) {
+                status = cowc.DATA_REQUEST_STATE_SUCCESS_EMPTY;
+            } else {
+                status = cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY
+            }
+            self.chartDataModel.set({dataStatus: status});
+
         },
 
         applyStaticData: function () {
@@ -118,46 +137,41 @@ define([
 
         renderChart: function (selector) {
             var self = this,
-                viewConfig = self.attributes.viewConfig,
                 chartTemplate = contrail.getTemplate4Id("coCharts-chart-template");
-            
-            var data = self.chartDataModel.get('data'),
-                checkEmptyDataCB = function (data) {
-                    return (!data || data.length === 0 || !data.filter(function (d) {
-                        return d.length;
-                    }).length);
-                },
-                chartDataRequestState = cowu.getRequestState4Model(self.model, data, checkEmptyDataCB);
-
-            //Todo create a message view and register model and data providers for error
-            //render the message view.
-
-            // if (self.chartConfig.defaultDataStatusMessage && !(data.length > 0 && data[0].values.length > 0)) {
-            //     var messageHandler = self.chartConfig.statusMessageHandler;
-            //     self.renderMessage(messageHandler(chartDataRequestState), selector);
-            // } 
             
             $(selector).find(".coCharts-container").remove();
             $(selector).append(chartTemplate(self.chartConfig));
-            self.chartConfig = getChartConfig(selector, viewConfig['chartOptions']);
 
             //self.applyStaticData();
 
-            //var chartConfigDataOptions = generateChartConfigModelOptions(self.chartConfig);
-            var dataProvider = new DataProvider({parentDataModel: self.chartDataModel});
+            //Common Message View. will be used for rendering info messages and error
+            var messageView = new MessageView({
+                config: new MessageComponentConfigModel(this.chartConfig.message),
+                id: "messageView",
+                container: $(selector).find(".coCharts-main-container")
+            });
+
+            //One of the way to bind to message events of already created model 
+            messageView.registerModelDataStatusEvents(self.chartDataModel);
+            
+            var dataProvider = new DataProvider({
+                parentDataModel: self.chartDataModel,
+                messageEvent: messageView.eventObject
+            });
 
             //Todo Instead of variable selector view we will render a control panel with actions
             //One of the action will be filter/variable selection
             //each action will be defined using config
-            var variableSelectorConfigModel = new VariableSelectorComponentConfigModel(self.chartConfig.controlPanel.filter);
-            var variableSelectorView = new VariableSelectorView({config: variableSelectorConfigModel});
-            $(selector).find(".coCharts-control-panel-container").append(variableSelectorView.render().el);
+            // var variableSelectorConfigModel = new VariableSelectorComponentConfigModel(self.chartConfig.controlPanel.filter);
+            // var variableSelectorView = new VariableSelectorView({config: variableSelectorConfigModel});
+            // $(selector).find(".coCharts-control-panel-container").append(variableSelectorView.render().el);
 
             // NavigationView
             var navigationComponentConfigModel = new NavigationComponentConfigModel(self.chartConfig.navigation);
             var navigationView = new NavigationView({
                 model: dataProvider,
                 config: navigationComponentConfigModel,
+                messageEvent: messageView.eventObject,
                 id: "navigationView"
             });
             $(selector).find(".coCharts-navigation-container").append(navigationView.render().el);
@@ -216,8 +230,9 @@ define([
     });
 
     function getChartConfig(selector, chartOptions) {
-        var chartSelector = $(selector).find('.coCharts-container');
-
+        var chartSelector = $(selector).find('.coCharts-container'),
+            chartWidth = ($(chartSelector).width() > 100) ? $(chartSelector).width() - 10 : undefined; 
+        
         var defaultZoomScatterConfig = {
             chartId: 'zoomScatterChart',
             navigation: {
@@ -230,7 +245,7 @@ define([
             },
             mainChart: {
                 chartHeight: 270,
-                chartWidth: $(chartSelector).width() - 10,
+                chartWidth: chartWidth,
                 marginTop: 20,
                 marginRight: 5,
                 marginBottom: 50,
@@ -255,9 +270,11 @@ define([
             height: 350,
             width: '100%',
             dataParser: null,
-            noDataMessage: 'No Data Found',
-            defaultDataStatusMessage: true,
-            statusMessageHandler: cowm.getRequestMessage,
+            message: {
+                noDataMessage: 'No Data Found',
+                dataStatusMessage: true,
+                statusMessageHandler: cowm.getRequestMessage,
+            }
         };
 
         var chartConfig = $.extend(true, {}, defaultZoomScatterConfig, chartOptions);

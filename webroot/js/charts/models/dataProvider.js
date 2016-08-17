@@ -14,6 +14,8 @@ define([
      */
     var DataProvider = Backbone.Model.extend({
         defaults: {
+            _type: 'DataProvider',
+
             /// The formatted / filtered data
             data: [],
 
@@ -26,7 +28,15 @@ define([
 
             /// This can be a DataModel or another DataProvider.
             /// expected functions: getData(), getQueryLimit(), setQueryLimit()
-            parentDataModel: undefined
+            parentDataModel: undefined,
+            
+            error: false,
+
+            //List or error objects with level and error message
+            errorList: [],
+            
+            messageEvent: _.extend({}, Backbone.events)
+
         },
 
         initialize: function( options ) {
@@ -35,6 +45,8 @@ define([
                 this.listenTo( this.getParentModel(), "change", this.prepareData );
             }
             this.prepareData();
+
+            this.listenTo(this, "change:error", this.triggerError);
         },
 
         getParentModel: function() {
@@ -190,6 +202,14 @@ define([
         prepareData: function() {
             // Set the new data array and reset range - leave the manual range.
             this.setDataAndRanges( {} );
+        },
+
+        triggerError: function() {
+            if (this.error) {
+                this.messageEvent.trigger('error', {type: this._type, action: "show", messages: this.errorList});
+            } else {
+                this.messageEvent.trigger('error', {type: this._type, action: "hide"});
+            }
         }
     });
 
