@@ -122,20 +122,6 @@ define([
         return cssList;
     };
 
-    this.getFakeServer = function (serverConfig) {
-        var fakeServer = sinon.fakeServer.create();
-        fakeServer.autoRespond = (serverConfig == null || serverConfig['autoRespond'] == null) ? true : serverConfig['autoRespond'];
-        fakeServer.autoRespondAfter = (serverConfig == null || serverConfig['autoRespondAfter'] == null) ? 0 : serverConfig['autoRespondAfter'];
-        fakeServer.xhr.useFilters = true;
-
-        fakeServer.xhr.addFilter(function (method, url) {
-            var searchResult = url.search(/(.*\.tmpl.*)|(.*\.js.*)/);
-            return searchResult == -1 ? false : true;
-        });
-
-        return fakeServer;
-    };
-
     this.getViewConfigObj = function (viewObj) {
         if ((viewObj != null) &&
             contrail.checkIfExist(viewObj.attributes) &&
@@ -384,6 +370,53 @@ define([
         }
     };
 
+    this.registerTestServerRoutes = function(featureName, testServerConfig, registerDone) {
+        var deferred = registerDone ? registerDone : $.Deferred();
+        $.ajax({
+            url: 'http://localhost:9090/api/dynamic',
+            type: 'post',
+            data: JSON.stringify({
+                responses: testServerConfig.getRoutesConfig(),
+                mockDataFile: testServerConfig.responseDataFile,
+                featureName : featureName
+            }),
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            success: function (data) {
+                deferred.resolve();
+            },
+            error: function (error) {
+                console.log("Error occurred in injecting routes." + JSON.stringify(error));
+                deferred.reject();
+            }
+        });
+        return deferred.promise();
+    };
+
+    this.clearTestServerRoutes = function () {
+        console.log("Removing handlers");
+        var deferred = $.Deferred();
+
+        $.ajax({
+            url: 'http://localhost:9090/api/remove',
+            type: 'post',
+            data: '',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            success: function (data) {
+                console.log("Removed test page routes from server.");
+                deferred.resolve();
+            },
+            error: function (error) {
+                console.log("Error occurred in removing routes." + JSON.stringify(error));
+                deferred.reject();
+            }
+        });
+        return deferred.promise();
+    };
+
     return {
         getRegExForUrl                  : getRegExForUrl,
         getNumberOfColumnsForGrid       : getNumberOfColumnsForGrid,
@@ -391,7 +424,6 @@ define([
         getCSSList                      : getCSSList,
         getSidebarHTML                  : getSidebarHTML,
         getPageHeaderHTML               : getPageHeaderHTML,
-        getFakeServer                   : getFakeServer,
         getViewConfigObj                : getViewConfigObj,
         setViewObjAndViewConfig4All     : setViewObjAndViewConfig4All,
         setModelObj4All                 : setModelObj4All,
@@ -405,7 +437,9 @@ define([
         triggerClickOnElement           : triggerClickOnElement,
         setElementValueAndInvokeChange  : setElementValueAndInvokeChange,
         compareIfMessageExists          : compareIfMessageExists,
-        getTextInElement                : getTextInElement
+        getTextInElement                : getTextInElement,
+        registerTestServerRoutes        : registerTestServerRoutes,
+        clearTestServerRoutes           : clearTestServerRoutes
     };
 
 });

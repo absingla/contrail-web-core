@@ -5,13 +5,12 @@ module.exports = function(config) {
   config.set({
     basePath: __dirname + '/../../..',    
     autoWatch: true,
-    frameworks: ['qunit','sinon'],
+    frameworks: ['qunit'],
     files: [],
     plugins:[
         'karma-phantomjs-launcher',
         'karma-coverage',
         'karma-qunit',
-        'karma-sinon',
         'karma-htmlfile-reporter',
         //'karma-html-reporter',
         'karma-junit-reporter',

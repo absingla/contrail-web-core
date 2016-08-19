@@ -26,7 +26,7 @@ var depArray = [
 
     'co-test-utils', 'co-test-constants',
 
-    'layout-handler', 'joint.contrail', 'text',
+    'layout-handler', 'joint.contrail', 'text', 'contrail-unified-1', 'contrail-unified-2', 'contrail-unified-3'
 
 ];
 
@@ -70,7 +70,7 @@ function setFeaturePkgAndInit(featurePkg, coreTestMockData) {
     testAppConfig.featurePkg = JSON.stringify(coreTestMockData[featurePkgObj.featurePkg]);
     testAppConfig.featuresDisabled = JSON.stringify(coreTestMockData[featurePkgObj.featuresDisabled]);
     testAppConfig.webServerInfo = JSON.stringify(coreTestMockData[featurePkgObj.webServerInfo]);
-
+    testAppConfig.featureName = featurePkg;
     testAppInit(testAppConfig);
 }
 /**
@@ -264,7 +264,7 @@ function testAppInit(testAppConfig) {
             'co-test-messages',
             'co-test-runner',
             'jquery'
-        ], function (menuXML,CoreCommonTmpl,cotu,cotc) {
+        ], function (menuXML,CoreCommonTmpl,cotu,cotc, cotm, cotr) {
             // var fakeServer = sinon.fakeServer.create();
             // fakeServer.autoRespond = true;
             // fakeServer.respondWith("GET", cotu.getRegExForUrl('/api/admin/webconfig/featurePkg/webController'),
@@ -338,7 +338,6 @@ function testAppInit(testAppConfig) {
                             layoutHandlerLoadDefObj.resolve();
                             layoutHandler.load(menuXML);
 
-
                             var cssList = cotu.getCSSList();
 
                             for (var i = 0; i < cssList.length; i++) {
@@ -380,6 +379,8 @@ function testAppInit(testAppConfig) {
                                         console.log("Loaded test file: " + testFile.split('/').pop());
 
                                         if (pageTestConfig) {
+                                            pageTestConfig.featureName = testAppConfig.featureName;
+                                            
                                             testSetupDefObj.done(function() {
                                                 startKarmaCB();
                                             });
@@ -405,19 +406,24 @@ function testAppInit(testAppConfig) {
                                     //window.QUnit.stop();
                                     testFilesIndex += 1;
                                     loadTestRunner = false;
-                                    if (testFilesIndex < allTestFiles.length) {
-                                        //console.log("Initializing QUnit and proceeding to next test.");
-                                        window.QUnit.init();
-                                        var defObj = $.Deferred();
-                                        defObj.done(loadNextFileOrStartCoverage);
-                                        loadSingleFileAndStartKarma(allTestFiles[testFilesIndex], defObj, loadTestRunner);
-                                    }
-                                    else if (testFilesIndex == allTestFiles.length) {
-                                        console.log("Completed; Starting Coverage.")
-                                        window.__karma__.complete({
-                                            coverage: window.__coverage__
-                                        });
-                                    }
+
+                                    //Un-register the routes from test server. when promise is resolved, proceed with test case.
+                                    var clearRoutesDefObj = cotu.clearTestServerRoutes();
+                                    clearRoutesDefObj.always(function(){
+                                        if (testFilesIndex < allTestFiles.length) {
+                                            //console.log("Initializing QUnit and proceeding to next test.");
+                                            window.QUnit.init();
+                                            var defObj = $.Deferred();
+                                            defObj.done(loadNextFileOrStartCoverage);
+                                            loadSingleFileAndStartKarma(allTestFiles[testFilesIndex], defObj, loadTestRunner);
+                                        }
+                                        else if (testFilesIndex == allTestFiles.length) {
+                                            console.log("Completed; Starting Coverage.")
+                                            window.__karma__.complete({
+                                                coverage: window.__coverage__
+                                            });
+                                        }
+                                    });
                                 };
 
                                 defObj.done(loadNextFileOrStartCoverage);

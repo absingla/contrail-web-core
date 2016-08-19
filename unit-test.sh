@@ -65,6 +65,14 @@ if [ -d "$GRUNT_DIR" ]; then
         $GRUNT_BIN node-qunit
     fi
 
+    echo    "******************************"
+    echo    "*     Test Server setup     *"
+    echo -e "******************************\n\n"
+
+    cd webroot/test/server
+    ln -sf ../../../node_modules/ node_modules
+
+    cd $THREE_BACK
     IFS=',' read -ra REPOS <<< "$2"
     for REPO in "${REPOS[@]}"; do
         echo $REPO

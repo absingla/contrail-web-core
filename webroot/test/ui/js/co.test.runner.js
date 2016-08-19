@@ -34,31 +34,18 @@ define([
         return viewTestConfig;
     };
 
-    var defaultFakeServerConfig = {
-        options: {
-            autoRespondAfter: 100
-        },
-        responses: [],
-        getResponsesConfig: function () {
+    var defaultTestServerConfig = {
+        options: {},
+        responseDataFile: '',
+        getRoutesConfig: function () {
             return [];
         }
     };
 
-    this.getDefaultFakeServerConfig = function () {
-        return defaultFakeServerConfig;
+    this.getDefaultTestServerConfig = function () {
+        return defaultTestServerConfig;
     };
-
-    this.createFakeServerResponse = function (respObj) {
-        var defaultResponse = {
-            method: 'GET',
-            url: '/',
-            statusCode: 200,
-            headers: {"Content-Type": "application/json"},
-            body: ''
-        };
-        return $.extend({}, defaultResponse, respObj);
-    }
-
+    
     var defaultPageConfig = {
         hashParams: {
             p: ''
@@ -71,9 +58,10 @@ define([
     }
 
     var defaultPageTestConfig = {
+        featureName: '',
         moduleId: 'Set moduleId for your Test in pageTestConfig',
         testType: 'Set type of the test',
-        fakeServer: this.getDefaultFakeServerConfig(),
+        testServerConfig: this.getDefaultTestServerConfig(),
         page: this.getDefaultPageConfig(),
         getTestConfig: function () {
             return {};
@@ -85,7 +73,7 @@ define([
         }
     };
 
-    this.createPageTestConfig = function (moduleId, testType, fakeServerConfig, pageConfig, getTestConfigCB, testInitFn) {
+    this.createPageTestConfig = function (moduleId, testType, testServerConfig, pageConfig, getTestConfigCB, testInitFn) {
         var pageTestConfig = $.extend(true, {}, defaultPageTestConfig);
         if (moduleId != null) {
             pageTestConfig.moduleId = moduleId;
@@ -93,8 +81,8 @@ define([
         if (testType != null) {
             pageTestConfig.testType = testType;
         }
-        if (fakeServerConfig != null) {
-            pageTestConfig.fakeServer = $.extend({}, pageTestConfig.fakeServer, fakeServerConfig);
+        if (testServerConfig != null) {
+            pageTestConfig.testServerConfig = $.extend({}, pageTestConfig.testServerConfig, testServerConfig);
         }
         if (pageConfig != null) {
             pageTestConfig.page = $.extend({}, pageTestConfig.page, pageConfig);
@@ -239,18 +227,8 @@ define([
 
     };
 
-    this.registerTestServerRoutes = function(registerDone) {
-        //Sample delay for server response registrations.
-        setTimeout(function() {
-            if (registerDone) registerDone.resolve();
-        }, 500);
-
-    };
-
     /**
      * moduleId
-     * fakeServer.options {}
-     * fakeServer.responses
      * page.hashParams
      * page.loadTimeout
      * rootView
@@ -258,23 +236,16 @@ define([
      * @param PageTestConfig
      */
     this.startTestRunner = function (pageTestConfig, setupDone) {
-        var self = this,
-            fakeServer = null,
-            fakeServerConfig = ifNull(pageTestConfig.fakeServer, self.getDefaultFakeServerConfig());
-
+        var self = this;
+        
         module(pageTestConfig.moduleId, {
             setup: function () {
-                fakeServer = cotu.getFakeServer(fakeServerConfig.options);
-                _.each(fakeServerConfig.responses, function (response) {
-                    fakeServer.respondWith(response.method, response.url, [response.statusCode, response.headers, response.data]);
-                });
                 $.ajaxSetup({
                     cache: true
                 });
             },
             teardown: function () {
-                fakeServer.restore();
-                delete fakeServer;
+
             }
         });
         
@@ -285,10 +256,10 @@ define([
 
             switch (pageTestConfig.testType) {
                 case cotc.VIEW_TEST:
-                    self.startViewTestRunner(pageTestConfig, fakeServer, assert, done);
+                    self.startViewTestRunner(pageTestConfig, assert, done);
                     break;
                 case cotc.MODEL_TEST:
-                    self.startModelTestRunner(pageTestConfig, fakeServer, done);
+                    self.startModelTestRunner(pageTestConfig , done);
                     break;
                 case cotc.UNIT_TEST:
                     self.startUnitTestRunner(pageTestConfig, done);
@@ -299,19 +270,14 @@ define([
                     console.log("Specify test type in your page test config. eg: cotc.VIEW_TEST or cotc.MODEL_TEST");
             }
         });
-        
-        self.registerTestServerRoutes(setupDone);
+        cotu.registerTestServerRoutes(pageTestConfig.featureName, pageTestConfig.testServerConfig, setupDone);
     };
-
-    this.startViewTestRunner = function(viewTestConfig, fakeServer, assert, done) {
+    
+    this.startViewTestRunner = function(viewTestConfig, assert, done) {
         if (contrail.checkIfExist(viewTestConfig.page.hashParams)) {
             var loadingStartedDefObj = loadFeature(viewTestConfig.page.hashParams);
             loadingStartedDefObj.done(function () {
                 //additional fake server response setup
-                var responses = viewTestConfig.fakeServer.getResponsesConfig();
-                _.each(responses, function (response) {
-                    fakeServer.respondWith(response.method, response.url, [response.statusCode, response.headers, response.body]);
-                });
 
                 var pageLoadTimeOut = viewTestConfig.page.loadTimeout,
                     pageLoadSetTimeoutId, pageLoadStart = new Date();
@@ -422,13 +388,7 @@ define([
 
     };
 
-    this.startModelTestRunner = function(pageTestConfig, fakeServer, done) {
-
-        //additional fake server response setup
-        var responses = pageTestConfig.fakeServer.getResponsesConfig();
-        _.each(responses, function (response) {
-            fakeServer.respondWith(response.method, response.url, [response.statusCode, response.headers, response.body]);
-        });
+    this.startModelTestRunner = function(pageTestConfig, done) {
 
         //TODO Remove the page timeout usage
         var pageLoadTimeOut = pageTestConfig.page.loadTimeout;
@@ -493,8 +453,7 @@ define([
     };
 
     return {
-        getDefaultFakeServerConfig: getDefaultFakeServerConfig,
-        createFakeServerResponse: createFakeServerResponse,
+        getDefaultTestServerConfig: getDefaultTestServerConfig,
         getDefaultPageConfig: getDefaultPageConfig,
         createTestSuiteConfig: createTestSuiteConfig,
         createViewTestConfig: createViewTestConfig,
