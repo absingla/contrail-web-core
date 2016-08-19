@@ -1,8 +1,8 @@
 <!-- Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.  -->
 
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:import href="params.xsl"/>
-	<xsl:import href="common.xsl"/>
+	<xsl:import href="xsl/params.xsl"/>
+	<xsl:import href="xsl/common.xsl"/>
 
 	<!--set the doc type publice tp -//W3C//DTD HTML 4.0 Transitional//EN.-->
 	<xsl:output method="html" indent="yes" doctype-public="-//W3C//DTD HTML 4.0 Transitional//EN"/>
@@ -30,8 +30,11 @@
 					<!-- Suppress rlist as it has been handled already and using to create first page. i.e ToC page -->
 					<xsl:when test="attribute::type[.='rlist']"/>
 					<!-- Handling of slist -->
-					<xsl:otherwise>
+					<xsl:when test="attribute::type[.='slist']">
 						<xsl:call-template name="output_slist_formatting"/>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:call-template name="output_element_formatting"/>
 					</xsl:otherwise>
 				</xsl:choose>
 			</xsl:for-each>

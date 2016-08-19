@@ -45,7 +45,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         //Files not in bundles
         'underscore'            : coreWebDir + '/assets/underscore/underscore-min',
         'slickgrid-utils'       : coreWebDir + "/js/slickgrid-utils",
-        'jquery'                : coreWebDir + '/assets/jquery/js/jquery-1.8.3.min',
+        'jquery'                : coreWebDir + '/assets/jquery/js/jquery.min',
         'contrail-load'         : coreWebDir + '/js/contrail-load',
         'vis'                   : coreWebDir + '/assets/vis-v4.9.0/js/vis.min',
         'vis-node-model'              : coreWebDir + '/js/models/VisNodeModel',
@@ -65,6 +65,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
 
         'query-form-view'             : coreWebDir + '/js/views/QueryFormView',
         'contrail-vis-view'           : coreWebDir + '/js/views/ContrailVisView',
+        'contrail-config-model'       : coreWebDir + '/js/models/ContrailConfigModel',
 
         'query-form-model'            : coreWebDir + '/js/models/QueryFormModel',
         'query-or-model'              : coreWebDir + '/js/models/QueryOrModel',
@@ -90,6 +91,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         var devAliasMap = {
             //Start - Core-bundle aliases
             'core-utils'                  : coreWebDir + '/js/common/core.utils',
+            'core-hash-utils'             : coreWebDir + '/js/common/core.hash.utils',
             'core-constants'              : coreWebDir + '/js/common/core.constants',
             'core-formatters'             : coreWebDir + '/js/common/core.formatters',
             'core-cache'                  : coreWebDir + '/js/common/core.cache',
@@ -107,10 +109,11 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'crossfilter'               : coreWebDir + '/assets/crossfilter/js/crossfilter',
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
             'text'                        : coreWebDir + '/assets/requirejs/text',
-            'knockout'                    : coreWebDir + '/assets/knockout/knockout-3.0.0',
+            'knockout'                    : coreWebDir + '/assets/knockout/knockout',
             'moment'                    : coreWebDir + "/assets/moment/moment",
             'layout-handler'              : coreWebDir + '/js/handlers/LayoutHandler',
             'menu-handler'                : coreWebDir + '/js/handlers/MenuHandler',
+            'help-handler'                : coreWebDir + '/js/handlers/HelpHandler',
             'content-handler'             : coreWebDir + '/js/handlers/ContentHandler',
             'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd',
             'mon-infra-node-list-model'   : coreWebDir + '/js/models/NodeListModel',
@@ -123,26 +126,21 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             //End - core-bundle aliases
             //Start - jquery.dep.libs aliases
             'jquery.xml2json'           : coreWebDir + '/assets/jquery/js/jquery.xml2json',
-            'jquery.ba-bbq'             : coreWebDir + '/assets/jquery/js/jquery.ba-bbq.min',
             'jquery.json'               : coreWebDir + "/assets/slickgrid/js/jquery.json-2.3.min",
             'bootstrap'                 : coreWebDir + '/assets/bootstrap/js/bootstrap',
             'select2'                   : coreWebDir + "/assets/select2/js/select2.min",
             'slick.core'                : coreWebDir + "/assets/slickgrid/js/slick.core",
             'slick.dataview'            : coreWebDir + "/assets/slickgrid/js/slick.dataview",
-            'jquery-ui'                 : coreWebDir + '/assets/jquery-ui/js/jquery-ui',
             'contrail-elements'         : coreWebDir + "/js/contrail-elements",
             'jquery.timer'              : coreWebDir + '/assets/jquery/js/jquery.timer',
             'jquery.ui.touch-punch'     : coreWebDir + '/assets/jquery/js/jquery.ui.touch-punch.min',
-            'jquery.validate'           : coreWebDir + "/assets/jquery/js/jquery.validate",
+            'jquery.validate'           : coreWebDir + "/assets/jquery/js/jquery.validate.min",
             'jquery.tristate'           : coreWebDir + "/assets/jquery/js/jquery.tristate",
             'jquery.multiselect'        : coreWebDir + "/assets/jquery-ui/js/jquery.multiselect",
             'jquery.multiselect.filter' : coreWebDir + "/assets/jquery-ui/js/jquery.multiselect.filter",
             'jquery.steps.min'          : coreWebDir + "/assets/jquery/js/jquery.steps.min",
             'jquery.panzoom'            : coreWebDir + "/assets/jquery/js/jquery.panzoom.min",
-            'jquery.ui.position'        : coreWebDir + "/assets/jquery-contextMenu/js/jquery.ui.position",
-            'jquery-contextmenu'        : coreWebDir + "/assets/jquery-contextMenu/js/jquery.contextMenu",
             'jquery.event.drag'         : coreWebDir + "/assets/slickgrid/js/jquery.event.drag-2.2",
-            'jquery.droppick'           : coreWebDir + "/assets/slickgrid/js/jquery.dropkick-1.0.0",
             'jquery.datetimepicker'     : coreWebDir + "/assets/datetimepicker/js/jquery.datetimepicker",
             //End - jquery.dep.libs aliases
             //Start - thirdparty-libs aliases
@@ -191,7 +189,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         var prodAliasMap = {
             'controller-basedir'          : coreBaseDir,
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
-            'knockout'                    : coreWebDir + '/assets/knockout/knockout-3.0.0',
+            'knockout'                    : coreWebDir + '/assets/knockout/knockout',
             'knockback'                   : coreWebDir + '/assets/backbone/knockback.min',
             'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd',
             'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
@@ -256,9 +254,6 @@ var coreAppShim =  {
     'xml2json' : {
         deps: ["jquery"]
     },
-    "jquery.ba-bbq" : {
-        deps: ['jquery']
-    },
     "jquery.timer" : {
         deps: ['jquery']
     },
@@ -296,9 +291,6 @@ var coreAppShim =  {
     'contrail-common': {
         deps: ['jquery']
     },
-    // 'contrail-layout': {
-    //     deps:['jquery.ba-bbq']
-    // },
     'slick.enhancementpager': {
         deps: ['jquery']
     },
@@ -315,7 +307,7 @@ var coreAppShim =  {
         deps: ['jquery']
     },
     'jquery-dep-libs' : {
-        deps: ['jquery']
+        deps: ['jquery-ui']
     },
     'slickgrid-utils': {
         deps: ['jquery','slick.grid','slick.dataview']
@@ -410,13 +402,11 @@ var coreBundles = {
         ],
         'jquery-dep-libs': [
             'jquery.xml2json',
-            'jquery.ba-bbq',
             'jquery.json',
             'bootstrap',
             'select2',
             'slick.core',
             'slick.dataview',
-            'jquery-ui',
             'contrail-elements',
             'jquery.timer',
             'jquery.ui.touch-punch',
@@ -426,7 +416,7 @@ var coreBundles = {
             'jquery.multiselect.filter',
             'jquery.steps.min',
             'jquery.panzoom',
-            'jquery-contextmenu',
+            // 'jquery-contextmenu',
             'jquery.event.drag',
             'jquery.droppick',
             'jquery.datetimepicker'
@@ -434,6 +424,7 @@ var coreBundles = {
         'core-bundle'       : [
             'underscore',
             'core-utils',
+            'core-hash-utils',
             'core-constants',
             'core-formatters',
             'core-cache',
@@ -454,6 +445,7 @@ var coreBundles = {
             'moment',
             'layout-handler',
             'menu-handler',
+            'help-handler',
             'content-handler',
             'validation',
             'core-basedir/js/views/BarChartInfoView',
@@ -514,6 +506,20 @@ var coreBundles = {
             'core-basedir/js/views/SparklineView',
             'core-basedir/js/views/TabsView',
             'core-basedir/js/views/WizardView'
+        ],
+        'nonamd-libs': [
+            'web-utils',
+            'analyzer-utils',
+            'config_global',
+            'contrail-layout',
+            'handlebars-utils',
+            'contrail-common',
+            'uuid',
+            'protocol',
+            'xdate',
+            'ipv6',
+            'handlebars',
+            'jsonpath'
         ]
     };
 
@@ -945,7 +951,6 @@ function getCoreTestAppPaths(coreBaseDir) {
         'co-grid-contrail-list-model-test-suite'     : coreTestAppBaseDir + '/grid/ContrailListModel.test.suite',
         'co-grid-view-test-suite'                    : coreTestAppBaseDir + '/grid/GridView.test.suite',
         'co-grid-view-error-test-suite'              : coreTestAppBaseDir +'/grid/GridViewError.test.suite',
-        'co-console-error-suite'                     : coreTestAppBaseDir + '/generic/ConsoleError.test.suite',
         'co-grid-contrail-list-model-lib-test-suite' : coreTestAppBaseDir + '/grid/ContrailListModel.lib.test.suite',
         'co-grid-view-lib-test-suite'                : coreTestAppBaseDir + '/grid/GridView.lib.test.suite',
         'co-chart-view-zoom-scatter-test-suite'      : coreTestAppBaseDir + '/chart/ZoomScatterChartView.test.suite',
@@ -953,7 +958,6 @@ function getCoreTestAppPaths(coreBaseDir) {
         'co-chart-view-line-test-suite'              : coreTestAppBaseDir + '/chart/LineWithFocusChartView.test.suite',
         'co-tabs-view-test-suite'                    : coreTestAppBaseDir + '/generic/TabsView.test.suite',
         'co-details-view-test-suite'                 : coreTestAppBaseDir + '/generic/DetailsView.test.suite',
-
         'co-form-model-validations-test-suite'       : coreTestAppBaseDir + '/form/ModelValidations.test.suite',
     };
 }

@@ -10,31 +10,21 @@ define([
     'co-test-runner'
 ], function (_, cotu, cotm, cotc, cotr) {
 
-    var testSuiteClass = function (viewObj, suiteConfig) {
+        var testSuiteClass = function (viewObj, suiteConfig) {
 
         var viewConfig = cotu.getViewConfigObj(viewObj),
-            el = viewObj.el,
-            gridData = $(el).data('contrailGrid'),
-            gridItems = gridData._dataView.getItems(),
-            gridConfig = $.extend(true, {}, covdc.gridConfig, viewConfig.elementConfig);
-
-        var viewConfigHeader = gridConfig.header,
-            viewConfigColHeader = gridConfig.columnHeader,
-            viewConfigBody = gridConfig.body,
-            viewConfigFooter = gridConfig.footer;
-
+            el = viewObj.el;
         module(cotu.formatTestModuleMessage(cotm.TEST_GRIDVIEW_GRID, el.id));
 
         var gridViewErrorTestSuite = cotr.createTestSuite('GridViewErrorTest');
 
         /**
-         * Grid Body group test cases
+         * Grid error group test cases
          */
-        var pageSize = viewConfigFooter ? viewConfigFooter.pager.options.pageSize : 0;
-        var bodyTestGroup = gridViewErrorTestSuite.createTestGroup('body');
+        var errorTestGroup = gridViewErrorTestSuite.createTestGroup('error');
 
-        //Invalid URL in case of remote ajax datasource scenario
-        bodyTestGroup.registerTest(cotr.test("Invalid URL in case of remote ajax datasource scenario", function () {
+        //Remote ajax datasource failure scenario
+        errorTestGroup.registerTest(cotr.test("Error scenario in case of remote ajax datasource fails", function () {
             expect(1);
             var isPresent = $($(el).find('.slick-viewport .grid-canvas')).text().trim().indexOf("Error") > -1 ? true : false;
 

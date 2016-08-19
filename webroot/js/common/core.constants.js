@@ -19,12 +19,22 @@ define([
 //          NOTICE  : 2, //Blue
 //          INFO    : 3, //Green
         };
-        this.COLOR_SEVERITY_MAP = {
-            red : 'error',
-            orange : 'warning',
-            blue : 'default',
-            green : 'okay'
-        };
+       this.SEVERITY_TO_TEXT_MAP = {
+               0 : "Critical",
+               1 : "Major",
+               2 : "Minor"
+       };
+       this.COLOR_SEVERITY_MAP = {
+                red : 'error',
+                orange : 'warning',
+                blue : 'default',
+                green : 'okay'
+           };
+       this.SEV_TO_COLOR_MAP = {
+               0 : 'red',
+               1 : 'red',
+               2 : 'orange'
+       }
         this.PATTERN_IP_ADDRESS  = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
         this.PATTERN_SUBNET_MASK = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(\d|[1-2]\d|3[0-2]))?$/;
         this.PATTERN_MAC_ADDRESS = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
@@ -67,6 +77,9 @@ define([
 
         this.TMPL_2ROW_CONTENT_VIEW = "core-2-row-content-template";
         this.TMPL_2COLUMN_1ROW_2ROW_CONTENT_VIEW = "core-2-column-1-row-2row-content-template";
+        //anlytics node template
+        //core-2-row-4-column-template
+        this.TMPL_4COLUMN__2ROW_CONTENT_VIEW = "core-2-row-4-column-template";
 
         this.TMPL_ACCORDIAN_VIEW = "core-accordian-view-template";
         this.TMPL_JSON_EDITOR_VIEW = "core-json-editor-view-template";
@@ -172,6 +185,11 @@ define([
         this.GRAPH_MARGIN_TOP = 4000;
         this.GRAPH_MARGIN_BOTTOM = 4000;
 
+        this.VIEW_FORM_DROPDOWN_VIEW = "FormDropdownView";
+        this.VIEW_SECTION_VIEW = "SectionView";
+        this.VIEW_FORM_EDITABLE_GRID_VIEW = "FormEditableGridView";
+        this.VIEW_FORM_INPUT_VIEW = "FormInputView";
+
         this.TOOLTIP_DELAY = 1000;
 
         this.DEFAULT_CONFIG_ELEMENT_TOOLTIP = {
@@ -183,13 +201,13 @@ define([
 
         this.DEFAULT_CONFIG_NOT_FOUND_PAGE = {
             title: 'Page not found.',
-            iconClass: 'icon-warning-sign',
+            iconClass: 'fa fa-exclamation-triangle',
             defaultNavLinks: false
         };
 
         this.DEFAULT_CONFIG_ERROR_PAGE = {
             title: "Error in getting data.",
-            iconClass: 'icon-warning-sign',
+            iconClass: 'fa fa-exclamation-triangle',
             defaultErrorMessage: false,
             defaultNavLinks: false
         };
@@ -408,70 +426,83 @@ define([
 
             // cpu_info
             "cpu_info.mem_virt": "kilo-byte",
+            "AVG(cpu_info.mem_virt)": "kilo-byte",
             "SUM(cpu_info.mem_virt)": "kilo-byte",
             "MAX(cpu_info.mem_virt)": "kilo-byte",
             "MIN(cpu_info.mem_virt)": "kilo-byte",
 
             "cpu_info.mem_res": "kilo-byte",
+            "AVG(cpu_info.mem_res)": "kilo-byte",
             "SUM(cpu_info.mem_res)": "kilo-byte",
             "MAX(cpu_info.mem_res)": "kilo-byte",
             "MIN(cpu_info.mem_res)": "kilo-byte",
 
             "cpu_info.used_sys_mem": "kilo-byte",
+            "AVG(cpu_info.used_sys_mem)": "kilo-byte",
             "SUM(cpu_info.used_sys_mem)": "kilo-byte",
             "MAX(cpu_info.used_sys_mem)": "kilo-byte",
             "MIN(cpu_info.used_sys_mem)": "kilo-byte",
 
 
             "cpu_info.cpu_share": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
+            "AVG(cpu_info.cpu_share)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "SUM(cpu_info.cpu_share)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "MAX(cpu_info.cpu_share)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "MIN(cpu_info.cpu_share)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
 
 
             "cpu_info.one_min_cpuload": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
+            "AVG(cpu_info.one_min_cpuload)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "SUM(cpu_info.one_min_cpuload)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "MAX(cpu_info.one_min_cpuload)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "MIN(cpu_info.one_min_cpuload)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
 
             // cpu_stats
             "cpu_stats.cpu_one_min_avg": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
+            "AVG(cpu_stats.cpu_one_min_avg)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "SUM(cpu_stats.cpu_one_min_avg)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "MAX(cpu_stats.cpu_one_min_avg)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
             "MIN(cpu_stats.cpu_one_min_avg)": [{format: 'number', options: {formatSpecifier: '.3n'}}, {format: 'percentage'}],
 
             "cpu_stats.vm_memory_quota": "byte",
+            "AVG(cpu_stats.vm_memory_quota)": "byte",
             "SUM(cpu_stats.vm_memory_quota)": "byte",
             "MAX(cpu_stats.vm_memory_quota)": "byte",
             "MIN(cpu_stats.vm_memory_quota)": "byte",
 
             "cpu_stats.virt_memory": "byte",
+            "AVG(cpu_stats.virt_memory)": "byte",
             "SUM(cpu_stats.virt_memory)": "byte",
             "MAX(cpu_stats.virt_memory)": "byte",
             "MIN(cpu_stats.virt_memory)": "byte",
 
             "cpu_stats.peak_virt_memory": "byte",
+            "AVG(cpu_stats.peak_virt_memory)": "byte",
             "SUM(cpu_stats.peak_virt_memory)": "byte",
             "MAX(cpu_stats.peak_virt_memory)": "byte",
             "MIN(cpu_stats.peak_virt_memory)": "byte",
 
             "cpu_stats.disk_allocated_bytes": "byte",
+            "AVG(cpu_stats.disk_allocated_bytes)": "byte",
             "SUM(cpu_stats.disk_allocated_bytes)": "byte",
             "MAX(cpu_stats.disk_allocated_bytes)": "byte",
             "MIN(cpu_stats.disk_allocated_bytes)": "byte",
 
             "cpu_stats.disk_used_bytes": "byte",
+            "AVG(cpu_stats.disk_used_bytes)": "byte",
             "SUM(cpu_stats.disk_used_bytes)": "byte",
             "MAX(cpu_stats.disk_used_bytes)": "byte",
             "MIN(cpu_stats.disk_used_bytes)": "byte",
 
             // msg_info
             "msg_info.bytes": "byte",
+            "AVG(msg_info.bytes)": "byte",
             "SUM(msg_info.bytes)": "byte",
             "MAX(msg_info.bytes)": "byte",
             "MIN(msg_info.bytes)": "byte",
 
             "msg_info.messages": "number",
+            "AVG(msg_info.messages)": "number",
             "SUM(msg_info.messages)": "number",
             "MAX(msg_info.messages)": "number",
             "MIN(msg_info.messages)": "number",
@@ -742,68 +773,199 @@ define([
 
             // info_stats
             "info_stats.read_kbytes": "kilo-byte",
+            "AVG(info_stats.read_kbytes)": "kilo-byte",
             "SUM(info_stats.read_kbytes)": "kilo-byte",
             "MAX(info_stats.read_kbytes)": "kilo-byte",
             "MIN(info_stats.read_kbytes)": "kilo-byte",
 
             "info_stats.write_kbytes": "kilo-byte",
+            "AVG(info_stats.write_kbytes)": "kilo-byte",
             "SUM(info_stats.write_kbytes)": "kilo-byte",
             "MAX(info_stats.write_kbytes)": "kilo-byte",
             "MIN(info_stats.write_kbytes)": "kilo-byte",
 
+            //network_info_stats
+            "network_info.rx_packets": "number",
+            "AVG(network_info.rx_packets)": "number",
+            "SUM(network_info.rx_packets)": "number",
+            "MAX(network_info.rx_packets)": "number",
+            "MIN(network_info.rx_packets)": "number",
+
+            "network_info.tx_packets": "number",
+            "AVG(network_info.tx_packets)": "number",
+            "SUM(network_info.tx_packets)": "number",
+            "MAX(network_info.tx_packets)": "number",
+            "MIN(network_info.tx_packets)": "number",
+
+            "network_info.rx_bytes": "bytes",
+            "AVG(network_info.rx_bytes)": "bytes",
+            "SUM(network_info.rx_bytes)": "bytes",
+            "MAX(network_info.rx_bytes)": "bytes",
+            "MIN(network_info.rx_bytes)": "bytes",
+
+            "network_info.tx_bytes": "bytes",
+            "AVG(network_info.tx_bytes)": "bytes",
+            "SUM(network_info.tx_bytes)": "bytes",
+            "MAX(network_info.tx_bytes)": "bytes",
+            "MIN(network_info.tx_bytes)": "bytes",
+
             // resource_info_stats
             "resource_info_stats.mem_usage_mb": "mega-byte",
+            "AVG(resource_info_stats.mem_usage_mb)": "mega-byte",
             "SUM(resource_info_stats.mem_usage_mb)": "mega-byte",
             "MAX(resource_info_stats.mem_usage_mb)": "mega-byte",
             "MIN(resource_info_stats.mem_usage_mb)": "mega-byte",
 
+            //egressRqe
+            "egressRqeQueue.rqeBufferCount": "number",
+            "AVG(egressRqeQueue.rqeBufferCount)": "number",
+            "SUM(egressRqeQueue.rqeBufferCount)": "number",
+            "MAX(egressRqeQueue.rqeBufferCount)": "number",
+            "MIN(egressRqeQueue.rqeBufferCount)": "number",
+
+            //egressCpuQueue
+            "egressCpuQueue.cpuBufferCount": "number",
+            "AVG(egressCpuQueue.cpuBufferCount)": "number",
+            "SUM(egressCpuQueue.cpuBufferCount)": "number",
+            "MAX(egressCpuQueue.cpuBufferCount)": "number",
+            "MIN(egressCpuQueue.cpuBufferCount)": "number",
+
+            //egressMcQueue
+            "egressMcQueue.mcQueueEntries": "number",
+            "AVG(egressMcQueue.mcQueueEntries)": "number",
+            "SUM(egressMcQueue.mcQueueEntries)": "number",
+            "MAX(egressMcQueue.mcQueueEntries)": "number",
+            "MIN(egressMcQueue.mcQueueEntries)": "number",
+
+            "egressMcQueue.mcBufferCount": "number",
+            "AVG(egressMcQueue.mcBufferCount)": "number",
+            "SUM(egressMcQueue.mcBufferCount)": "number",
+            "MAX(egressMcQueue.mcBufferCount)": "number",
+            "MIN(egressMcQueue.mcBufferCount)": "number",
+
+            //egressUcQueue
+            "egressUcQueue.ucBufferCount": "number",
+            "AVG(egressUcQueue.ucBufferCount)": "number",
+            "SUM(egressUcQueue.ucBufferCount)": "number",
+            "MAX(egressUcQueue.ucBufferCount)": "number",
+            "MIN(egressUcQueue.ucBufferCount)": "number",
+
+            //egressServicePool
+            "egressServicePool.mcShareQueueEntries": "number",
+            "AVG(egressServicePool.mcShareQueueEntries)": "number",
+            "SUM(egressServicePool.mcShareQueueEntries)": "number",
+            "MAX(egressServicePool.mcShareQueueEntries)": "number",
+            "MIN(egressServicePool.mcShareQueueEntries)": "number",
+
+            "egressServicePool.mcShareBufferCount": "number",
+            "AVG(egressServicePool.mcShareBufferCount)": "number",
+            "SUM(egressServicePool.mcShareBufferCount)": "number",
+            "MAX(egressServicePool.mcShareBufferCount)": "number",
+            "MIN(egressServicePool.mcShareBufferCount)": "number",
+
+            //ingressServicePool
+            "ingressServicePool.umShareBufferCount": "number",
+            "AVG(ingressServicePool.umShareBufferCount)": "number",
+            "SUM(ingressServicePool.umShareBufferCount)": "number",
+            "MAX(ingressServicePool.umShareBufferCount)": "number",
+            "MIN(ingressServicePool.umShareBufferCount)": "number",
+
+            //ingressPortServicePool
+            "ingressPortServicePool.umShareBufferCount": "number",
+            "AVG(ingressPortServicePool.umShareBufferCount)": "number",
+            "SUM(ingressPortServicePool.umShareBufferCount)": "number",
+            "MAX(ingressPortServicePool.umShareBufferCount)": "number",
+            "MIN(ingressPortServicePool.umShareBufferCount)": "number",
+
+            //ingressPortPriorityGroup
+            "ingressPortPriorityGroup.umHeadroomBufferCount": "number",
+            "AVG(ingressPortPriorityGroup.umHeadroomBufferCount)":"number",
+            "SUM(ingressPortPriorityGroup.umHeadroomBufferCount)":"number",
+            "MAX(ingressPortPriorityGroup.umHeadroomBufferCount)":"number",
+            "MIN(ingressPortPriorityGroup.umHeadroomBufferCount)":"number",
+
+            "ingressPortPriorityGroup.umShareBufferCount": "number",
+            "AVG(ingressPortPriorityGroup.umShareBufferCount)": "number",
+            "SUM(ingressPortPriorityGroup.umShareBufferCount)": "number",
+            "MAX(ingressPortPriorityGroup.umShareBufferCount)": "number",
+            "MIN(ingressPortPriorityGroup.umShareBufferCount)": "number",
+
+            //disk_usage_stats
+            "disk_usage_stats.write_bytes": "byte",
+            "AVG(disk_usage_stats.write_bytes)": "byte",
+            "SUM(disk_usage_stats.write_bytes)": "byte",
+            "MAX(disk_usage_stats.write_bytes)": "byte",
+            "MIN(disk_usage_stats.write_bytes)": "byte",
+
+            "disk_usage_stats.read_bytes": "byte",
+            "AVG(disk_usage_stats.read_bytes)": "byte",
+            "SUM(disk_usage_stats.read_bytes)": "byte",
+            "MAX(disk_usage_stats.read_bytes)": "byte",
+            "MIN(disk_usage_stats.read_bytes)": "byte",
+
             // file_system_view_stats
             "file_system_view_stats.size_kb": "kilo-byte",
+            "AVG(file_system_view_stats.size_kb)": "kilo-byte",
             "SUM(file_system_view_stats.size_kb)": "kilo-byte",
             "MAX(file_system_view_stats.size_kb)": "kilo-byte",
             "MIN(file_system_view_stats.size_kb)": "kilo-byte",
 
             "file_system_view_stats.used_kb": "kilo-byte",
+            "AVG(file_system_view_stats.used_kb)": "kilo-byte",
             "SUM(file_system_view_stats.used_kb)": "kilo-byte",
             "MAX(file_system_view_stats.used_kb)": "kilo-byte",
             "MIN(file_system_view_stats.used_kb)": "kilo-byte",
 
             "file_system_view_stats.available_kb": "kilo-byte",
+            "AVG(file_system_view_stats.available_kb)": "kilo-byte",
             "SUM(file_system_view_stats.available_kb)": "kilo-byte",
             "MAX(file_system_view_stats.available_kb)": "kilo-byte",
             "MIN(file_system_view_stats.available_kb)": "kilo-byte",
 
             "file_system_view_stats.physical_disks.disk_size_kb": "kilo-byte",
+            "AVG(file_system_view_stats.physical_disks.disk_size_kb)": "kilo-byte",
             "SUM(file_system_view_stats.physical_disks.disk_size_kb)": "kilo-byte",
             "MAX(file_system_view_stats.physical_disks.disk_size_kb)": "kilo-byte",
             "MIN(file_system_view_stats.physical_disks.disk_size_kb)": "kilo-byte",
 
             "file_system_view_stats.physical_disks.disk_used_kb": "kilo-byte",
+            "AVG(file_system_view_stats.physical_disks.disk_used_kb)": "kilo-byte",
             "SUM(file_system_view_stats.physical_disks.disk_used_kb)": "kilo-byte",
             "MAX(file_system_view_stats.physical_disks.disk_used_kb)": "kilo-byte",
             "MIN(file_system_view_stats.physical_disks.disk_used_kb)": "kilo-byte",
 
             "file_system_view_stats.physical_disks.disk_available_kb": "kilo-byte",
+            "AVG(file_system_view_stats.physical_disks.disk_available_kb)": "kilo-byte",
             "SUM(file_system_view_stats.physical_disks.disk_available_kb)": "kilo-byte",
             "MAX(file_system_view_stats.physical_disks.disk_available_kb)": "kilo-byte",
             "MIN(file_system_view_stats.physical_disks.disk_available_kb)": "kilo-byte",
 
             "database_usage.disk_space_used_1k": "kilo-byte",
+            "AVG(database_usage.disk_space_used_1k)": "kilo-byte",
             "SUM(database_usage.disk_space_used_1k)": "kilo-byte",
             "MAX(database_usage.disk_space_used_1k)": "kilo-byte",
             "MIN(database_usage.disk_space_used_1k)": "kilo-byte",
 
             "database_usage.disk_space_available_1k": "kilo-byte",
+            "AVG(database_usage.disk_space_available_1k)": "kilo-byte",
             "SUM(database_usage.disk_space_available_1k)": "kilo-byte",
             "MAX(database_usage.disk_space_available_1k)": "kilo-byte",
             "MIN(database_usage.disk_space_available_1k)": "kilo-byte",
 
             "database_usage.analytics_db_size_1k": "kilo-byte",
+            "AVG(database_usage.analytics_db_size_1k)": "kilo-byte",
             "SUM(database_usage.analytics_db_size_1k)": "kilo-byte",
             "MAX(database_usage.analytics_db_size_1k)": "kilo-byte",
             "MIN(database_usage.analytics_db_size_1k)": "kilo-byte",
 
+            "disk_usage_info.partition_space_used_1k": "kilo-byte",
+            "AVG(disk_usage_info.partition_space_used_1k)": "kilo-byte",
+            "SUM(disk_usage_info.partition_space_used_1k)": "kilo-byte",
+            "MAX(disk_usage_info.partition_space_used_1k)": "kilo-byte",
+            "MIN(disk_usage_info.partition_space_used_1k)": "kilo-byte",
+
             "disk_usage_info.partition_space_available_1k": "kilo-byte",
+            "AVG(disk_usage_info.partition_space_available_1k)": "kilo-byte",
             "SUM(disk_usage_info.partition_space_available_1k)": "kilo-byte",
             "MAX(disk_usage_info.partition_space_available_1k)": "kilo-byte",
             "MIN(disk_usage_info.partition_space_available_1k)": "kilo-byte"
@@ -854,10 +1016,22 @@ define([
         this.ANALYTICS_API_DOWN_ALARM_TEXT = 'Analytics API Down. Alarms may not be reported correctly.';
         this.ANALYTICS_PROCESSES_DOWN_ALARM_TEXT = 'Analytics Processes Down. Alarms may not be reported correctly.';
         this.UI_GENERATED_ALARM = 'UIGeneratedAlarm';
+
+        //RBAC constants
+        this.RBAC_ACCESS_TYPE_LIST = [{text: "Read", value: "4"},
+                                      {text: "Write", value: "2"},
+                                      {text: "Refer", value: "1"}];
+        this.PERMISSIONS_TITLE = 'Permissions';
+        this.PERMISSIONS_TAB_ID = 'permission_tab';
+        this.PERMISSIONS_SECTION_ID = 'permissions_config_tab';
+        this.RBAC_PERMISSIONS_ID = 'rbac_permissions';
+        this.TAB_FORM_TYPE = 'form';
+
         this.get = function () {
             var args = arguments;
             return cowu.getValueFromTemplate(args);
         };
+        this.DEFAULT_COLOR = '#adcfdc';
     };
     //Export to global scope
     cowc = new CoreConstants();
