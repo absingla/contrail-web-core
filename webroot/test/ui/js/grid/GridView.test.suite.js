@@ -47,59 +47,39 @@ define([
          */
         headerTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_DEFAULT_CONTROLS_DATA_ACTION,
             function () {
-            //by default the defaultControls are all set to true. custom viewConfig may not have it.
-            if (contrail.checkIfExist(viewConfigHeader.defaultControls)) {
-                expect(2);
-                //refreshable
-                if (viewConfigHeader.defaultControls.refreshable) {
+                //by default the defaultControls are all set to true. custom viewConfig may not have it.
+                if (contrail.checkIfExist(viewConfigHeader.defaultControls)) {
+                    expect(2);
+                    //refreshable
+                    if (viewConfigHeader.defaultControls.refreshable) {
+                        equal($(el).find('.grid-header .link-refreshable').attr('data-action'), 'refresh',
+                            "grid should have refresh control present");
+                    } else {
+                        equal($(el).find('.grid-header .link-refreshable').attr('data-action'), undefined,
+                            "grid should not have refresh control present");
+                    }
+                    //searchable
+                    if (viewConfigHeader.defaultControls.searchable) {
+                        equal($(el).find('.grid-header .link-searchbox').attr('data-action'), 'search',
+                            "grid should have search control present");
+                    } else {
+                        equal($(el).find('.grid-header .link-searchbox').attr('data-action'), undefined,
+                            "grid should not have search control present");
+                    }
+
+                } else {
+                    /**
+                     * defaultControls are not present in viewConfig. which means grid will use the
+                     * default defaultControls; which all the actions are set to true.
+                     */
+                    //refreshable
                     equal($(el).find('.grid-header .link-refreshable').attr('data-action'), 'refresh',
                         "grid should have refresh control present");
-                } else {
-                    equal($(el).find('.grid-header .link-refreshable').attr('data-action'), undefined,
-                        "grid should not have refresh control present");
-                }
-                //searchable
-                if (viewConfigHeader.defaultControls.searchable) {
+                    //searchable
                     equal($(el).find('.grid-header .link-searchbox').attr('data-action'), 'search',
                         "grid should have search control present");
-                } else {
-                    equal($(el).find('.grid-header .link-searchbox').attr('data-action'), undefined,
-                        "grid should not have search control present");
                 }
-                //TODO class for collapseable, exportable
-                /*
-                 //collapseable
-                 if (viewConfigHeader.defaultControls.collapseable) {
-                 equal($(el).find('.grid-header').attr('data-action'), 'collapse',
-                 "grid should have collapse control present");
-
-                 } else {
-                 equal($(el).find('.grid-header').attr('data-action'), undefined,
-                 "grid should not have collapse control present");
-                 }
-                 //exportable
-                 if (viewConfigHeader.defaultControls.exportable) {
-                 equal($(el).find('.grid-header').attr('data-action'), 'export',
-                 "grid should have export control present");
-
-                 } else {
-                 equal($(el).find('.grid-header').attr('data-action'), undefined,
-                 "grid should not have export control present");
-                 }
-                 */
-            } else {
-                /**
-                 * defaultControls are not present in viewConfig. which means grid will use the
-                 * default defaultControls; which all the actions are set to true.
-                 */
-                //refreshable
-                equal($(el).find('.grid-header .link-refreshable').attr('data-action'), 'refresh',
-                    "grid should have refresh control present");
-                //searchable
-                equal($(el).find('.grid-header .link-searchbox').attr('data-action'), 'search',
-                    "grid should have search control present");
-            }
-        }, cotr.SEVERITY_MEDIUM));
+            }, cotr.SEVERITY_MEDIUM));
 
 
         /**
@@ -111,41 +91,39 @@ define([
                 expect(4);
                 //refreshable
                 if (viewConfigHeader.defaultControls.refreshable) {
-                    equal($(el).find('.grid-header .widget-toolbar-icon .icon-repeat').length, 1,
+                    equal($(el).find('.grid-header .widget-toolbar-icon .fa-repeat').length, 1,
                         "grid should have refresh icon present");
                 } else {
-                    equal($(el).find('.grid-header .widget-toolbar-icon .icon-repeat').length, 0,
+                    equal($(el).find('.grid-header .widget-toolbar-icon .fa-repeat').length, 0,
                         "grid should not have refresh icon present");
                 }
                 //searchable
                 if (viewConfigHeader.defaultControls.searchable) {
-                    equal($(el).find('.grid-header .widget-toolbar-icon .icon-search').length, 1,
+                    equal($(el).find('.grid-header .widget-toolbar-icon .fa-search').length, 1,
                         "grid should have search icon present");
                 } else {
-                    equal($(el).find('.grid-header .widget-toolbar-icon .icon-search').length, 0,
+                    equal($(el).find('.grid-header .widget-toolbar-icon .fa-search').length, 0,
                         "grid should not have search icon present");
                 }
                 //collapseable
                 if (viewConfigHeader.defaultControls.collapseable) {
                     // either up or down collapseable should be present.
-                    var collapseable = $(el).find('.grid-header .widget-toolbar-icon .icon-chevron-up').length |
-                        $(el).find('.grid-header .widget-toolbar-icon .icon-chevron-down').length;
+                    var collapseable = $(el).find('.grid-header .widget-toolbar-icon .fa-chevron-up').length |
+                        $(el).find('.grid-header .widget-toolbar-icon .fa-chevron-down').length;
 
-                 //   equal($(el).find('.grid-header .widget-toolbar-icon .icon-chevron-up').length, 1,
-                 //       "grid should have collapse icon present");
                     equal(collapseable, 1, "grid should have collapse icon present");
 
                 } else {
-                    equal($(el).find('.grid-header .widget-toolbar-icon .icon-chevron-up').length, 0,
+                    equal($(el).find('.grid-header .widget-toolbar-icon .fa-chevron-up').length, 0,
                         "grid should not have collapse icon present");
                 }
                 //exportable
                 if (viewConfigHeader.defaultControls.exportable) {
-                    equal($(el).find('.grid-header .widget-toolbar-icon .icon-download-alt').length, 1,
+                    equal($(el).find('.grid-header .widget-toolbar-icon .fa-download').length, 1,
                         "grid should have export icon present");
 
                 } else {
-                    equal($(el).find('.grid-header .widget-toolbar-icon .icon-download-alt').length, 0,
+                    equal($(el).find('.grid-header .widget-toolbar-icon .fa-download').length, 0,
                         "grid should not have export icon present");
                 }
             } else {
@@ -155,16 +133,16 @@ define([
                  */
                 expect(4);
                 //refreshable
-                equal($(el).find('.grid-header .widget-toolbar-icon .icon-repeat').length, 1,
+                equal($(el).find('.grid-header .widget-toolbar-icon .fa-repeat').length, 1,
                     "grid should have refresh icon present");
                 //searchable
-                equal($(el).find('.grid-header .widget-toolbar-icon .icon-search').length, 1,
+                equal($(el).find('.grid-header .widget-toolbar-icon .fa-search').length, 1,
                     "grid should have search icon present");
                 //collapseable
-                equal($(el).find('.grid-header .widget-toolbar-icon .icon-chevron-up').length, 0,
+                equal($(el).find('.grid-header .widget-toolbar-icon .fa-chevron-up').length, 0,
                     "grid should have collapse icon present");
                 //exportable
-                equal($(el).find('.grid-header .widget-toolbar-icon .icon-download-alt').length, 1,
+                equal($(el).find('.grid-header .widget-toolbar-icon .fa-download').length, 1,
                     "grid should have export icon present");
             }
 
@@ -231,7 +209,7 @@ define([
 
 
         /**
-         * Config validation test cases
+         * Config validation test case
          */
 
         headerTestGroup.registerTest(cotr.test("Test if the columns are present", function () {
@@ -240,25 +218,6 @@ define([
             notEqual(viewConfigColHeader.columns.length,0,"Columns header cannot be empty");
 
         }, cotc.SEVERITY_HIGH));
-
-        /*
-        headerTestGroup.registerTest(cotr.test("Test if the columns have name", function () {
-            for (var i = 0; i < viewConfigColHeader.columns.length - 1; i++) {
-                notEqual(viewConfigColHeader.columns[i].name, undefined, "Header Name cannot be undefined");
-                notEqual(viewConfigColHeader.columns[i].name, "", "Header Name cannot be empty");
-            }
-
-        }, cotc.SEVERITY_HIGH));
-
-        if (contrail.checkIfExist(viewConfigColHeader.columns[0].sortable)){
-            headerTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_HEADER_COLUMN_SORTABLE, function () {
-                for(var i =0 ; i< viewConfigColHeader.columns.length; i++ ) {
-                    expect(viewConfigColHeader.columns.length);
-                    notEqual(viewConfigColHeader.columns[i].sortable ,false, "Columns should always be sortable");
-                }
-            }, cotc.SEVERITY_HIGH));
-        }
-         */
 
         /**
          * Grid Body group test cases
@@ -425,6 +384,17 @@ define([
             }
         }, cotc.SEVERITY_HIGH));
 
+        bodyTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_ROW_FIXED_HEIGHT, function () {
+            expect(1);
+            if (viewConfigBody.options.fixedRowHeight != false && _.isNumber(viewConfigBody.options.fixedRowHeight)) {
+                //get the cgrid of the first row
+                var cgrid = $(el).find('.slick-row:first').attr('data-cgrid');
+                equal($(el).find('.slick_row_' + cgrid).css('height'), viewConfigBody.options.fixedRowHeight + "px",
+                    "Fixed row height should equal to configured.");
+            } else {
+                ok(true, "Fixed row height is set to false");
+            }
+        }, cotc.SEVERITY_HIGH));
 
 
         bodyTestGroup.registerTest(cotr.test(cotm.GRIDVIEW_ROW_FIXED_HEIGHT, function () {
