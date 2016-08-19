@@ -28,14 +28,15 @@ function init(app, responses, mockDataFile, callback, featureName) {
     for (var i = 0; i < responses.length; i++) {
         var response = responses[i];
 
+        var urlRegExp = utils.regExpString2regExp(response.url);
         if (response.method == undefined)
             response.method = 'GET';
 
         if (response.method.indexOf('GET') >= 0) {
-            nock('http://localhost.com').get(utils.getRegExForUrl(response.url)).times(10).reply(200, mockData.methods[response.fnName]());
+            nock('http://localhost.com').get(urlRegExp).times(10).reply(200, mockData.methods[response.fnName]());
         }
         else if (response.method.indexOf('POST') >= 0) {
-            nock('http://localhost.com').post(utils.getRegExForUrl(response.url)).times(10).reply(200, mockData.methods[response.fnName]());
+            nock('http://localhost.com').post(urlRegExp).times(10).reply(200, mockData.methods[response.fnName]());
         }
         else
             console.log("Didn't match any methods")
