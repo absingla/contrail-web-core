@@ -297,6 +297,11 @@ define([
 
         config.options.container.showContainer = options.showLegend;
         config.options.brush.extent = options.brushExtent;
+
+        console.log({
+            config: config,
+            charts: chartSeries
+        });
         
         return {
             config: config,

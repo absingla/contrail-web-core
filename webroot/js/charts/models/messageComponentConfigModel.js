@@ -10,7 +10,7 @@ define( ["jquery", "underscore", "backbone"],
                 
                 _showOnceMessageIds: [],
                 
-                noDataMessage: 'No Data Found',
+                noDataMessage: "No Data Found",
                 
                 showDataStatusMessage: true,
                 

@@ -2,20 +2,20 @@
  * Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.
  */
 
-define( ["underscore", "backbone"],
-    function( _, Backbone ) {
+define(["underscore", "backbone"],
+    function (_, Backbone) {
 
         /**
-        * Base data model.
-        */
-    	var DataModel = Backbone.Model.extend({
+         * Base data model.
+         */
+        var DataModel = Backbone.Model.extend({
             defaults: {
                 /// The formatted data
-            	data: [],
+                data: [],
 
                 //Function to parse the data. Act as formatter
                 dataParser: undefined,
-                
+
                 //to Save the current state of data fetching
                 //Todo: integrate properly with ContrailListModel remoteDataHandler.
                 dataStatus: undefined,
@@ -25,27 +25,27 @@ define( ["underscore", "backbone"],
                 limit: {}
             },
 
-            getData: function() {
-                return this.get( "data" );
+            getData: function () {
+                return this.get("data");
             },
-            
-            setData: function(data) {
+
+            setData: function (data) {
                 if (_.isFunction(this.dataParser)) {
                     data = this.dataParser(data);
                 }
                 this.set({data: data});
             },
 
-            getQueryLimit: function() {
-                return this.get( "limit" );
+            getQueryLimit: function () {
+                return this.get("limit");
             },
 
-            setQueryLimit: function( limit ) {
+            setQueryLimit: function (limit) {
                 // Simulate a query. The provided limit should be used to retreive a new data chunk.
                 var self = this;
-                setTimeout( function() {
-                    self.set( { data: self.getData(), limit: limit } );
-                }, 1000 );
+                setTimeout(function () {
+                    self.set({data: self.getData(), limit: limit});
+                }, 1000);
             },
 
             // Formatter prepares the raw data. Try to avoid additional formatting on view level.
@@ -59,9 +59,9 @@ define( ["underscore", "backbone"],
             // Helper functions - no need to implement in an actual DataModel.
             // However an actual DataModel would require some functions to fetch data.
 
-            setDataAndLimit: function( data, limit ) {
+            setDataAndLimit: function (data, limit) {
                 this.setData(data);
-                this.set( { limit: limt } );
+                this.set({limit: limt});
             }
         });
 

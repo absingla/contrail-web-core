@@ -3,9 +3,9 @@
  */
 
 define([
-    'jquery', 'underscore', 'backbone', 'd3-v4',
-    'core-basedir/js/charts/views/dataView',
-    'core-basedir/js/charts/models/messageComponentConfigModel',
+    "jquery", "underscore", "backbone", "d3-v4",
+    "core-basedir/js/charts/views/DataView",
+    "core-basedir/js/charts/models/MessageComponentConfigModel",
 ], function ($, _, Backbone, d3, DataView, MessageComponentConfigModel) {
     var MessageView = DataView.extend({
         tagName: "div",
@@ -79,22 +79,22 @@ define([
 
             if (this.params.messages.length > 0) {
                 _.each(this.params.messages, function (msgObj) {
-                    if (msgObj.type == messageObj.type) {
-                        if (messageObj.action == "new" || messageObj.action == "once") {
+                    if (msgObj.type === messageObj.type) {
+                        if (messageObj.action === "new" || messageObj.action === "once") {
                             msgObj.action = messageObj.action;
                             msgObj.messages = messageObj.messages;
-                        } else if (messageObj.action == "update") {
+                        } else if (messageObj.action === "update") {
                             msgObj.messages.concat(messageObj.messages);
                         }
                         found = true;
                     }
-                    if (msgObj.action == "once") {
+                    if (msgObj.action === "once") {
                         _showOnceMessageIds.push(msgObj.id);
                     }
                 });
             }
             if (!found) {
-                if (messageObj.action == "once") {
+                if (messageObj.action === "once") {
                     _showOnceMessageIds.push(messageObj.id);
                 }
                 this.params.messages.push(messageObj);
@@ -106,7 +106,7 @@ define([
             var modelDataStatus = model.get("dataStatus"),
                 action = "new"; //new, update, once
 
-            if (modelDataStatus == cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY) {
+            if (modelDataStatus === cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY) {
                 action = "once";
             }
 

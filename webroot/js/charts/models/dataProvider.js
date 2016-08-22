@@ -5,7 +5,7 @@
 define([
     "underscore",
     "backbone"
-], function( _, Backbone ) {
+], function (_, Backbone) {
     /**
      * A DataModel wrapper for view components.
      * Handles:
@@ -14,7 +14,7 @@ define([
      */
     var DataProvider = Backbone.Model.extend({
         defaults: {
-            _type: 'DataProvider',
+            _type: "DataProvider",
 
             /// The formatted / filtered data
             data: [],
@@ -29,45 +29,45 @@ define([
             /// This can be a DataModel or another DataProvider.
             /// expected functions: getData(), getQueryLimit(), setQueryLimit()
             parentDataModel: undefined,
-            
+
             error: false,
 
             //List or error objects with level and error message
             errorList: [],
-            
+
             messageEvent: _.extend({}, Backbone.events)
 
         },
 
-        initialize: function( options ) {
+        initialize: function (options) {
             // Listen for changes in the parent model.
-            if( this.hasParentModel() ) {
-                this.listenTo( this.getParentModel(), "change", this.prepareData );
+            if (this.hasParentModel()) {
+                this.listenTo(this.getParentModel(), "change", this.prepareData);
             }
             this.prepareData();
 
             this.listenTo(this, "change:error", this.triggerError);
         },
 
-        getParentModel: function() {
-            return this.get( "parentDataModel" );
+        getParentModel: function () {
+            return this.get("parentDataModel");
         },
 
-        hasParentModel: function() {
-            return this.has( "parentDataModel" );
+        hasParentModel: function () {
+            return this.has("parentDataModel");
         },
 
-        getData: function() {
-            return this.get( "data" );
+        getData: function () {
+            return this.get("data");
         },
 
-        setData: function( data ) {
-            this.set( { data: data } );
+        setData: function (data) {
+            this.set({data: data});
         },
 
-        getParentData: function() {
+        getParentData: function () {
             var data;
-            if( this.hasParentModel() && _.isFunction( this.getParentModel().getData ) ) {
+            if (this.hasParentModel() && _.isFunction(this.getParentModel().getData)) {
                 data = this.getParentModel().getData();
             }
             else {
@@ -76,9 +76,9 @@ define([
             return data;
         },
 
-        getQueryLimit: function() {
+        getQueryLimit: function () {
             var queryLimit;
-            if( this.hasParentModel() && _.isFunction( this.getParentModel().getQueryLimit ) ) {
+            if (this.hasParentModel() && _.isFunction(this.getParentModel().getQueryLimit)) {
                 queryLimit = this.getParentModel().getQueryLimit();
             }
             else {
@@ -90,27 +90,27 @@ define([
         /**
          * Calls the parent's setQueryLimit() function. In practice this will iterate down to the DataModel and should cause a data re-fetch with new limits.
          */
-        setQueryLimit: function( queryLimit ) {
-            if( this.hasParentModel() && _.isFunction( this.getParentModel().setQueryLimit ) ) {
-                this.getParentModel().setQueryLimit( queryLimit );
+        setQueryLimit: function (queryLimit) {
+            if (this.hasParentModel() && _.isFunction(this.getParentModel().setQueryLimit)) {
+                this.getParentModel().setQueryLimit(queryLimit);
             }
         },
 
-        getRange: function() {
-            return this.get( "range" );
+        getRange: function () {
+            return this.get("range");
         },
 
-        getRangeFor: function( variableName ) {
+        getRangeFor: function (variableName) {
             var range = this.getRange();
-            if( !_.has( range, variableName ) ) {
-                range[variableName] = this.calculateRangeForDataAndVariableName( this.getData(), variableName );
+            if (!_.has(range, variableName)) {
+                range[variableName] = this.calculateRangeForDataAndVariableName(this.getData(), variableName);
             }
             return range[variableName];
         },
 
-        getParentRange: function() {
+        getParentRange: function () {
             var parentRange;
-            if( this.hasParentModel() && _.isFunction( this.getParentModel().getRange ) ) {
+            if (this.hasParentModel() && _.isFunction(this.getParentModel().getRange)) {
                 parentRange = this.getParentModel().getRange();
             }
             else {
@@ -119,53 +119,53 @@ define([
             return parentRange;
         },
 
-        setRange: function( range ) {
-            this.set( { range: range } );
+        setRange: function (range) {
+            this.set({range: range});
         },
 
         /**
          * Sets the ranges and manual ranges for the variables provided in the newRange object.
          * Example: setRangeFor( { x: [0,100], y: [5,10] } )
          */
-        setRangeFor: function( newRange ) {
+        setRangeFor: function (newRange) {
             var self = this;
-            var range = _.extend( {}, self.getRange() );
-            var manualRange = _.extend( {}, self.get( "manualRange" ) );
-            _.each( newRange, function( variableRange, variableName ) {
+            var range = _.extend({}, self.getRange());
+            var manualRange = _.extend({}, self.get("manualRange"));
+            _.each(newRange, function (variableRange, variableName) {
                 range[variableName] = variableRange;
                 manualRange[variableName] = variableRange;
             });
-            self.setDataAndRanges( range, manualRange );
+            self.setDataAndRanges(range, manualRange);
         },
 
-        resetRangeFor: function( newRange ) {
+        resetRangeFor: function (newRange) {
             var self = this;
-            var range = _.extend( {}, self.getRange() );
-            _.each( newRange, function( variableRange, variableName ) {
+            var range = _.extend({}, self.getRange());
+            _.each(newRange, function (variableRange, variableName) {
                 delete range[variableName];
-                delete self.get( "manualRange" )[variableName];
+                delete self.get("manualRange")[variableName];
             });
-            self.setRange( range );
+            self.setRange(range);
         },
 
         /**
          * Worker function used to calculate a data range for provided varaible name.
          */
-        calculateRangeForDataAndVariableName: function( data, variableName ) {
+        calculateRangeForDataAndVariableName: function (data, variableName) {
             var min, max;
             var variableRange;
-            var manualRange = this.get( "manualRange" );
+            var manualRange = this.get("manualRange");
             var queryLimit = this.getQueryLimit();
             var parentRange = this.getParentRange();
-            if( _.isArray( manualRange[variableName] ) ) {
+            if (_.isArray(manualRange[variableName])) {
                 // Use manually set range if available.
                 variableRange = [manualRange[variableName][0], manualRange[variableName][1]];
             }
-            else if( _.isArray( queryLimit[variableName] ) ) {
+            else if (_.isArray(queryLimit[variableName])) {
                 // Use query limit range if available.
                 variableRange = [queryLimit[variableName][0], queryLimit[variableName][1]];
             }
-            else if( _.isArray( parentRange[variableName] ) ) {
+            else if (_.isArray(parentRange[variableName])) {
                 // Use parent's range for variable if available.
                 variableRange = [parentRange[variableName][0], parentRange[variableName][1]];
             }
@@ -173,42 +173,42 @@ define([
                 // Otherwise calculate the range from data.
                 min = Infinity;
                 max = -Infinity;
-                _.each( data, function( d ) {
-                    if( d[variableName] < min ) min = d[variableName];
-                    if( d[variableName] > max ) max = d[variableName];
+                _.each(data, function (d) {
+                    if (d[variableName] < min) min = d[variableName];
+                    if (d[variableName] > max) max = d[variableName];
                 });
                 variableRange = [min, max];
             }
             return variableRange;
         },
 
-        setDataAndRanges: function( range, manualRange ) {
+        setDataAndRanges: function (range, manualRange) {
             var data = this.getParentData();
-            var formatData = this.get( "formatData" );
-            if( !manualRange ) {
-                manualRange = this.get( "manualRange" );
+            var formatData = this.get("formatData");
+            if (!manualRange) {
+                manualRange = this.get("manualRange");
             }
-            if( _.isFunction( formatData ) ) {
-                data = formatData( data, manualRange );
+            if (_.isFunction(formatData)) {
+                data = formatData(data, manualRange);
             }
 
-            this.set( { data: data, range: range, manualRange: manualRange } );
+            this.set({data: data, range: range, manualRange: manualRange});
         },
 
         /**
          * Take the parent's data and filter / format it.
          * Called on initialization and when parent data changed.
          */
-        prepareData: function() {
+        prepareData: function () {
             // Set the new data array and reset range - leave the manual range.
-            this.setDataAndRanges( {} );
+            this.setDataAndRanges({});
         },
 
-        triggerError: function() {
+        triggerError: function () {
             if (this.error) {
-                this.messageEvent.trigger('error', {type: this._type, action: "show", messages: this.errorList});
+                this.messageEvent.trigger("error", {type: this._type, action: "show", messages: this.errorList});
             } else {
-                this.messageEvent.trigger('error', {type: this._type, action: "hide"});
+                this.messageEvent.trigger("error", {type: this._type, action: "hide"});
             }
         }
     });

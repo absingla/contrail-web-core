@@ -3,19 +3,19 @@
  */
 
 define([
-    'contrail-list-model',
-    'contrail-view',
-    'd3-v4',
-    'core-basedir/js/charts/models/dataModel',
-    'core-basedir/js/charts/models/dataProvider',
-    'core-basedir/js/charts/models/scatterBubbleChartConfigModel',
-    'core-basedir/js/charts/views/scatterBubbleChartView',
-    'core-basedir/js/charts/models/navigationComponentConfigModel',
-    'core-basedir/js/charts/views/navigationView',
-    'core-basedir/js/charts/models/tooltipComponentConfigModel',
-    'core-basedir/js/charts/views/tooltipView',
-    'core-basedir/js/charts/models/messageComponentConfigModel',
-    'core-basedir/js/charts/views/messageView',
+    "contrail-list-model",
+    "contrail-view",
+    "d3-v4",
+    "core-basedir/js/charts/models/DataModel",
+    "core-basedir/js/charts/models/DataProvider",
+    "core-basedir/js/charts/models/ScatterBubbleChartConfigModel",
+    "core-basedir/js/charts/views/ScatterBubbleChartView",
+    "core-basedir/js/charts/models/NavigationComponentConfigModel",
+    "core-basedir/js/charts/views/NavigationView",
+    "core-basedir/js/charts/models/TooltipComponentConfigModel",
+    "core-basedir/js/charts/views/TooltipView",
+    "core-basedir/js/charts/models/MessageComponentConfigModel",
+    "core-basedir/js/charts/views/MessageView",
 ], function (ContrailListModel, ContrailView, d3, DataModel, DataProvider,
              ScatterBubbleChartConfigModel, ScatterBubbleChartView,
              NavigationComponentConfigModel, NavigationView,
@@ -25,19 +25,19 @@ define([
     var ZoomScatterChartView = ContrailView.extend({
         render: function () {
             var self = this,
-                viewConfig = self.attributes['viewConfig'],
+                viewConfig = self.attributes.viewConfig,
                 selector = $(self.$el),
                 modelMap = contrail.handleIfNull(self.modelMap, {});
 
             if (contrail.checkIfExist(viewConfig.modelKey) && contrail.checkIfExist(modelMap[viewConfig.modelKey])) {
-                self.model = modelMap[viewConfig.modelKey]
+                self.model = modelMap[viewConfig.modelKey];
             }
 
-            if (self.model === null && viewConfig['modelConfig'] != null) {
-                self.model = new ContrailListModel(viewConfig['modelConfig']);
+            if (self.model === null && viewConfig.modelConfig !== null) {
+                self.model = new ContrailListModel(viewConfig.modelConfig);
             }
 
-            self.chartConfig = getChartConfig(selector, viewConfig['chartOptions']);
+            self.chartConfig = getChartConfig(selector, viewConfig.chartOptions);
 
             if (self.model !== null) {
 
@@ -65,12 +65,8 @@ define([
                 viewConfig = self.attributes.viewConfig,
                 data = self.model.getItems();
 
-            if (contrail.checkIfFunction(viewConfig['parseFn'])) {
-                data = viewConfig['parseFn'](data);
-            }
-
-            if (contrail.checkIfFunction(self.chartConfig['dataParser'])) {
-                data = self.chartConfig['dataParser'](data);
+            if (contrail.checkIfFunction(viewConfig.parseFn)) {
+                data = viewConfig.parseFn(data);
             }
 
             self.chartDataModel.setData(data);
@@ -88,7 +84,7 @@ define([
             } else if (self.model.empty === true) {
                 status = cowc.DATA_REQUEST_STATE_SUCCESS_EMPTY;
             } else {
-                status = cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY
+                status = cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY;
             }
             self.chartDataModel.set({dataStatus: status});
 
@@ -191,53 +187,18 @@ define([
             var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
             var tooltipView = new TooltipView({config: tooltipConfig});
             tooltipView.registerTriggerEvent(mainChartView.eventObject, "mouseover", "mouseout");
-        },
-
-        renderMessage: function (message, selector, chartOptions) {
-            var self = this,
-                message = contrail.handleIfNull(message, ""),
-                selector = contrail.handleIfNull(selector, $(self.$el)),
-                chartOptions = contrail.handleIfNull(chartOptions, self.chartConfig);
-
-            var svgElement = $(selector).find('svg');
-            if (!svgElement.length)
-                $('<svg style="height:300px;" class="row-fluid"></svg>').appendTo(selector);
-
-            var container = d3.select($(selector).find("svg")[0]),
-                requestStateText = container.selectAll('.nv-requestState').data([message]),
-                textPositionX = $(selector).width() / 2,
-                textPositionY = chartOptions.margin.top + $(selector).find('.nv-focus').heightSVG() / 2 + 10;
-
-            requestStateText
-                .enter().append('text')
-                .attr('class', 'nvd3 nv-requestState')
-                .attr('dy', '-.7em')
-                .style('text-anchor', 'middle');
-
-            requestStateText
-                .attr('x', textPositionX)
-                .attr('y', textPositionY)
-                .text(function (t) {
-                    return t;
-                });
-        },
-
-        removeMessage: function (selector) {
-            var self = this,
-                selector = contrail.handleIfNull(selector, $(self.$el));
-            $(selector).find('svg').remove();
         }
     });
 
     function getChartConfig(selector, chartOptions) {
-        var chartSelector = $(selector).find('.coCharts-container'),
+        var chartSelector = $(selector).find(".coCharts-container"),
             chartWidth = ($(chartSelector).width() > 100) ? $(chartSelector).width() - 10 : undefined; 
         
         var defaultZoomScatterConfig = {
-            chartId: 'zoomScatterChart',
+            chartId: "zoomScatterChart",
             navigation: {
                 enable: false,
-                xAccessor: 'x',
+                xAccessor: "x",
                 accessorData: {}
             },
             controlPanel: {
@@ -253,12 +214,12 @@ define([
                 maxCircleRadius: 10,
                 maxScale: 5,
                 minScale: 1 / 5,
-                yLabel: 'Y Axis',
-                xLabel: 'X Axis',
-                yLabelFormat: d3.format(','),
-                xLabelFormat: d3.format(','),
-                xAccessor: 'x',
-                sizeAccessor: 'size',
+                yLabel: "Y Axis",
+                xLabel: "X Axis",
+                yLabelFormat: d3.format(","),
+                xLabelFormat: d3.format(","),
+                xAccessor: "x",
+                sizeAccessor: "size",
                 forceX: [undefined, undefined],
                 forceY: [undefined, undefined],
                 accessorData: {}
@@ -268,10 +229,10 @@ define([
             marginBottom: 50,
             marginLeft: 50,
             height: 350,
-            width: '100%',
+            width: "100%",
             dataParser: null,
             message: {
-                noDataMessage: 'No Data Found',
+                noDataMessage: "No Data Found",
                 dataStatusMessage: true,
                 statusMessageHandler: cowm.getRequestMessage,
             }
@@ -283,10 +244,10 @@ define([
         //Todo multiple accessor support on each Y axis: Y1 & Y2
         chartConfig.navigation.yAccessor = Object.keys(chartConfig.navigation.accessorData)[0];
         chartConfig.mainChart.yAccessor = Object.keys(chartConfig.mainChart.accessorData)[0];
-        chartConfig.mainChart.sizeAccessor = chartConfig.mainChart.accessorData[chartConfig.mainChart.yAccessor]["sizeAccessor"];
+        chartConfig.mainChart.sizeAccessor = chartConfig.mainChart.accessorData[chartConfig.mainChart.yAccessor].sizeAccessor;
         
         return chartConfig;
-    };
+    }
     
     return ZoomScatterChartView;
 });
