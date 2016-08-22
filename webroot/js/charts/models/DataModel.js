@@ -4,7 +4,6 @@
 
 define(["underscore", "backbone"],
     function (_, Backbone) {
-
         /**
          * Base data model.
          */

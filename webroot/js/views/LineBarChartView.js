@@ -108,7 +108,7 @@ define([
             self.renderMessage(messageHandler(chartDataRequestState), selector, chartOptions);
         } else {
             self.removeMessage();
-            $(selector).find(".coCharts-container").remove();
+            $(selector).find(".coCharts-main-container").remove();
             $(selector).append(chartTemplate(chartOptions));
 
             var configDataObj  = createConfigAndData4coChart(chartOptions, chartData);
@@ -116,10 +116,10 @@ define([
             self.chartContainer = new ChartContainer(configDataObj.config, configDataObj.charts);
             self.chartContainer.chartOptions = chartOptions;
 
-            self.chartContainer.render($(selector).find(".coCharts-container")[0]);
+            self.chartContainer.render($(selector).find(".coCharts-main-container")[0]);
 
             //Store the chart object as a data attribute so that the chart can be updated dynamically
-            $(selector).find(".coCharts-container").data('chart', self.chartContainer);
+            $(selector).find(".coCharts-main-container").data('chart', self.chartContainer);
 
             if (widgetConfig !== null) {
                 if (contrail.checkIfExist(widgetConfig.viewConfig.controls.right.custom.filterY) &&
@@ -135,7 +135,7 @@ define([
                             viewConfig: getWidgetFilterViewConfig(selector, configDataObj)
                         }, widgetConfig.viewConfig.controls.right.custom.filterY);
                 }
-                self.renderView4Config(selector.find('.coCharts-container'), chartViewModel, widgetConfig, null, null, null);
+                self.renderView4Config(selector.find('.coCharts-main-container'), chartViewModel, widgetConfig, null, null, null);
             }
 
         }
