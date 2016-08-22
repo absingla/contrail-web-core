@@ -144,12 +144,27 @@ function updateHttpsSecureOptions (apiType, options)
                 logutils.logger.error('readFileSync error for ca file' + e);
             }
         }
-        /* If strictSSL is set to false, then if response.client.authorized
-         * is set as false, a secure connection is established.
-         */
+        var keyFile = getHttpsOptionsByAPIType(apiType, 'key');
+        if ((null != keyFile) && ('' != keyFile) && ("" != keyFile)) {
+            try {
+                options['key'] = fs.readFileSync(keyFile);
+            } catch(e) {
+                logutils.logger.error('readFileSync error for key file' + e);
+            }
+        }
+        var certFile = getHttpsOptionsByAPIType(apiType, 'cert');
+        if ((null != certFile) && ('' != certFile) && ("" != certFile)) {
+            try {
+                options['cert'] = fs.readFileSync(certFile);
+            } catch(e) {
+                logutils.logger.error('readFileSync error for cert file' + e);
+            }
+        }
+        /* https://github.com/mscdex/node-imap/issues/181 */
+        options['rejectUnauthorized'] = false;
         var strictSSL = getHttpsOptionsByAPIType(apiType, 'strictSSL');
         if (null != strictSSL) {
-            options['strictSSL'] = strictSSL;
+            options['rejectUnauthorized'] = strictSSL;
         }
     }
     return options;

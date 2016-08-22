@@ -35,11 +35,10 @@ var NETWORKS_PAGINATION_CNT = 25;
 var ctInitComplete = false;
 var sInitComplete = false;
 var sevLevels = {
-    ERROR   : 0, //Red
-    WARNING : 1, //Orange
-    NOTICE  : 2, //Blue
-    INFO    : 3, //Green
-}
+    CRITICAL : 0, //Red
+    ERROR    : 1, //Red
+    WARNING  : 2 //Orange
+};
 var infraAlertMsgs = {
         'UVE_MISSING'           : "System Information unavailable", 
         'PARTIAL_UVE_MISSING'   : "Partial System Information",
@@ -132,9 +131,9 @@ function initializePrototypes() {
 
 function collapseElement(e,collapseDivID) {
     if($(e).prop("tagName").toUpperCase() == "I"){
-        $(e).toggleClass('icon-caret-right').toggleClass('icon-caret-down');
+        $(e).toggleClass('fa-caret-right').toggleClass('fa-caret-down');
     } else {
-        $(e).find("i.icon-caret-right,i.icon-caret-down").toggleClass('icon-caret-right').toggleClass('icon-caret-down');
+        $(e).find("i.fa-caret-right,i.fa-caret-down").toggleClass('fa-caret-right').toggleClass('fa-caret-down');
     }
     //var widgetBodyElem = $(e).parents('div.widget-box').find('div.widget-body');
     var widgetBoxElem;
@@ -421,19 +420,19 @@ function pushBreadcrumb(breadcrumbsArr) {
         $('#breadcrumb').children('li').removeClass('active');
         if (i == 0) {
             //Add divider icon for previous breadcrumb
-            $('#breadcrumb').children('li:last').append('<span class="divider"><i class="icon-angle-right"></i></span>')
+            $('#breadcrumb').children('li:last').append('<span class="divider"><i class="fa fa-angle-right"></i></span>')
         }
         if(href != null && href != ''){
             if (i == breadcrumbsArr.length - 1) {
                 $('#breadcrumb').append('<li class="active"><a href=' + href +' >' + label + '</a></li>');
             } else {
-                $('#breadcrumb').append('<li><a href=' + href + '>' + label + '</a><span class="divider"><i class="icon-angle-right"></i></span></li>');
+                $('#breadcrumb').append('<li><a href=' + href + '>' + label + '</a><span class="divider"><i class="fa fa-angle-angle-right"></i></span></li>');
             }
         }else{
             if (i == breadcrumbsArr.length - 1) {
                 $('#breadcrumb').append('<li class="active"><a>' + label + '</a></li>');
             } else {
-                $('#breadcrumb').append('<li><a>' + label + '</a><span class="divider"><i class="icon-angle-right"></i></span></li>');
+                $('#breadcrumb').append('<li><a>' + label + '</a><span class="divider"><i class="fa fa-angle-angle-right"></i></span></li>');
             }
         }
     }
@@ -448,7 +447,7 @@ function removeActiveBreadcrumb(breadcrumbsArr) {
 
 function pushBreadcrumbDropdown(id){
 	$('#breadcrumb').children('li').removeClass('active');
-	$('#breadcrumb').children('li:last').append('<span class="divider"><i class="icon-angle-right"></i></span>');
+	$('#breadcrumb').children('li:last').append('<span class="divider"><i class="fa fa-angle-right"></i></span>');
 	$('#breadcrumb').append('<li class="active"><div id="' + id + '"></div></li>');
 }
 
@@ -553,8 +552,12 @@ function cellTemplateLinks(options) {
     if (options['onclick'] != null) {
         onclickAction = 'onclick="' + options['onclick'] + '"';
     }
-    if(options['statusBubble'] == true)
-        statusBubble = getNodeStatusForSummaryPages(rowData,'summary');
+    if(options['statusBubble'] == true) {
+        var statusTemplate = contrail.getTemplate4Id('statusTemplate');
+//      statusBubble = getNodeStatusForSummaryPages(rowData,'summary');
+        statusBubble = statusTemplate({color:rowData['color'], colorSevMap:cowc.COLOR_SEVERITY_MAP});
+    }
+
     return contrail.format("{5}<span class='{1}' {0} {2} {4}>{3}</span>", nameStr, tooltipCls, titleStr, cellText, onclickAction, statusBubble);
 }
 
@@ -952,7 +955,7 @@ function loadAlertsContent(deferredObj){
                     }, 
                     errorGettingData: {
                         type: 'error',
-                        iconClasses: 'icon-warning',
+                        iconClasses: 'fa fa-warning',
                         text: 'Error in getting Data.'
                     }
                 }
@@ -962,13 +965,7 @@ function loadAlertsContent(deferredObj){
                     {
                         field:'name',
                         name:'Node',
-                        minWidth:150,
-                        formatter: function(r,c,v,cd,dc){
-                            if(typeof(dc['sevLevel']) != "undefined" && typeof(dc['name']) != "undefined")
-                                return "<span>"+statusTemplate({sevLevel:dc['sevLevel'],sevLevels:sevLevels})+dc['name']+"</span>";
-                            else
-                                return dc['name'];
-                        }
+                        minWidth:150
                     },{
                         field:'type',
                         name:'Node Type / Process',
@@ -1414,14 +1411,12 @@ function getNodeStatusForSummaryPages(data,page) {
     result['alerts'] = tooltipAlerts;
     result['nodeSeverity'] = data['alerts'][0] != null ? data['alerts'][0]['sevLevel'] : sevLevels['INFO'];
     result['messages'] = msgs;
-     var statusTemplate = contrail.getTemplate4Id('statusTemplate');
-    if(page == 'summary')
-        return statusTemplate({sevLevel:result['nodeSeverity'],sevLevels:sevLevels});
     return result;
 }
 var dashboardUtils = {
     sortNodesByColor: function(a,b) {
         // var colorPriorities = [d3Colors['green'],d3Colors['blue'],d3Colors['orange'],d3Colors['red']];
+        var d3Colors = cowc.COLOR_SEVERITY_MAP;
         var colorPriorities = [d3Colors['blue'],d3Colors['green'],d3Colors['orange'],d3Colors['red']];
         var aColor = $.inArray(a['color'],colorPriorities);
         var bColor = $.inArray(b['color'],colorPriorities);

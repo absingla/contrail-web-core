@@ -35,19 +35,21 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'core-srcdir'                 : coreBaseDir,
         'core-basedir'                : coreWebDir,
         //Bundles
-        'thirdparty-libs'       : coreWebDir + '/js/common/thirdparty.libs',
-        'contrail-core-views'   : coreWebDir + '/js/common/contrail.core.views',
-        'chart-libs'            : coreWebDir + '/js/common/chart.libs',
-        'core-bundle'           : coreWebDir + '/js/common/core.bundle',
-        'global-libs'           : coreWebDir + '/js/common/global-libs',
-        'jquery-dep-libs'       : coreWebDir + '/js/common/jquery.dep.libs',
-        'nonamd-libs'           : coreWebDir + '/js/common/nonamd.libs',
+        'thirdparty-libs'             : coreWebDir + '/js/common/thirdparty.libs',
+        'contrail-core-views'         : coreWebDir + '/js/common/contrail.core.views',
+        'chart-libs'                  : coreWebDir + '/js/common/chart.libs',
+        'core-bundle'                 : coreWebDir + '/js/common/core.bundle',
+        'global-libs'                 : coreWebDir + '/js/common/global-libs',
+        'jquery-dep-libs'             : coreWebDir + '/js/common/jquery.dep.libs',
+        'nonamd-libs'                 : coreWebDir + '/js/common/nonamd.libs',
         //Files not in bundles
-        'underscore'            : coreWebDir + '/assets/underscore/underscore-min',
-        'slickgrid-utils'       : coreWebDir + "/js/slickgrid-utils",
-        'jquery'                : coreWebDir + '/assets/jquery/js/jquery-1.8.3.min',
-        'contrail-load'         : coreWebDir + '/js/contrail-load',
-        'vis'                   : coreWebDir + '/assets/vis-v4.9.0/js/vis.min',
+        'underscore'                  : coreWebDir + '/assets/underscore/underscore-min',
+        'slickgrid-utils'             : coreWebDir + "/js/slickgrid-utils",
+        //'jquery'                      : coreWebDir + '/assets/jquery/js/jquery-1.8.3.min',
+        //'jquery'                      : coreWebDir + '/assets/jquery/js/jquery-1.9.1.min',
+        'jquery'                      : coreWebDir + '/assets/jquery/js/jquery.min',
+        'contrail-load'               : coreWebDir + '/js/contrail-load',
+        'vis'                         : coreWebDir + '/assets/vis-v4.9.0/js/vis.min',
         'vis-node-model'              : coreWebDir + '/js/models/VisNodeModel',
         'vis-edge-model'              : coreWebDir + '/js/models/VisEdgeModel',
         'vis-tooltip-model'           : coreWebDir + '/js/models/VisTooltipModel',
@@ -60,11 +62,12 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'joint'                       : coreWebDir + '/assets/joint/js/joint.clean',
         'joint.contrail'              : coreWebDir + '/js/joint.contrail',
 
-        'core-alarm-utils'           :  coreWebDir + '/js/common/core.alarms.utils',
-        'core-alarm-parsers'         :  coreWebDir + '/js/common/core.alarms.parsers',
+        'core-alarm-utils'            :  coreWebDir + '/js/common/core.alarms.utils',
+        'core-alarm-parsers'          :  coreWebDir + '/js/common/core.alarms.parsers',
 
         'query-form-view'             : coreWebDir + '/js/views/QueryFormView',
         'contrail-vis-view'           : coreWebDir + '/js/views/ContrailVisView',
+        'contrail-config-model'       : coreWebDir + '/js/models/ContrailConfigModel',
 
         'query-form-model'            : coreWebDir + '/js/models/QueryFormModel',
         'query-or-model'              : coreWebDir + '/js/models/QueryOrModel',
@@ -72,15 +75,16 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'contrail-vis-model'          : coreWebDir + '/js/models/ContrailVisModel',
 
         'loginwindow-model'           : coreWebDir + '/js/models/LoginWindowModel',
-        'xml2json'                  : coreWebDir + '/assets/jquery/js/xml2json',
+        'xml2json'                    : coreWebDir + '/assets/jquery/js/xml2json',
 
         'json-editor'                 : coreWebDir + '/assets/jsoneditor/js/jsoneditor.min',
         'ajv'                         : coreWebDir + '/assets/ajv/ajv.min',
-        'server-schema'               : coreWebDir + '/schemas/server.schema',
-        'cluster-schema'              : coreWebDir + '/schemas/cluster.schema',
         'json-model'                  : coreWebDir + "/js/models/JsonModel",
-        'json-edit-view'              : coreWebDir + '/js/views/JsonEditView'
-
+        'json-edit-view'              : coreWebDir + '/js/views/JsonEditView',
+        'jquery-ui'                   : coreWebDir + '/assets/jquery-ui/js/jquery-ui.min',
+        'schema-model'               : coreWebDir + '/js/models/SchemaModel',
+        'view-config-generator'      : coreWebDir + '/js/common/view.config.generator',
+        'iframe-view'                 : coreWebDir + '/js/views/IframeView'
     };
 
     //Separate out aliases that need to be there for both prod & dev environments
@@ -88,6 +92,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         var devAliasMap = {
             //Start - Core-bundle aliases
             'core-utils'                  : coreWebDir + '/js/common/core.utils',
+            'core-hash-utils'             : coreWebDir + '/js/common/core.hash.utils',
             'core-constants'              : coreWebDir + '/js/common/core.constants',
             'core-formatters'             : coreWebDir + '/js/common/core.formatters',
             'core-cache'                  : coreWebDir + '/js/common/core.cache',
@@ -102,13 +107,14 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'contrail-view-model'         : coreWebDir + '/js/models/ContrailViewModel',
             'contrail-list-model'         : coreWebDir + '/js/models/ContrailListModel',
             'lodash'                      : coreWebDir + '/assets/lodash/lodash.min',
-            'crossfilter'               : coreWebDir + '/assets/crossfilter/js/crossfilter',
+            'crossfilter'                 : coreWebDir + '/assets/crossfilter/js/crossfilter',
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
             'text'                        : coreWebDir + '/assets/requirejs/text',
-            'knockout'                    : coreWebDir + '/assets/knockout/knockout-3.0.0',
-            'moment'                    : coreWebDir + "/assets/moment/moment",
+            'knockout'                    : coreWebDir + '/assets/knockout/knockout',
+            'moment'                      : coreWebDir + "/assets/moment/moment",
             'layout-handler'              : coreWebDir + '/js/handlers/LayoutHandler',
             'menu-handler'                : coreWebDir + '/js/handlers/MenuHandler',
+            'help-handler'                : coreWebDir + '/js/handlers/HelpHandler',
             'content-handler'             : coreWebDir + '/js/handlers/ContentHandler',
             'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd',
             'mon-infra-node-list-model'   : coreWebDir + '/js/models/NodeListModel',
@@ -121,26 +127,21 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             //End - core-bundle aliases
             //Start - jquery.dep.libs aliases
             'jquery.xml2json'           : coreWebDir + '/assets/jquery/js/jquery.xml2json',
-            'jquery.ba-bbq'             : coreWebDir + '/assets/jquery/js/jquery.ba-bbq.min',
             'jquery.json'               : coreWebDir + "/assets/slickgrid/js/jquery.json-2.3.min",
             'bootstrap'                 : coreWebDir + '/assets/bootstrap/js/bootstrap',
             'select2'                   : coreWebDir + "/assets/select2/js/select2.min",
             'slick.core'                : coreWebDir + "/assets/slickgrid/js/slick.core",
             'slick.dataview'            : coreWebDir + "/assets/slickgrid/js/slick.dataview",
-            'jquery-ui'                 : coreWebDir + '/assets/jquery-ui/js/jquery-ui',
             'contrail-elements'         : coreWebDir + "/js/contrail-elements",
             'jquery.timer'              : coreWebDir + '/assets/jquery/js/jquery.timer',
             'jquery.ui.touch-punch'     : coreWebDir + '/assets/jquery/js/jquery.ui.touch-punch.min',
-            'jquery.validate'           : coreWebDir + "/assets/jquery/js/jquery.validate",
+            'jquery.validate'           : coreWebDir + "/assets/jquery/js/jquery.validate.min",
             'jquery.tristate'           : coreWebDir + "/assets/jquery/js/jquery.tristate",
             'jquery.multiselect'        : coreWebDir + "/assets/jquery-ui/js/jquery.multiselect",
             'jquery.multiselect.filter' : coreWebDir + "/assets/jquery-ui/js/jquery.multiselect.filter",
             'jquery.steps.min'          : coreWebDir + "/assets/jquery/js/jquery.steps.min",
             'jquery.panzoom'            : coreWebDir + "/assets/jquery/js/jquery.panzoom.min",
-            'jquery.ui.position'        : coreWebDir + "/assets/jquery-contextMenu/js/jquery.ui.position",
-            'jquery-contextmenu'        : coreWebDir + "/assets/jquery-contextMenu/js/jquery.contextMenu",
             'jquery.event.drag'         : coreWebDir + "/assets/slickgrid/js/jquery.event.drag-2.2",
-            'jquery.droppick'           : coreWebDir + "/assets/slickgrid/js/jquery.dropkick-1.0.0",
             'jquery.datetimepicker'     : coreWebDir + "/assets/datetimepicker/js/jquery.datetimepicker",
             //End - jquery.dep.libs aliases
             //Start - thirdparty-libs aliases
@@ -191,7 +192,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         var prodAliasMap = {
             'controller-basedir'          : coreBaseDir,
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
-            'knockout'                    : coreWebDir + '/assets/knockout/knockout-3.0.0',
+            'knockout'                    : coreWebDir + '/assets/knockout/knockout',
             'knockback'                   : coreWebDir + '/assets/backbone/knockback.min',
             'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd',
             'joint.contrail': coreWebDir + '/js/common/joint.contrail',
@@ -223,12 +224,6 @@ var coreAppShim =  {
     'jquery.tristate' : {
         deps: ['jquery-ui']
     },
-    'jquery.ui.position' : {
-        deps: ['jquery']
-    },
-    'jquery-contextmenu' : {
-        deps: ['jquery']
-    },
     'jquery.multiselect.filter' : {
         deps: ['jquery-ui']
     },
@@ -255,9 +250,6 @@ var coreAppShim =  {
     },
     'xml2json' : {
         deps: ["jquery"]
-    },
-    "jquery.ba-bbq" : {
-        deps: ['jquery']
     },
     "jquery.timer" : {
         deps: ['jquery']
@@ -296,12 +288,6 @@ var coreAppShim =  {
     'contrail-common': {
         deps: ['jquery']
     },
-    // 'contrail-layout': {
-    //     deps:['jquery.ba-bbq']
-    // },
-    'slick.enhancementpager': {
-        deps: ['jquery']
-    },
     'slick.rowselectionmodel': {
         deps: ['jquery']
     },        
@@ -315,7 +301,7 @@ var coreAppShim =  {
         deps: ['jquery']
     },
     'jquery-dep-libs' : {
-        deps: ['jquery']
+        deps: ['jquery-ui']
     },
     'slickgrid-utils': {
         deps: ['jquery','slick.grid','slick.dataview']
@@ -410,13 +396,11 @@ var coreBundles = {
         ],
         'jquery-dep-libs': [
             'jquery.xml2json',
-            'jquery.ba-bbq',
             'jquery.json',
             'bootstrap',
             'select2',
             'slick.core',
             'slick.dataview',
-            'jquery-ui',
             'contrail-elements',
             'jquery.timer',
             'jquery.ui.touch-punch',
@@ -426,7 +410,6 @@ var coreBundles = {
             'jquery.multiselect.filter',
             'jquery.steps.min',
             'jquery.panzoom',
-            'jquery-contextmenu',
             'jquery.event.drag',
             'jquery.droppick',
             'jquery.datetimepicker'
@@ -434,6 +417,7 @@ var coreBundles = {
         'core-bundle'       : [
             'underscore',
             'core-utils',
+            'core-hash-utils',
             'core-constants',
             'core-formatters',
             'core-cache',
@@ -454,6 +438,7 @@ var coreBundles = {
             'moment',
             'layout-handler',
             'menu-handler',
+            'help-handler',
             'content-handler',
             'validation',
             'core-basedir/js/views/BarChartInfoView',
@@ -514,6 +499,20 @@ var coreBundles = {
             'core-basedir/js/views/SparklineView',
             'core-basedir/js/views/TabsView',
             'core-basedir/js/views/WizardView'
+        ],
+        'nonamd-libs': [
+            'web-utils',
+            'analyzer-utils',
+            'config_global',
+            'contrail-layout',
+            'handlebars-utils',
+            'contrail-common',
+            'uuid',
+            'protocol',
+            'xdate',
+            'ipv6',
+            'handlebars',
+            'jsonpath'
         ]
     };
 
@@ -896,6 +895,20 @@ function initCustomKOBindings(Knockout) {
     });
 };
 
+function loadGohanUI() {
+    sessionStorage.setItem('gohan_contrail',true);
+    sessionStorage.setItem('tenant',JSON.stringify(loadUtils.getCookie('project')));
+    $('#alarms-popup-link').hide();
+    $('#nav-search').hide();
+    require(['iframe-view'],function(IframeView) {
+        var iframeView = new IframeView({
+            el:$("#main-container"),
+            url:"./gohan.html"
+        });
+        iframeView.render();
+    });
+};
+
 function changeRegion (e)
 {
     var oldRegion = contrail.getCookie('region');
@@ -903,6 +916,12 @@ function changeRegion (e)
     if ((null != region) && (oldRegion != region) &&
         ('null' != region) && ('undefined' != region)) {
         contrail.setCookie('region', region);
+        if(region == "All Regions") {
+            //To indicate that gohanUI is being embedded in contrailUI
+            sessionStorage.setItem('gohan_contrail',true);
+            loadGohanUI();
+            return;
+        }
         /* And issue logout request */
         loadUtils.logout()
     }
@@ -1024,7 +1043,11 @@ if (typeof document !== 'undefined' && document) {
         }
 
         $.when.apply(window, featureAppDefObjList).done(function () {
-            globalObj['featureAppDefObj'].resolve();
+            //Ensure d3 and nv.d3 are available before loading any particular feature
+            //d3 and nv.d3 are not necessary for loading menu and layout
+            require(['chart-utils'],function() {
+                globalObj['featureAppDefObj'].resolve();
+            });
         });
     };
 
@@ -1093,7 +1116,7 @@ if (typeof document !== 'undefined' && document) {
                     globalObj['webServerInfo'] = loadUtils.parseWebServerInfo(response);
 
                     //For Region drop-down
-                    require(['jquery', 'jquery-dep-libs'], function() {
+                    require(['jquery', 'jquery-dep-libs','nonamd-libs'], function() {
                         var regionList =
                             globalObj.webServerInfo.regionList;
                         var cnt = 0;
@@ -1112,7 +1135,23 @@ if (typeof document !== 'undefined' && document) {
                                                             width: '100px',
                                                             change: changeRegion});
                             $('#regionDD').data("contrailDropdown").setData(ddRegionList);
-                            $("#regionDD").data("contrailDropdown").value(contrail.getCookie('region'));
+                            // if(loadUtils.getCookie('region') != "All Regions")
+                            $("#regionDD").data("contrailDropdown").value(loadUtils.getCookie('region'));
+                            if(globalObj['webServerInfo']['cgcEnabled'] == true) {
+                                //Fetch tokens for gohanUI
+                                $.ajax({
+                                    type: "POST",
+                                    url: '/gohan_contrail_auth/tokens'
+                                }).done(function(response,textStatus,xhr) {
+                                    var jsonObj = {};
+                                    jsonObj[loadUtils.getCookie('project')] = response;
+                                    sessionStorage.setItem('scopedToken',JSON.stringify(jsonObj));
+                                });
+                            }
+                            //Trigger change handler while setting default value
+                            if(loadUtils.getCookie('region') == "All Regions") {
+                                loadGohanUI();
+                            }
                         }
                     });
                     webServerInfoDefObj.resolve();
@@ -1122,11 +1161,13 @@ if (typeof document !== 'undefined' && document) {
                     }
                     $('#user-profile').show();
                     loadUtils.bindAppListeners();
+
                     $.when.apply(window,[menuXMLLoadDefObj,layoutHandlerLoadDefObj]).done(function(menuXML) {
                         if(globalObj['featureAppDefObj'] == null)
                             globalObj['featureAppDefObj'] = $.Deferred();
                         require(['core-bundle'],function() {
-                            layoutHandler.load(menuXML);
+                            if(loadUtils.getCookie('region') != "All Regions")
+                                layoutHandler.load(menuXML);
                         });
                     });
                 });
@@ -1148,7 +1189,7 @@ if (typeof document !== 'undefined' && document) {
                         $("#region_id").select2({placeholder: "Select the Region",
                                                 data: regionList,
                                                 width: "283px"})
-                        var cookieRegion = contrail.getCookie('region');
+                        var cookieRegion = loadUtils.getCookie('region');
                         if (regionList.length > 0) {
                             if (null == cookieRegion) {
                                 cookieRegion = regionList[0]['key'];
@@ -1196,7 +1237,11 @@ if (typeof document !== 'undefined' && document) {
                             globalObj['featureAppDefObj'] = $.Deferred();
                         if(webServerInfoDefObj == null)
                             webServerInfoDefObj = $.Deferred();
-                        loadFeatureApps(featurePkgs);
+                        //Ensure the global aliases (like contrail,functions in web-utils) are available before loading
+                        //feature packages as they are used in the callback of feature init modules without requring them
+                        require(['nonamd-libs'],function() {
+                            loadFeatureApps(featurePkgs);
+                        });
                     });
                 });
             },
@@ -1249,6 +1294,8 @@ if (typeof document !== 'undefined' && document) {
                 });
             },
             logout: function() {
+                //Clear iframes
+                $('.iframe-view').remove();
                 //Clear All Pending Ajax calls
                 $.allajax.abort();
                 $.ajax({
@@ -1320,12 +1367,13 @@ if (typeof document !== 'undefined' && document) {
                         window.kbValidation = validation;
                         // window.ko = ko;
                     });
-                    require(['core-utils'],function(CoreUtils) {
+                    require(['core-utils', 'core-hash-utils'],function(CoreUtils, CoreHashUtils) {
                         cowu = new CoreUtils();
+                        cowhu = new CoreHashUtils();
                         require(['underscore'],function(_) {
                             _.noConflict();
                         });
-                        require(['layout-handler','content-handler','contrail-load','lodash'],function(LayoutHandler,ContentHandler,ChartUtils,_) {
+                        require(['layout-handler', 'content-handler', 'help-handler', 'contrail-load','lodash'], function(LayoutHandler, ContentHandler, HelpHandler, ChartUtils,_) {
                             window._ = _;
                             contentHandler = new ContentHandler();
                             initBackboneValidation();
@@ -1333,6 +1381,7 @@ if (typeof document !== 'undefined' && document) {
                             initDomEvents();
                             layoutHandler = new LayoutHandler();
                             layoutHandlerLoadDefObj.resolve();
+                            helpHandler = new HelpHandler();
                         });
                     });
                 });

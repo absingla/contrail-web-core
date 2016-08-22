@@ -189,6 +189,7 @@ define([
                 $.ajax(ajaxConfig).success(function(response) {
                     var selectFields = getSelectFields4Table(response, disableFieldArray, disableSubstringArray),
                         whereFields = getWhereFields4NameDropdown(response, tableName, self.disableWhereFields);
+                    var selectFields_Aggtype = [];
 
                     self.select_data_object().requestState((selectFields.length > 0) ? cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY : cowc.DATA_REQUEST_STATE_SUCCESS_EMPTY);
                     contrailViewModel.set({
@@ -213,7 +214,7 @@ define([
                 });
             }
         },
-
+        
         formatModelConfig: function(modelConfig) {
             var whereOrClausesCollectionModel, filterAndClausesCollectionModel;
 
