@@ -171,21 +171,33 @@ define([
             return d3.extent(axisRange);
         },
 
+        getDomainForAccessor: function(accessor) {
+            var self = this,
+                accessorDomain = [],
+                data = self.getData();
+
+            _.each(data, function(dataItem) {
+                accessorDomain.push(dataItem[accessor]);
+            });
+            return accessorDomain;
+        },
+
         /**
          * Use the scales provided in the config or calculate them to fit data in view.
          * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
          */
         calculateScales: function () {
             var self = this;
-            var rangeX = self.model.getRangeFor(this.params.xAccessor);
             var rangeY1 = self.getRangeForAxis(this.params._y1AccessorList);
             var rangeY2 = self.getRangeForAxis(this.params._y2AccessorList);
 
             var xMinpx = self.params.marginLeft;
             var xMaxpx = self.params.chartWidth - self.params.marginRight;
             if (!self.params.xScale) {
-                self.params.xScale = d3.scaleOrdinal().domain(rangeX).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
+                var xDomain = self.getDomainForAccessor(self.params.xAccessor);
+                self.params.xScale = d3.scaleBand().domain(xDomain).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
             } else {
+                var rangeX = self.model.getRangeFor(this.params.xAccessor);
                 self.params.xScale.domain(rangeX).range([xMinpx, xMaxpx]);
             }
 
@@ -245,9 +257,13 @@ define([
             var y1Axis = d3.axisLeft(self.params.y1Scale)
                 .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
                 .tickPadding(5).ticks(self.params.y1Ticks);
+            var y2Axis = d3.axisLeft(self.params.y2Scale)
+                .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
+                .tickPadding(5).ticks(self.params.y2Ticks);
             var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
             svg.select(".axis.x-axis").call(xAxis);
             svg.select(".axis.y1-axis").call(y1Axis);
+            svg.select(".axis.y2-axis").call(y2Axis);
         },
 
         renderData: function () {
