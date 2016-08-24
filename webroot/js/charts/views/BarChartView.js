@@ -47,15 +47,32 @@ define([
             return axis;
         },
 
-        getBarX: function (i) {
+        getBarX: function (accessor, dataItem, i) {
             var self = this,
-                delimiter = self.getData().length > 1 ? 1 : 0;
+                data = self.getData(),
+                xValue = dataItem[self.params.xAccessor],
+                delimiter = data.length > 1 ? 1 : 0;
 
-            return self.params.xScale(self.params.xAccessor) - this.params.chartWidth / (self.getData().length - delimiter) * i;
+            if (self.params.xScale && (self.params.chartType === "GROUPED" || self.params.chartType === "none")) {
+                var barWidth = self.getBarWidth(accessor),
+                    axisNum = self.getYAxis(accessor),
+                    chartIndex = self.params["_y" + axisNum + "AccessorList"].indexOf(accessor),
+                    axisChartCount = self.getChartCount(axisNum);
+                return self.params.xScale(xValue) - barWidth * axisChartCount / (data.length - delimiter) * i + barWidth * chartIndex;
+            } else if (self.params.chartType === "STACKED") {
+                return self.params.xScale(xValue) - this.params.chartWidth / (data.length - delimiter) * i;
+            }
+
         },
 
-        getBarY: function () {
-
+        getBarY: function (accessor, dataItem, i) {
+            var self = this,
+                axisNum = self.getYAxis(accessor);
+            if (self.params.chartType === "GROUPED" || self.params.chartType === "none") {
+                return self.params["y" + axisNum + "Scale"](dataItem[accessor]);
+            } else if(self.params.chartType === "STACKED") {
+                //Todo get bar y when stacked
+            }
         },
 
         getBarGap: function () {
@@ -64,22 +81,36 @@ define([
         },
 
         getBarWidth: function (accessor) {
-            var self = this;
+            var self = this,
+                data = self.getData();
 
-            if (self.params.strategy === "GROUPED") {
+            if (self.params.chartType === "GROUPED") {
                 var axisChartCount = self.getChartCount(self.getYAxis(accessor));
-                return (self.params.chartWidth / self.getData().length - self.getBarGap()) / axisChartCount ;
+                return (self.params.chartWidth / data.length - self.getBarGap()) / axisChartCount ;
             } else {
-                return self.params.chartWidth / self.getData().length - self.getBarGap();
+                return self.params.chartWidth / data.length - self.getBarGap();
             }
         },
 
-        getBarHeight: function (value) {
+        getBarHeight: function (accessor, dataItem) {
             var self = this;
-            if (self.params.strategy === "GROUPED") {
-                return (self.params.chartHeight - self.params.y1Scale(value));
+            if (self.params.chartType === "GROUPED" || self.params.chartType === "none") {
+                return (self.params.chartHeight - self.params.y1Scale(dataItem[accessor]));
+            } else if(self.params.chartType === "STACKED") {
+                //Todo get bar height when stacked
+            }
+        },
+
+        getBarColor: function(accessor) {
+            var self = this;
+            if (self.params.accessorData[accessor].color) {
+                return self.params.accessorData[accessor].color;
             } else {
-                return self.params.chartWidth - self.getBarGap(value);
+                var axis = self.getYAxis(accessor);
+                if (!self.params["_y" + axis + "ColorScale"]) {
+                    self.params["_y" + axis + "ColorScale"] = d3.scaleOrdinal(d3.schemeCategory20);
+                }
+                return self.params["_y" + axis + "ColorScale"](accessor);
             }
         },
 
@@ -102,7 +133,13 @@ define([
         calculateDimensions: function () {
             var self = this;
             if (!self.params.chartWidth) {
-                self.params.chartWidth = self.$el.width();
+                var containerWidth = (self.$el.width() > 0) ? self.$el.width() : 500;
+                if (self.params.marginLeft) {
+                    self.params.chartWidth = containerWidth - self.params.marginLeft;
+                }
+                if (self.params.marginRight) {
+                    self.params.chartWidth -= self.params.marginRight;
+                }
             }
             if (!self.params.chartHeight) {
                 self.params.chartHeight = Math.round(3 * self.params.chartWidth / 4);
@@ -144,10 +181,12 @@ define([
             var rangeY1 = self.getRangeForAxis(this.params._y1AccessorList);
             var rangeY2 = self.getRangeForAxis(this.params._y2AccessorList);
 
+            var xMinpx = self.params.marginLeft;
+            var xMaxpx = self.params.chartWidth - self.params.marginRight;
             if (!self.params.xScale) {
-                var xMinpx = self.params.marginLeft;
-                var xMaxpx = self.params.chartWidth - self.params.marginRight;
-                self.params.xScale = d3.scaleLinear().domain(rangeX).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
+                self.params.xScale = d3.scaleOrdinal().domain(rangeX).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
+            } else {
+                self.params.xScale.domain(rangeX).range([xMinpx, xMaxpx]);
             }
 
             var yMaxpx = self.params.marginTop;
@@ -220,35 +259,29 @@ define([
             var y1BarEnter = svg.select(".y1bars").selectAll(".bar").data(data).enter(),
                 y2BarEnter = svg.select(".y2bars").selectAll(".bar").data(data).enter();
 
-            // Render Y1 axis. iterate over y1AccessorList
-            _.each(self.params._y1AccessorList, function (accessor) {
-                y1BarEnter.append("rect")
-                    .attr("class", "bar")
-                    .attr("x", function (d, i) {
-                        return self.params.xScale(d[self.params.xAccessor]);
-                    }).attr("y", function (d, i) {
-                        return self.params.y1Scale(d[accessor]);
-                    }).attr("width", function (d, i) {
-                        return self.getBarWidth(accessor);
-                    }).attr("height", function (d, i) {
-                        return self.getBarHeight(d[accessor], i);
-                    }).attr("fill");
-            });
-
-            // Render Y2 axis
-            _.each(self.params._y2AccessorList, function (accessor) {
-                y2BarEnter.append("rect")
-                    .attr("class", "bar")
-                    .attr("x", function (d, i) {
-                        return self.params.xScale(d[self.params.xAccessor]);
-                    }).attr("y", function (d, i) {
-                    return self.params.y2Scale(d[accessor]);
-                }).attr("width", function (d, i) {
-                    return self.getBarWidth(d);
-                }).attr("height", function (d, i) {
-                    return self.getBarHeight(d[accessor], i);
+            function renderBars(barsEnterSelection, accessorList) {
+                _.each(accessorList, function (accessor) {
+                    barsEnterSelection.append("rect")
+                        .attr("class", "bar")
+                        .attr("x", function (d, i) {
+                            // console.log("X: " + self.getBarX(accessor, d, i));
+                            return self.getBarX(accessor, d, i);})
+                        .attr("y", function (d, i) {
+                            // console.log("Y: " + self.getBarY(accessor, d, i));
+                            return self.getBarY(accessor, d, i);})
+                        .attr("width", function (d, i) {
+                            // console.log("width: " + self.getBarWidth(accessor) );
+                            return self.getBarWidth(accessor);})
+                        .attr("height", function (d, i) {
+                            // console.log("height: " + self.getBarHeight(accessor, d, i));
+                            return self.getBarHeight(accessor, d, i);})
+                        .attr("fill", function(d, i) { return self.getBarColor(accessor);});
                 });
-            });
+            }
+            // Render Y1 bars
+            renderBars(y1BarEnter, self.params._y1AccessorList);
+            // Render Y2 bars
+            renderBars(y2BarEnter, self.params._y2AccessorList);
         },
 
         render: function () {

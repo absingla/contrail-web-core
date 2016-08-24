@@ -32,7 +32,7 @@ define([
             marginRight: undefined,
 
             /// Scales can be provided as a d3 scale or undefined if they need to be calculated.
-            xScale: undefined,
+            xScale: undefined, //d3.scaleTime()
             y1Scale: undefined,
             y2Scale: undefined,
 
@@ -57,8 +57,8 @@ define([
             _y1AccessorList: ["y"],
             _y2AccessorList: [],
 
-            //Grouped or stacked chart
-            strategy: "GROUPED",
+            //GROUPED or STACKED chart
+            chartType: "none",
         }
     });
 
