@@ -16,15 +16,20 @@ define([
         className: "navigation-view line-chart",
 
         initialize: function (options) {
-            this.config = options.config;
-            this.resetParams();
-            this.template = contrail.getTemplate4Id("coCharts-navigation-panel");
-            this.listenTo(this.model, "change", this.modelChanged);
-            this.listenTo(this.config, "change", this.render);
-            this.eventObject = _.extend({}, Backbone.Events);
+            var self = this;
+            self.config = options.config;
+            self.resetParams();
+            self.template = contrail.getTemplate4Id("coCharts-navigation-panel");
+            self.listenTo(self.model, "change", self.modelChanged);
+            self.listenTo(self.config, "change", self.render);
+            self.eventObject = _.extend({}, Backbone.Events);
+            var throttled = _.throttle( function() {
+                self.render();
+            }, 100 );
+            $( window ).resize( throttled );
 
-            this.focusDataProvider = new DataProvider({parentDataModel: this.model});
-            this.brush = null;
+            self.focusDataProvider = new DataProvider({parentDataModel: self.model});
+            self.brush = null;
         },
 
         events: {

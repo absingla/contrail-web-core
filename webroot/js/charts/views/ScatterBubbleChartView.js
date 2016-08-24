@@ -11,17 +11,22 @@ define([
         className: "scatter-bubble-chart",
 
         initialize: function (options) {
+            var self = this;
             // TODO: Every model change will trigger a redraw. This might not be desired - dedicated redraw event?
 
             /// The config model
-            this.config = options.config;
+            self.config = options.config;
 
             /// View params hold values from the config and computed values.
-            this.resetParams();
+            self.resetParams();
 
-            this.listenTo(this.model, "change", this.render);
-            this.listenTo(this.config, "change", this.render);
-            this.eventObject = _.extend({}, Backbone.Events);
+            self.listenTo(self.model, "change", self.render);
+            self.listenTo(self.config, "change", self.render);
+            self.eventObject = _.extend({}, Backbone.Events);
+            var throttled = _.throttle( function() {
+                self.render();
+            }, 100 );
+            $( window ).resize( throttled );
         },
 
         /**

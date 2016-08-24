@@ -177,7 +177,13 @@ define([
                     if (d[variableName] < min) min = d[variableName];
                     if (d[variableName] > max) max = d[variableName];
                 });
-                variableRange = [min, max];
+                if( data.length ) {
+                    variableRange = [min, max];
+                }
+                else {
+                    // No data available so assume a [0..1] range.
+                    variableRange = [0, 1];
+                }
             }
             return variableRange;
         },
