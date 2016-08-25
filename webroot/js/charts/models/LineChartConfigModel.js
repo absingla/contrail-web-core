@@ -32,8 +32,7 @@ define([
 
             /// Scales can be provided as a d3 scale or undefined if they need to be calculated.
             xScale: undefined,
-            yScale: undefined,
-            rScale: undefined,
+            y1Scale: undefined,
 
             /// Axis can be provided as a d3 axis or true if they need to be calculated.
             axisTop: false,

@@ -103,7 +103,7 @@ define([
 
         getBarColor: function(accessor) {
             var self = this;
-            if (self.params.accessorData[accessor].color) {
+            if (_.has(self.params.accessorData[accessor], "color")) {
                 return self.params.accessorData[accessor].color;
             } else {
                 var axis = self.getYAxis(accessor);
@@ -116,13 +116,28 @@ define([
 
         updateAccessorList: function () {
             var self = this;
-            _.each(this.params.accessorData, function (accessor) {
+            self.params._y1AccessorList = [];
+            self.params._y2AccessorList = [];
+            _.each(this.params.accessorData, function (accessor, key) {
                 if (accessor.y === 1) {
-                    self.params._y1AccessorList.push(accessor);
+                    self.params._y1AccessorList.push(key);
                 } else if (accessor.y === 2) {
-                    self.params._y2AccessorList.push(accessor);
+                    self.params._y2AccessorList.push(key);
                 }
             });
+        },
+
+        // Accessor in the axis accessor list may not be present in the Data.
+        // From the accessorList Return only the accessor that's present in the data
+        getAccessorListForRender: function(accessorList) {
+            var self = this,
+                data = self.getData(),
+                accessorList4Render = [];
+            _.each(accessorList, function(accessor) {
+                if (_.has(data[0], accessor))
+                    accessorList4Render.push(accessor);
+            });
+            return accessorList4Render;
         },
 
         /**
@@ -276,6 +291,7 @@ define([
                 y2BarEnter = svg.select(".y2bars").selectAll(".bar").data(data).enter();
 
             function renderBars(barsEnterSelection, accessorList) {
+                accessorList = self.getAccessorListForRender(accessorList);
                 _.each(accessorList, function (accessor) {
                     barsEnterSelection.append("rect")
                         .attr("class", "bar")

@@ -32,7 +32,7 @@ define([
          * Use the dimensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
          * This method should be called before rendering because the available dimensions could have changed.
          */
-        calculateDimmensions: function () {
+        calculateDimensions: function () {
             var self = this;
             if (!self.params.chartWidth) {
                 self.params.chartWidth = self.$el.width();
@@ -67,10 +67,10 @@ define([
                 var xMaxpx = self.params.chartWidth - self.params.marginRight;
                 self.params.xScale = d3.scaleLinear().domain(rangeX).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
             }
-            if (!self.params.yScale) {
+            if (!self.params.y1Scale) {
                 var yMaxpx = self.params.marginTop;
                 var yMinpx = self.params.chartHeight - self.params.marginBottom;
-                self.params.yScale = d3.scaleLinear().domain(rangeY).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
+                self.params.y1Scale = d3.scaleLinear().domain(rangeY).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
             }
         },
 
@@ -86,9 +86,9 @@ define([
             });
             svg.append("g")
                 .attr("class", "axis x-axis")
-                .attr("transform", "translate(0," + ( self.params.yScale.range()[1] ) + ")");
+                .attr("transform", "translate(0," + ( self.params.y1Scale.range()[1] ) + ")");
             svg.append("g")
-                .attr("class", "axis y-axis")
+                .attr("class", "axis y1-axis")
                 .attr("transform", "translate(" + ( self.params.xScale.range()[0] ) + ",0)");
             svg.append("g")
                 .attr("class", "lines")
@@ -109,8 +109,8 @@ define([
          */
         renderAxis: function () {
             var self = this;
-            var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.yScale.range()[0] - self.params.yScale.range()[1]).tickPadding(5).ticks(self.params.xTicks);
-            var yAxis = d3.axisLeft(self.params.yScale).tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0])).tickPadding(5).ticks(self.params.yTicks);
+            var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.y1Scale.range()[0] - self.params.y1Scale.range()[1]).tickPadding(5).ticks(self.params.xTicks);
+            var yAxis = d3.axisLeft(self.params.y1Scale).tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0])).tickPadding(5).ticks(self.params.yTicks);
             var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
             svg.select(".axis.x-axis").call(xAxis);
             svg.select(".axis.y-axis").call(yAxis);
@@ -129,7 +129,7 @@ define([
                     return self.params.xScale(d[self.params.xAccessor]);
                 })
                 .y(function (d) {
-                    return self.params.yScale(d[self.params.yAccessor]);
+                    return self.params.y1Scale(d[self.params.yAccessor]);
                 });
             var svg = self.svgSelection();
             var svgLine = svg.select(".lines").selectAll(".line").datum(data);
@@ -151,7 +151,7 @@ define([
             var self = this;
             _.defer(function () {
                 self.resetParams();
-                self.calculateDimmensions();
+                self.calculateDimensions();
                 self.calculateScales();
                 self.renderSVG();
                 self.renderAxis();
