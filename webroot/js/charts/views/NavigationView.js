@@ -47,7 +47,7 @@ define([
             var prevWindowSize = prevWindowXMax - prevWindowXMin;
             // Prepare the scales for setting the new window position.
             self.resetParams();
-            self.calculateDimmensions();
+            self.calculateDimensions();
             self.calculateScales();
             // Try to keep the same data window. Move it if exceeds data range.
             if (!_.isUndefined(prevWindowXMin) && !_.isUndefined(prevWindowXMax)) {
@@ -136,7 +136,7 @@ define([
             var self = this;
             _.defer(function () {
                 self.resetParams();
-                self.calculateDimmensions();
+                self.calculateDimensions();
                 self.calculateScales();
                 self.renderSVG();
                 self.renderAxis();

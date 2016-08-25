@@ -81,7 +81,7 @@ define([
                 status = cowc.DATA_REQUEST_STATE_FETCHING;
             } else if (self.model.error === true) {
                 status = cowc.DATA_REQUEST_STATE_ERROR;
-            } else if (self.model.empty === true) {
+            } else if (self.model.empty === true || self.model.getItems().length == 0 ) {
                 status = cowc.DATA_REQUEST_STATE_SUCCESS_EMPTY;
             } else {
                 status = cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY;
@@ -117,6 +117,7 @@ define([
                                 name: i,
                                 x: i,
                                 y: 100 * Math.random(),
+                                y2: 50 * Math.random(),
                                 flowCnt: 10 * Math.random(),
                                 c1: 10 * Math.random(),
                                 c2: 10 * Math.random()
@@ -208,7 +209,7 @@ define([
                 chartHeight: 270,
                 chartWidth: chartWidth,
                 marginTop: 20,
-                marginRight: 5,
+                marginRight: 50,
                 marginBottom: 50,
                 marginLeft: 50,
                 maxCircleRadius: 10,
