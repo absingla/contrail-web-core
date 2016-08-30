@@ -27,6 +27,19 @@ define([
             this.eventObject = _.extend({}, Backbone.Events);
         },
 
+        updateAccessorList: function () {
+            var self = this;
+            self.params._y1AccessorList = [];
+            self.params._y2AccessorList = [];
+            _.each(this.params.accessorData, function (accessor, key) {
+                if (accessor.y === 1) {
+                    self.params._y1AccessorList.push(key);
+                } else if (accessor.y === 2) {
+                    self.params._y2AccessorList.push(key);
+                }
+            });
+        },
+
         /**
          * Calculates the chart dimensions and margins.
          * Use the dimensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
@@ -61,17 +74,26 @@ define([
         calculateScales: function () {
             var self = this;
             var rangeX = self.model.getRangeFor(this.params.xAccessor);
-            var rangeY = self.model.getRangeFor(this.params.yAccessor);
+            var rangeY1 = self.getRangeForAxis(this.params._y1AccessorList);
+            var rangeY2 = self.getRangeForAxis(this.params._y2AccessorList);
+
             if (!self.params.xScale) {
-                var xMinpx = self.params.marginLeft;
-                var xMaxpx = self.params.chartWidth - self.params.marginRight;
-                self.params.xScale = d3.scaleLinear().domain(rangeX).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
+                self.params.xScale = d3.scaleLinear();
             }
+            var xMinpx = self.params.marginLeft;
+            var xMaxpx = self.params.chartWidth - self.params.marginLeft - self.params.marginRight;
+            self.params.xScale.domain(rangeX).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
+
             if (!self.params.y1Scale) {
-                var yMaxpx = self.params.marginTop;
-                var yMinpx = self.params.chartHeight - self.params.marginBottom;
-                self.params.y1Scale = d3.scaleLinear().domain(rangeY).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
+                self.params.y1Scale = d3.scaleLinear();
             }
+            if (!self.params.y2Scale) {
+                self.params.y2Scale = d3.scaleLinear();
+            }
+            var yMaxpx = self.params.marginTop;
+            var yMinpx = self.params.chartHeight - self.params.marginBottom - self.params.marginTop;
+            self.params.y1Scale.domain(rangeY1).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
+            self.params.y2Scale.domain(rangeY2).range([yMinpx, yMaxpx]);
         },
 
         /**
@@ -88,12 +110,16 @@ define([
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.y1Scale.range()[1] ) + ")");
             svg.append("g")
-                .attr("class", "axis y1-axis")
+                .attr("class", "axis y-axis y1-axis")
                 .attr("transform", "translate(" + ( self.params.xScale.range()[0] ) + ",0)");
             svg.append("g")
-                .attr("class", "lines")
-                .append("path")
-                .attr("class", "line");
+                .attr("class", "axis y-axis y2-axis")
+                .attr("transform", "translate(" + ( self.params.xScale.range()[1] ) + ",0)");
+            svg.append("g")
+                .attr("class", "lines y1-lines");
+            svg.append("g")
+                .attr("class", "lines y2-lines");
+
             self.svgSelection()
                 .attr("width", self.params.chartWidth)
                 .attr("height", self.params.chartHeight);
@@ -109,48 +135,140 @@ define([
          */
         renderAxis: function () {
             var self = this;
-            var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.y1Scale.range()[0] - self.params.y1Scale.range()[1]).tickPadding(5).ticks(self.params.xTicks);
-            var yAxis = d3.axisLeft(self.params.y1Scale).tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0])).tickPadding(5).ticks(self.params.yTicks);
+            var xAxis = d3.axisBottom(self.params.xScale)
+                .tickSizeInner(self.params.y1Scale.range()[0] - self.params.y1Scale.range()[1])
+                .tickPadding(5).ticks(self.params.xTicks);
+            var y1Axis = d3.axisLeft(self.params.y1Scale);
+            var y2Axis = d3.axisRight(self.params.y2Scale);
+
+            y1Axis.tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
+                .tickPadding(5).ticks(self.params.y1Ticks);
+            y2Axis.tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
+                .tickPadding(5).ticks(self.params.y2Ticks);
+
             var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
-            svg.select(".axis.x-axis").call(xAxis);
-            svg.select(".axis.y-axis").call(yAxis);
+
+            if (self.params._enableXAxis === "line") {
+                svg.select(".axis.x-axis").call(xAxis);
+            }
+            if (self.params._y1Chart === "line") {
+                var y1TickValues = y1Axis.scale().ticks(y1Axis.ticks()[0]);
+                self.config.set({
+                    y1AxisYCoordinates: y1TickValues.map(function(yVal){ return y1Axis.scale()(yVal);})
+                });
+                svg.select(".axis.y1-axis").call(y1Axis);
+            }
+            if (self.params._y2Chart === "line") {
+                //Y2 axis ticks position should match Y1 axis.
+                //If Y1 coordinates exist, find the corresponding coordinates on Y2 Axis scale.
+                if (self.params.y1AxisYCoordinates) {
+                     var tickValues = self.params.y1AxisYCoordinates.map(function(d){return y2Axis.scale().invert(d)});
+                    y2Axis.tickValues(tickValues);
+                }
+                svg.select(".axis.y2-axis").call(y2Axis);
+            }
         },
 
         getData: function () {
             return this.model.getData();
         },
 
+        getLineColor: function(accessor) {
+            var self = this;
+            if (_.has(self.params.accessorData[accessor], "color")) {
+                return self.params.accessorData[accessor].color;
+            } else {
+                var axis = self.getYAxis(accessor);
+                if (!self.params["_y" + axis + "ColorScale"]) {
+                    self.params["_y" + axis + "ColorScale"] = d3.scaleOrdinal(d3.schemeCategory20);
+                }
+                return self.params["_y" + axis + "ColorScale"](accessor);
+            }
+        },
+
+        //Return the Y axis accessor belongs to.
+        getYAxis: function(accessor) {
+            var axis = undefined;
+            if (_.contains(this.params._y1AccessorList, accessor)) {
+                axis = 1;
+            } else if (_.contains(this.params._y2AccessorList, accessor)) {
+                axis = 2;
+            }
+            return axis;
+        },
+
+        /**
+         * Calculates the [min, max] for an accessorList
+         * @param accessorList
+         */
+        getRangeForAxis: function (accessorList) {
+            var self = this,
+                axisRanges = [],
+                domain = [undefined, undefined];
+
+            if (accessorList.length > 0) {
+                _.each(accessorList, function (accessor) {
+                    axisRanges = axisRanges.concat(self.model.getRangeFor(accessor));
+                });
+                domain = d3.extent(axisRanges);
+            }
+
+            return domain;
+        },
+
+        getLineY: function(accessor, dataItem, index) {
+            var self = this,
+                axis =  self.getYAxis(accessor);
+            return self.params["y" + axis + "Scale"](dataItem[accessor]);
+        },
+
+
         renderData: function () {
             var self = this;
             var data = self.getData();
-            console.log("Rendering data in (" + self.id + "): ", data, self.params);
-            var line = d3.line()
-                .x(function (d) {
-                    return self.params.xScale(d[self.params.xAccessor]);
-                })
-                .y(function (d) {
-                    return self.params.y1Scale(d[self.params.yAccessor]);
-                });
             var svg = self.svgSelection();
-            var svgLine = svg.select(".lines").selectAll(".line").datum(data);
-            svgLine.attr("d", line);
-            /*
-             var svgLineEnter = svgLine.enter();
-             svgLineEnter.append( "path" )
-             .attr( "class", "line" )
-             .attr( "d", line );
-             var svgLineEdit = svgLine.transition().ease( d3.easeLinear ).duration( self.params.duration );
-             svgLineEdit
-             .attr( "d", line );
-             svgLine.exit().transition().ease( d3.easeLinear ).duration( self.params.duration )
-             .remove();
-             */
+
+            function renderLine(axisLine, data, accessorList) {
+                var lines = [];
+                _.each(accessorList, function (accessor, index) {
+                    // Bars for each accessor will be grouped under a bar-group.
+                    index += 1;
+
+                    var line = d3.line()
+                        .x(function (d) {
+                            return self.params.xScale(d[self.params.xAccessor]);
+                        })
+                        .y(function (d, i) {
+                            return self.getLineY(accessor, d, i);
+                        });
+                    lines.push(line);
+
+                    axisLine.append("g")
+                        .attr("class", "line-group-" + index)
+                        .append("path")
+                        .attr("class", "line")
+                        .attr("stroke", function(d, i) { return self.getLineColor(accessor);});
+
+                    var svgLine = axisLine.select(".line-group-" + index).selectAll(".line").datum(data);
+                    svgLine.attr("d", line);
+
+                });
+            }
+
+            console.log("Rendering data in (" + self.id + "): ", data, self.params);
+            if (self.params._y1Chart === "line") {
+                renderLine(svg.select(".y1-lines"), data, self.params._y1AccessorList);
+            }
+            if (self.params._y2Chart === "line") {
+                renderLine(svg.select(".y2-lines"), data, self.params._y2AccessorList);
+            }
         },
 
         render: function () {
             var self = this;
             _.defer(function () {
                 self.resetParams();
+                self.updateAccessorList();
                 self.calculateDimensions();
                 self.calculateScales();
                 self.renderSVG();

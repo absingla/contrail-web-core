@@ -49,7 +49,7 @@ define([
 
         getBarX: function (accessor, dataItem, i) {
             var self = this,
-                data = self.getData(),
+                data = this.params._renderData || self.getData(),
                 xValue = dataItem[self.params.xAccessor],
                 delimiter = data.length > 1 ? 1 : 0;
 
@@ -60,7 +60,7 @@ define([
                     axisChartCount = self.getChartCount(axisNum);
                 return self.params.xScale(xValue) - barWidth * axisChartCount / (data.length - delimiter) * i + barWidth * chartIndex;
             } else if (self.params.chartType === "STACKED") {
-                return self.params.xScale(xValue) - this.params.chartWidth / (data.length - delimiter) * i;
+                return self.params.xScale(xValue) ;//- this.params.chartWidth / (data.length - delimiter) * i;
             }
 
         },
@@ -71,34 +71,42 @@ define([
             if (self.params.chartType === "GROUPED" || self.params.chartType === "none") {
                 return self.params["y" + axisNum + "Scale"](dataItem[accessor]);
             } else if(self.params.chartType === "STACKED") {
-                //Todo get bar y when stacked
+                var barY = self.params._chartCanvasHeight - self.getBarHeight(accessor, dataItem),
+                    chartIndex = self.params["_y" + axisNum + "AccessorList"].indexOf(accessor),
+                    axisChartCount = self.getChartCount(axisNum);
+
+                for (var j = 0; j < axisChartCount; j ++) {
+                    if (j === chartIndex) {
+                        break;
+                    }
+                    barY -= self.getBarHeight(this.params["_y" + axisNum + "AccessorList"][j], dataItem);
+                }
+                return barY;
             }
         },
 
         getBarGap: function () {
-            var self = this;
-            return self.params.chartWidth / self.getData().length / 20;
+            var self = this,
+                data = this.params._renderData || self.getData();
+            return self.params.chartWidth / data.length / 20;
         },
 
         getBarWidth: function (accessor) {
             var self = this,
-                data = self.getData();
+                data = this.params._renderData || self.getData();
 
-            if (self.params.chartType === "GROUPED") {
+            if (self.params.chartType === "GROUPED" || self.params.chartType === "none") {
                 var axisChartCount = self.getChartCount(self.getYAxis(accessor));
-                return (self.params.chartWidth / data.length - self.getBarGap()) / axisChartCount ;
+                return ((self.params.chartWidth / data.length ) - self.getBarGap()) / axisChartCount ;
             } else {
-                return self.params.chartWidth / data.length - self.getBarGap();
+                return ((self.params.chartWidth / data.length) - self.getBarGap());
             }
         },
 
         getBarHeight: function (accessor, dataItem) {
-            var self = this;
-            if (self.params.chartType === "GROUPED" || self.params.chartType === "none") {
-                return (self.params.chartHeight - self.params.y1Scale(dataItem[accessor]));
-            } else if(self.params.chartType === "STACKED") {
-                //Todo get bar height when stacked
-            }
+            var self = this,
+                axisNum = self.getYAxis(accessor);
+            return (self.params._chartCanvasHeight - self.params["y" + axisNum +"Scale"](dataItem[accessor]));
         },
 
         getBarColor: function(accessor) {
@@ -148,13 +156,14 @@ define([
         calculateDimensions: function () {
             var self = this;
             if (!self.params.chartWidth) {
-                var containerWidth = (self.$el.width() > 0) ? self.$el.width() : 500;
-                if (self.params.marginLeft) {
-                    self.params.chartWidth = containerWidth - self.params.marginLeft;
-                }
-                if (self.params.marginRight) {
-                    self.params.chartWidth -= self.params.marginRight;
-                }
+                self.params.chartWidth = (self.$el.width() > 0) ? self.$el.width() : 500;
+
+                // if (self.params.marginLeft) {
+                //     self.params.chartWidth = containerWidth - self.params.marginLeft;
+                // }
+                // if (self.params.marginRight) {
+                //     self.params.chartWidth -= self.params.marginRight;
+                // }
             }
             if (!self.params.chartHeight) {
                 self.params.chartHeight = Math.round(3 * self.params.chartWidth / 4);
@@ -171,6 +180,9 @@ define([
                     });
                 }
             });
+
+            self.params._chartCanvasWidth = self.params.chartWidth - self.params.marginLeft - self.params.marginRight;
+            self.params._chartCanvasHeight = self.params.chartHeight - self.params.marginTop - self.params.marginBottom;
         },
 
         /**
@@ -179,11 +191,27 @@ define([
          */
         getRangeForAxis: function (accessorList) {
             var self = this,
-                axisRange = [];
-            _.each(accessorList, function (accessor) {
-                axisRange = axisRange.concat(self.model.getRangeFor(accessor));
-            });
-            return d3.extent(axisRange);
+                data = self.getData(),
+                axisRanges = [],
+                domain = [undefined, undefined];
+
+            if (self.params.chartType === "GROUPED" || self.params.chartType === "none") {
+                _.each(accessorList, function (accessor) {
+                    axisRanges = axisRanges.concat(self.model.getRangeFor(accessor));
+                });
+                domain = d3.extent(axisRanges);
+            } else if (self.params.chartType === "STACKED") {
+                domain = [Infinity, - Infinity];
+                _.each(data, function(dataItem) {
+                    var accessorValSum = 0;
+                    _.each(accessorList, function(accessor) {
+                        domain[0] = Math.min(dataItem[accessor], domain[0]);
+                        accessorValSum += dataItem[accessor];
+                        domain[1] = Math.max(accessorValSum, domain[1]);
+                    });
+                });
+            }
+            return domain;
         },
 
         getDomainForAccessor: function(accessor) {
@@ -207,7 +235,7 @@ define([
             var rangeY2 = self.getRangeForAxis(this.params._y2AccessorList);
 
             var xMinpx = self.params.marginLeft;
-            var xMaxpx = self.params.chartWidth - self.params.marginRight;
+            var xMaxpx = self.params.chartWidth - self.params.marginLeft - self.params.marginRight;
             if (!self.params.xScale) {
                 var xDomain = self.getDomainForAccessor(self.params.xAccessor);
                 self.params.xScale = d3.scaleBand().domain(xDomain).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
@@ -217,7 +245,7 @@ define([
             }
 
             var yMaxpx = self.params.marginTop;
-            var yMinpx = self.params.chartHeight - self.params.marginBottom;
+            var yMinpx = self.params.chartHeight - self.params.marginBottom - self.params.marginTop;
             if (!self.params.y1Scale) {
                 self.params.y1Scale = d3.scaleLinear().domain(rangeY1).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
             }
@@ -241,10 +269,10 @@ define([
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.y1Scale.range()[1] ) + ")");
             svg.append("g")
-                .attr("class", "axis y1-axis")
+                .attr("class", "axis y-axis y1-axis")
                 .attr("transform", "translate(" + ( self.params.xScale.range()[0] ) + ",0)");
             svg.append("g")
-                .attr("class", "axis y2-axis")
+                .attr("class", "axis y-axis y2-axis")
                 .attr("transform", "translate(" + ( self.params.xScale.range()[1] ) + ",0)");
             svg.append("g")
                 .attr("class", "y1bars");
@@ -272,28 +300,48 @@ define([
             var y1Axis = d3.axisLeft(self.params.y1Scale)
                 .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
                 .tickPadding(5).ticks(self.params.y1Ticks);
-            var y2Axis = d3.axisLeft(self.params.y2Scale)
+            var y2Axis = d3.axisRight(self.params.y2Scale)
                 .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
                 .tickPadding(5).ticks(self.params.y2Ticks);
             var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
-            svg.select(".axis.x-axis").call(xAxis);
-            svg.select(".axis.y1-axis").call(y1Axis);
-            svg.select(".axis.y2-axis").call(y2Axis);
+
+            if (self.params._enableXAxis === "bar") {
+                svg.select(".axis.x-axis").call(xAxis);
+            }
+            if (self.params._y1Chart === "bar") {
+                var y1TickValues = y1Axis.scale().ticks(y1Axis.ticks()[0]);
+                self.config.set({
+                    y1AxisYCoordinates: y1TickValues.map(function(yVal){ return y1Axis.scale()(yVal);})
+                });
+                svg.select(".axis.y1-axis").call(y1Axis);
+            }
+            if (self.params._y2Chart === "bar") {
+                //Y2 axis ticks position should match Y1 axis.
+                //If Y1 coordinates exist, find the corresponding coordinates on Y2 Axis scale.
+                if (self.params.y1AxisYCoordinates) {
+                    var tickValues = self.params.y1AxisYCoordinates.map(function(d){return y2Axis.scale().invert(d)});
+                    y2Axis.tickValues(tickValues);
+                }
+                svg.select(".axis.y2-axis").call(y2Axis);
+            }
         },
 
         renderData: function () {
             var self = this;
             var data = self.getData();
-            console.log("Rendering data in (" + self.id + "): ", data, self.params);
-            var svg = self.svgSelection();
 
-            var y1BarEnter = svg.select(".y1bars").selectAll(".bar").data(data).enter(),
-                y2BarEnter = svg.select(".y2bars").selectAll(".bar").data(data).enter();
+            this.params._renderData = data;
 
-            function renderBars(barsEnterSelection, accessorList) {
+            function renderBars(axisBar, data, accessorList) {
                 accessorList = self.getAccessorListForRender(accessorList);
-                _.each(accessorList, function (accessor) {
-                    barsEnterSelection.append("rect")
+                _.each(accessorList, function (accessor, index) {
+                    // Bars for each accessor will be grouped under a bar-group.
+                    index += 1;
+                    axisBar.append("g")
+                        .attr("class", "bar-group-" + index);
+                    var barGroupEnter = axisBar.select(".bar-group-" + index)
+                        .selectAll(".bar").data(data).enter();
+                    barGroupEnter.append("rect")
                         .attr("class", "bar")
                         .attr("x", function (d, i) {
                             // console.log("X: " + self.getBarX(accessor, d, i));
@@ -310,10 +358,16 @@ define([
                         .attr("fill", function(d, i) { return self.getBarColor(accessor);});
                 });
             }
-            // Render Y1 bars
-            renderBars(y1BarEnter, self.params._y1AccessorList);
-            // Render Y2 bars
-            renderBars(y2BarEnter, self.params._y2AccessorList);
+            console.log("Rendering data in (" + self.id + "): ", data, self.params);
+            var svg = self.svgSelection();
+            if (self.params._y1Chart === "bar") {
+                // Render Y1 bars
+                renderBars(svg.select(".y1-bars"), data, self.params._y1AccessorList);
+            }
+            if (self.params._y2Chart === "bar") {
+                // Render Y2 bars
+                renderBars(svg.select(".y2-bars"), data, self.params._y2AccessorList);
+            }
         },
 
         render: function () {

@@ -9,11 +9,11 @@ define([
 ], function ($, _, Backbone) {
     var BarChartConfigModel = Backbone.Model.extend({
         defaults: {
-            /// The chart width. If not provided will be caculated by View.
+            /// The chart width. If not provided will be calculated by View.
             chartWidth: undefined,
 
-            /// The chart height. If not provided will be caculated by View.
-            chartHeight: 100,//undefined,
+            /// The chart height. If not provided will be calculated by View.
+            chartHeight: undefined,
 
             /// Duration of chart transitions.
             duration: 100,
@@ -53,12 +53,19 @@ define([
 
             accessorData: {},
 
-            //Default we draw one chart series with y1 axis
-            _y1AccessorList: ["y"],
-            _y2AccessorList: [],
-
             //GROUPED or STACKED chart
             chartType: "none",
+
+            //User is not supposed to update this variable.
+            //In special cases, when chart is rendered part of another chart sharing axis
+            //this will be set in the combination view. For example LineBarChart.
+            _y1Chart: "bar",
+            _y2Chart: "bar",
+            _enableXAxis: "bar",
+
+            //Default we draw one chart series with y1 axis
+            _y1AccessorList: ["y"],
+            _y2AccessorList: []
         }
     });
 

@@ -3,6 +3,7 @@
  */
 
 define([
+    "backbone",
     "contrail-list-model",
     "contrail-view",
     "d3-v4",
@@ -16,7 +17,7 @@ define([
     "core-basedir/js/charts/views/TooltipView",
     "core-basedir/js/charts/models/MessageComponentConfigModel",
     "core-basedir/js/charts/views/MessageView",
-], function (ContrailListModel, ContrailView, d3, DataModel, DataProvider,
+], function (Backbone, ContrailListModel, ContrailView, d3, DataModel, DataProvider,
              LineChartConfigModel, LineChartView,
              BarChartConfigModel, BarChartView,
              TooltipComponentConfigModel, TooltipView,
@@ -38,6 +39,7 @@ define([
             }
 
             self.chartConfig = getChartConfig(selector, viewConfig.chartOptions);
+            self.chartConfigModel = new Backbone.Model(self.chartConfig);
 
             if (self.model !== null) {
 
@@ -103,7 +105,7 @@ define([
 
             //Common Message View. will be used for rendering info messages and error
             var messageView = new MessageView({
-                config: new MessageComponentConfigModel(this.chartConfig.message),
+                config: self.chartConfigModel.get("message"),
                 id: "messageView",
                 container: $(selector).find(".coCharts-main-container")
             });
@@ -127,7 +129,7 @@ define([
 
             var lineChartView = new LineChartView({
                 model: lineChartDataProvider,
-                config: new LineChartConfigModel(self.chartConfig.mainChart),
+                config: self.chartConfigModel.get("mainChart"),
                 messageEvent: messageView.eventObject,
                 el: $(selector).find(".coCharts-main-container"),
                 id: self.chartConfig.chartId
@@ -149,7 +151,7 @@ define([
 
             var barChartView = new BarChartView({
                 model: barChartDataProvider,
-                config: new BarChartConfigModel(self.chartConfig.mainChart),
+                config: self.chartConfigModel.get("mainChart"),
                 messageEvent: messageView.eventObject,
                 el: $(selector).find(".coCharts-main-container"),
                 id: self.chartConfig.chartId
@@ -206,7 +208,9 @@ define([
                 xScale: d3.scaleTime(),
                 forceX: [undefined, undefined],
                 forceY: [undefined, undefined],
-                accessorData: {}
+                accessorData: {},
+                y1Chart: "bar", //Default we will render bar on Y1
+                y2Chart: "line", //Line on Y2
             },
             message: {
                 noDataMessage: "No Data Found",
@@ -216,6 +220,30 @@ define([
         };
 
         var chartConfig = $.extend(true, {}, defaultLineBarConfig, chartOptions);
+
+        chartConfig.mainChart._y1Chart = chartConfig.mainChart.y1Chart;
+        chartConfig.mainChart._y2Chart = chartConfig.mainChart.y2Chart;
+
+        //X axis will be rendered from the chart on Y1 axis.
+        chartConfig.mainChart._enableXAxis = chartConfig.mainChart.y1Chart;
+
+        //Main chart canvas has 2 charts. combining both models in to single attr.
+        var lineChartConfigModel, barChartConfigModel, mainChartConfigModel;
+        if (chartConfig.mainChart.y1Chart === "line" || chartConfig.mainChart.y2Chart === "line") {
+            lineChartConfigModel = new LineChartConfigModel(chartConfig.mainChart);
+            mainChartConfigModel = lineChartConfigModel;
+        }
+        if (chartConfig.mainChart.y1Chart === "bar" || chartConfig.mainChart.y2Chart === "bar") {
+            barChartConfigModel = new BarChartConfigModel(chartConfig.mainChart);
+            if (mainChartConfigModel instanceof Backbone.Model) {
+                mainChartConfigModel.set(barChartConfigModel.attributes);
+            } else {
+                mainChartConfigModel = barChartConfigModel;
+            }
+        }
+        chartConfig.mainChart = mainChartConfigModel;
+
+        chartConfig.message = new MessageComponentConfigModel(chartConfig.message);
 
         return chartConfig;
     }
@@ -232,19 +260,19 @@ define([
             .attr("class", "axis x-axis")
             .attr("transform", "translate(0," + ( self.params.y1Scale.range()[1] ) + ")");
         svg.append("g")
-            .attr("class", "axis y1-axis")
+            .attr("class", "axis y-axis y1-axis")
             .attr("transform", "translate(" + ( self.params.xScale.range()[0] ) + ",0)");
         svg.append("g")
-            .attr("class", "axis y2-axis")
+            .attr("class", "axis y-axis y2-axis")
             .attr("transform", "translate(" + ( self.params.xScale.range()[1] ) + ",0)");
         svg.append("g")
-            .attr("class", "y1bars");
+            .attr("class", "bars y1-bars");
         svg.append("g")
-            .attr("class", "y2bars");
+            .attr("class", "bars y2-bars");
         svg.append("g")
-            .attr("class", "lines")
-            .append("path")
-            .attr("class", "line");
+            .attr("class", "lines y1-lines");
+        svg.append("g")
+            .attr("class", "lines y2-lines");
 
         self.svgSelection()
             .attr("width", self.params.chartWidth)
