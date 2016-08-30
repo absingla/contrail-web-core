@@ -5,8 +5,9 @@
 define([
     "jquery",
     "underscore",
-    "backbone"
-], function ($, _, Backbone) {
+    "backbone",
+    "d3-v4"
+], function ($, _, Backbone, d3) {
     var BarChartConfigModel = Backbone.Model.extend({
         defaults: {
             /// The chart width. If not provided will be calculated by View.
@@ -19,8 +20,8 @@ define([
             duration: 100,
 
             xTicks: 10,
-            y1Ticks: 10,
-            y2Ticks: 10,
+            y1Ticks: 5,
+            y2Ticks: 5,
 
             /// General margin used for computing the side margins.
             margin: 5,
@@ -50,6 +51,10 @@ define([
 
             // Variable names to use
             xAccessor: "x",
+
+            xFormatter: d3.timeFormat("%H:%M"),
+            y1Formatter: d3.format(".01f"),
+            y2Formatter: d3.format(".01f"),
 
             accessorData: {},
 

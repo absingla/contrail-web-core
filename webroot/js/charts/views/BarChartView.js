@@ -157,13 +157,6 @@ define([
             var self = this;
             if (!self.params.chartWidth) {
                 self.params.chartWidth = (self.$el.width() > 0) ? self.$el.width() : 500;
-
-                // if (self.params.marginLeft) {
-                //     self.params.chartWidth = containerWidth - self.params.marginLeft;
-                // }
-                // if (self.params.marginRight) {
-                //     self.params.chartWidth -= self.params.marginRight;
-                // }
             }
             if (!self.params.chartHeight) {
                 self.params.chartHeight = Math.round(3 * self.params.chartWidth / 4);
@@ -231,11 +224,9 @@ define([
          */
         calculateScales: function () {
             var self = this;
-            var rangeY1 = self.getRangeForAxis(this.params._y1AccessorList);
-            var rangeY2 = self.getRangeForAxis(this.params._y2AccessorList);
 
             var xMinpx = self.params.marginLeft;
-            var xMaxpx = self.params.chartWidth - self.params.marginLeft - self.params.marginRight;
+            var xMaxpx = self.params._chartCanvasWidth;
             if (!self.params.xScale) {
                 var xDomain = self.getDomainForAccessor(self.params.xAccessor);
                 self.params.xScale = d3.scaleBand().domain(xDomain).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
@@ -244,8 +235,26 @@ define([
                 self.params.xScale.domain(rangeX).range([xMinpx, xMaxpx]);
             }
 
+            var rangeY1 = self.getRangeForAxis(this.params._y1AccessorList);
+            var rangeY2 = self.getRangeForAxis(this.params._y2AccessorList);
+
+            if (self.params.forceY1) {
+                if (!_.isUndefined(self.params.forceY1[0]))
+                    rangeY1[0] = self.params.forceY1[0];
+                //For stacked bar charts, we can not force the max.
+                if (!_.isUndefined(self.params.forceY1[1]) && self.params.chartType !== "stacked")
+                    rangeY1[1] = self.params.forceY1[1];
+            }
+
+            if (self.params.forceY2) {
+                if (!_.isUndefined(self.params.forceY2[0]))
+                    rangeY2[0] = self.params.forceY2[0];
+                if (!_.isUndefined(self.params.forceY2[1]) && self.params.chartType !== "stacked")
+                    rangeY2[1] = self.params.forceY2[1];
+            }
+
             var yMaxpx = self.params.marginTop;
-            var yMinpx = self.params.chartHeight - self.params.marginBottom - self.params.marginTop;
+            var yMinpx = self.params._chartCanvasHeight;
             if (!self.params.y1Scale) {
                 self.params.y1Scale = d3.scaleLinear().domain(rangeY1).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
             }
@@ -296,13 +305,19 @@ define([
             var self = this;
             var xAxis = d3.axisBottom(self.params.xScale)
                 .tickSizeInner(self.params.y1Scale.range()[0] - self.params.y1Scale.range()[1])
-                .tickPadding(5).ticks(self.params.xTicks);
+                .tickPadding(5).ticks(self.params.xTicks)
+                .tickFormat(self.params.xFormatter);
+
             var y1Axis = d3.axisLeft(self.params.y1Scale)
                 .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y1Ticks);
+                .tickPadding(5).ticks(self.params.y1Ticks)
+                .tickFormat(self.params.y1Formatter);
+
             var y2Axis = d3.axisRight(self.params.y2Scale)
                 .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y2Ticks);
+                .tickPadding(5).ticks(self.params.y2Ticks)
+                .tickFormat(self.params.y2Formatter);
+
             var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
 
             if (self.params._enableXAxis === "bar") {

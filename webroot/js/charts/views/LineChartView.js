@@ -90,6 +90,22 @@ define([
             if (!self.params.y2Scale) {
                 self.params.y2Scale = d3.scaleLinear();
             }
+
+            if (self.params.forceY1) {
+                if (!_.isUndefined(self.params.forceY1[0]))
+                    rangeY1[0] = self.params.forceY1[0];
+                //For stacked bar charts, we can not force the max.
+                if (!_.isUndefined(self.params.forceY1[1]))
+                    rangeY1[1] = self.params.forceY1[1];
+            }
+
+            if (self.params.forceY2) {
+                if (!_.isUndefined(self.params.forceY2[0]))
+                    rangeY2[0] = self.params.forceY2[0];
+                if (!_.isUndefined(self.params.forceY2[1]))
+                    rangeY2[1] = self.params.forceY2[1];
+            }
+
             var yMaxpx = self.params.marginTop;
             var yMinpx = self.params.chartHeight - self.params.marginBottom - self.params.marginTop;
             self.params.y1Scale.domain(rangeY1).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
@@ -137,14 +153,18 @@ define([
             var self = this;
             var xAxis = d3.axisBottom(self.params.xScale)
                 .tickSizeInner(self.params.y1Scale.range()[0] - self.params.y1Scale.range()[1])
-                .tickPadding(5).ticks(self.params.xTicks);
-            var y1Axis = d3.axisLeft(self.params.y1Scale);
-            var y2Axis = d3.axisRight(self.params.y2Scale);
+                .tickPadding(5).ticks(self.params.xTicks)
+                .tickFormat(self.params.xFormatter);
 
-            y1Axis.tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y1Ticks);
-            y2Axis.tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y2Ticks);
+            var y1Axis = d3.axisLeft(self.params.y1Scale)
+                .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
+                .tickPadding(5).ticks(self.params.y1Ticks)
+                .tickFormat(self.params.y1Formatter);
+
+            var y2Axis = d3.axisRight(self.params.y2Scale)
+                .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
+                .tickPadding(5).ticks(self.params.y2Ticks)
+                .tickFormat(self.params.y2Formatter);
 
             var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
 
