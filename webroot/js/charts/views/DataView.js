@@ -28,6 +28,25 @@ define(["jquery", "underscore", "backbone", "d3-v4"],
                 }
                 this.params = _.extend(this.params, this.config.toJSON());
                 //this.params = this.config.toJSON();
+            },
+
+            getTooltipConfig: function(dataItem) {
+                var self = this,
+                    formattedData = {};
+                _.each(dataItem, function(value, key) {
+                    if (_.has(self.params.accessorData[key], "tooltip")) {
+                        var formattedKey = key,
+                            formattedVal = value;
+                        if (_.has(self.params.accessorData[key].tooltip, "nameFormatter"))
+                            formattedKey = self.params.accessorData[key].tooltip.nameFormatter(key);
+                        if (_.has(self.params.accessorData[key].tooltip, "valueFormatter"))
+                            formattedVal = self.params.accessorData[key].tooltip.valueFormatter(value);
+                        formattedData[formattedKey] = formattedVal;
+                    }
+                });
+                var tooltipConfig = self.params.tooltipConfigFn(formattedData);
+
+                return tooltipConfig;
             }
         });
 

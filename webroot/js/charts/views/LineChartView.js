@@ -242,6 +242,15 @@ define([
             return self.params["y" + axis + "Scale"](dataItem[accessor]);
         },
 
+        getTooltipData: function(data, xPos) {
+            var self = this,
+                xBisector = d3.bisector(function(d) {return d[self.params.xAccessor];}).left,
+                xVal = self.params.xScale.invert(xPos),
+                index = xBisector(data, xVal, 1);
+
+            var dataItem = xVal - data[index - 1][self.params.xAccessor] > data[index][self.params.xAccessor] - xVal ? data[index] : data[index - 1];
+            return dataItem;
+        },
 
         renderData: function () {
             var self = this;
@@ -267,7 +276,20 @@ define([
                         .attr("class", "line-group-" + index)
                         .append("path")
                         .attr("class", "line")
-                        .attr("stroke", function(d, i) { return self.getLineColor(accessor);});
+                        .attr("stroke", function(d, i) { return self.getLineColor(accessor);})
+                        .on("mouseover", function( data ) {
+                            var pos = d3.mouse(this);//$(this).offset();
+                            var offset = $(this).offset();
+                            var dataItem = self.getTooltipData(data, pos[0]);
+                            var tooltipConfig = self.getTooltipConfig(dataItem);
+                            self.eventObject.trigger("mouseover", dataItem, tooltipConfig, offset.left + pos[0], offset.top);
+                            d3.select(this).classed("active", true);
+                        })
+                        .on("mouseout", function( d ) {
+                            var pos = $(this).offset();
+                            self.eventObject.trigger("mouseout", d, pos.left, pos.top);
+                            d3.select(this).classed("active", false);
+                        });
 
                     var svgLine = axisLine.select(".line-group-" + index).selectAll(".line").datum(data);
                     svgLine.attr("d", line);

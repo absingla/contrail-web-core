@@ -169,6 +169,7 @@ define([
             var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
             var tooltipView = new TooltipView({config: tooltipConfig});
             tooltipView.registerTriggerEvent(barChartView.eventObject, "mouseover", "mouseout");
+            tooltipView.registerTriggerEvent(lineChartView.eventObject, "mouseover", "mouseout");
         }
     });
 

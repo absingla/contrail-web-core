@@ -370,7 +370,18 @@ define([
                         .attr("height", function (d, i) {
                             // console.log("height: " + self.getBarHeight(accessor, d, i));
                             return self.getBarHeight(accessor, d, i);})
-                        .attr("fill", function(d, i) { return self.getBarColor(accessor);});
+                        .attr("fill", function(d, i) { return self.getBarColor(accessor);})
+                        .on("mouseover", function( d ) {
+                            var pos = $(this).offset();
+                            var tooltipConfig = self.getTooltipConfig(d);
+                            self.eventObject.trigger("mouseover", d, tooltipConfig, pos.left, pos.top);
+                            d3.select(this).classed("active", true);
+                        })
+                        .on("mouseout", function( d ) {
+                            var pos = $(this).offset();
+                            self.eventObject.trigger("mouseout", d, pos.left, pos.top);
+                            d3.select(this).classed("active", false);
+                        });
                 });
             }
             console.log("Rendering data in (" + self.id + "): ", data, self.params);

@@ -58,6 +58,19 @@ define([
             y1Formatter: d3.format(".01f"),
             y2Formatter: d3.format(".01f"),
 
+            //Tooltip content & config specific callback
+            tooltipConfigFn: function(data) {
+                var tooltipConfig = {
+                    title: {name: data.name || "Title", type: data.type || ""},
+                    content: {iconClass: false, info: []},
+                    dimension: {width: 250}
+                };
+                _.each(data, function(value, key) {
+                    tooltipConfig.content.info.push({label: key, value: value});
+                });
+                return tooltipConfig;
+            },
+
             //User is not supposed to update this variable.
             //In special cases, when chart is rendered part of another chart sharing axis
             //this will be set in the combination view. For example LineBarChart.

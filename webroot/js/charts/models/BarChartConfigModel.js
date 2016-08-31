@@ -56,6 +56,19 @@ define([
             y1Formatter: d3.format(".01f"),
             y2Formatter: d3.format(".01f"),
 
+            //Tooltip content & config specific callback
+            tooltipConfigFn: function(data) {
+                var tooltipConfig = {
+                    title: {name: data.name || "Title", type: data.type || ""},
+                    content: {iconClass: false, info: []},
+                    dimension: {width: 250}
+                };
+                _.each(data, function(value, key) {
+                    tooltipConfig.content.info.push({label: key, value: value});
+                });
+                return tooltipConfig;
+            },
+
             accessorData: {},
 
             //GROUPED or STACKED chart
