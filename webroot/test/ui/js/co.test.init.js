@@ -16,7 +16,7 @@ var depArray = [
     'jquery', 'underscore', 'validation', 'core-constants', 'core-utils',
     'core-formatters', 'core-messages', 'core-views-default-config', 'core-labels', 'knockout', 'core-cache',
 
-    'text!/base/contrail-web-core/webroot/templates/core.common.tmpl',
+    'text!/base/contrail-web-core/webroot/common/ui/templates/core.common.tmpl',
 
     'core-basedir/js/common/qe.utils',
     'core-basedir/js/common/qe.model.config',
@@ -258,7 +258,7 @@ function testAppInit(testAppConfig) {
             }
         }
         requirejs(['text!menu.xml',
-            'text!/base/contrail-web-core/webroot/templates/core.common.tmpl',
+            'text!/base/contrail-web-core/webroot/common/ui/templates/core.common.tmpl',
             'co-test-utils',
             'co-test-constants',
             'co-test-messages',
@@ -300,7 +300,12 @@ function testAppInit(testAppConfig) {
             globalObj['webServerInfo'] = JSON.parse(testAppConfig.webServerInfo);
             webServerInfoDefObj.resolve();
 
-            loadFeatureApps(globalObj['webServerInfo']['featurePkg']);
+            /*
+                Adding timeout to simulate the loading core.common.tmpl before loading the feature
+             */
+            setTimeout(function(){
+                loadFeatureApps(globalObj['webServerInfo']['featurePkg']);
+            }, 1000);
 
             require(['chart-libs'],function() {});
             require(['jquery-dep-libs'],function() {});
