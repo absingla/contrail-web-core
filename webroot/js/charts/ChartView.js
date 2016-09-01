@@ -17,13 +17,16 @@ define([
     "core-basedir/js/charts/views/TooltipView",
     "core-basedir/js/charts/models/MessageComponentConfigModel",
     "core-basedir/js/charts/views/MessageView",
+    "core-basedir/js/charts/views/ControlPanelView",
+    "core-basedir/js/charts/models/ControlPanelConfigModel",
 ], function (Backbone, ContrailListModel, ContrailView, d3, DataModel, DataProvider,
              LineChartConfigModel, LineChartView,
              BarChartConfigModel, BarChartView,
              TooltipComponentConfigModel, TooltipView,
-             MessageComponentConfigModel, MessageView) {
-
-    var LineBarChartView = ContrailView.extend({
+             MessageComponentConfigModel, MessageView,
+             ControlPanelView, ControlPanelConfigModel
+) {
+    var ChartView = ContrailView.extend({
         render: function () {
             var self = this,
                 viewConfig = self.attributes.viewConfig,
@@ -94,6 +97,22 @@ define([
 
         applyStaticData: {},
 
+        registerConfigChangeEvent: function(eventObject) {
+            var self = this;
+            self.listenTo(eventObject, "change", self.updateChartConfigModel);
+        },
+
+        updateChartConfigModel: function(updatedData) {
+            self.chartConfigModel.set({mainChart:{accessorData: updatedData}});
+        },
+
+        isChartEnabled: function(chartModel, chartType) {
+            var self = this,
+                chartConfigModel = chartModel || self.chartConfigModel.get("mainChart");
+
+            return (chartConfigModel.get("y1Chart") === chartType || chartConfigModel.get("y2Chart") === chartType) ? true : false;
+        },
+
         renderChart: function (selector) {
             var self = this,
                 chartTemplate = contrail.getTemplate4Id("coCharts-chart-template");
@@ -113,63 +132,89 @@ define([
             //One of the way to bind to message events of already created model 
             messageView.registerModelDataStatusEvents(self.chartDataModel);
 
-            var lineChartDataProvider = new DataProvider({
-                parentDataModel: self.chartDataModel,
-                messageEvent: messageView.eventObject,
-                formatData: function(data) {
-                    var lineChartData = []
-                    _.each(data, function(dataItem) {
-                        if (!dataItem.bar) {
-                            lineChartData = lineChartData.concat(dataItem.values);
-                        }
-                    });
-                    return lineChartData;
-                }
-            });
-
-            var lineChartView = new LineChartView({
-                model: lineChartDataProvider,
-                config: self.chartConfigModel.get("mainChart"),
-                messageEvent: messageView.eventObject,
-                el: $(selector).find(".coCharts-main-container"),
-                id: self.chartConfig.chartId
-            });
-
-            var barChartDataProvider = new DataProvider({
-                parentDataModel: self.chartDataModel,
-                messageEvent: messageView.eventObject,
-                formatData: function(data) {
-                    var barChartData = [];
-                    _.each(data, function(dataItem) {
-                        if (dataItem.bar) {
-                            barChartData = barChartData.concat(dataItem.values);
-                        }
-                    });
-                    return barChartData;
-                }
-            });
-
-            var barChartView = new BarChartView({
-                model: barChartDataProvider,
-                config: self.chartConfigModel.get("mainChart"),
-                messageEvent: messageView.eventObject,
-                el: $(selector).find(".coCharts-main-container"),
-                id: self.chartConfig.chartId
-            });
-
-            //Override both charts renderSVG for line bar chart svg elements.
-            barChartView.renderSVG = lineBarChartSVG;
-            lineChartView.renderSVG = lineBarChartSVG;
-
-            //We will render the charts on same element
-            barChartView.render();
-            lineChartView.render();
-
             // TooltipView
             var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
             var tooltipView = new TooltipView({config: tooltipConfig});
-            tooltipView.registerTriggerEvent(barChartView.eventObject, "mouseover", "mouseout");
-            tooltipView.registerTriggerEvent(lineChartView.eventObject, "mouseover", "mouseout");
+
+            // Create individual chart components
+            self.chartComponents = [];
+
+            if(self.isChartEnabled(self.chartConfigModel.get("mainChart"), "line")) {
+                var lineChartDataProvider = new DataProvider({
+                    parentDataModel: self.chartDataModel,
+                    messageEvent: messageView.eventObject,
+                    formatData: function(data) {
+                        var lineChartData = []
+                        _.each(data, function(dataItem) {
+                            if (!dataItem.bar) {
+                                lineChartData = lineChartData.concat(dataItem.values);
+                            }
+                        });
+                        return lineChartData;
+                    }
+                });
+
+                var lineChartView = new LineChartView({
+                    model: lineChartDataProvider,
+                    config: self.chartConfigModel.get("mainChart"),
+                    messageEvent: messageView.eventObject,
+                    el: $(selector).find(".coCharts-main-container"),
+                    id: self.chartConfig.chartId
+                });
+
+                tooltipView.registerTriggerEvent(lineChartView.eventObject, "mouseover", "mouseout");
+                self.chartComponents.push(lineChartView);
+            }
+
+            if (self.isChartEnabled(self.chartConfigModel.get("mainChart"), "bar")) {
+                var barChartDataProvider = new DataProvider({
+                    parentDataModel: self.chartDataModel,
+                    messageEvent: messageView.eventObject,
+                    formatData: function(data) {
+                        var barChartData = [];
+                        _.each(data, function(dataItem) {
+                            if (dataItem.bar) {
+                                barChartData = barChartData.concat(dataItem.values);
+                            }
+                        });
+                        return barChartData;
+                    }
+                });
+
+                var barChartView = new BarChartView({
+                    model: barChartDataProvider,
+                    config: self.chartConfigModel.get("mainChart"),
+                    messageEvent: messageView.eventObject,
+                    el: $(selector).find(".coCharts-main-container"),
+                    id: self.chartConfig.chartId
+                });
+
+                //register tooltip event
+                tooltipView.registerTriggerEvent(barChartView.eventObject, "mouseover", "mouseout");
+                self.chartComponents.push(barChartView);
+            }
+
+            if (self.chartComponents.length !== 0) {
+                self._renderChartComponents();
+            }
+
+            //ControlPanel
+            // var controlPanelConfigModel = new ControlPanelConfigModel(self.chartConfigModel.get("mainChart"));
+            // var controlPanelView = new ControlPanelView({
+            //     config: self.chartConfigModel.get("mainChart"),
+            //     el: $(selector).find(".coCharts-control-panel-container")
+            // });
+            // controlPanelView.render();
+            // self.registerConfigChangeEvent(controlPanelView.eventObject);
+
+        },
+
+        _renderChartComponents: function() {
+            var self = this;
+            _.each(self.chartComponents, function(component) {
+                component.renderSVG = mainChartSVG;
+                component.render();
+            });
         }
     });
 
@@ -192,7 +237,17 @@ define([
                 accessorData: {}
             },
             controlPanel: {
-                enable: false
+                enable: false,
+                top: false,
+                right: {
+                    custom: {
+                        filterY: {
+                            enable: true
+                        }
+                    },
+                    expandedContainerWidth: 350,
+                    expandedContainerHeight: 280
+                }
             },
             mainChart: {
                 chartHeight: 270,
@@ -210,8 +265,8 @@ define([
                 forceX: [undefined, undefined],
                 forceY: [undefined, undefined],
                 accessorData: {},
-                y1Chart: "bar", //Default we will render bar on Y1
-                y2Chart: "line", //Line on Y2
+                y1Chart: "none",
+                y2Chart: "none",
             },
             message: {
                 noDataMessage: "No Data Found",
@@ -242,6 +297,8 @@ define([
                 mainChartConfigModel = barChartConfigModel;
             }
         }
+        //Todo: Add Zoom scatter model
+
         chartConfig.mainChart = mainChartConfigModel;
 
         chartConfig.message = new MessageComponentConfigModel(chartConfig.message);
@@ -249,7 +306,7 @@ define([
         return chartConfig;
     }
 
-    function lineBarChartSVG() {
+    function mainChartSVG() {
         var self = this;
         var svgs = d3.select(self.$el.get(0)).selectAll("svg").data([self.id]);
         var svg = svgs.enter().append("svg")
@@ -280,5 +337,5 @@ define([
             .attr("height", self.params.chartHeight);
     }
 
-    return LineBarChartView;
+    return ChartView;
 });
