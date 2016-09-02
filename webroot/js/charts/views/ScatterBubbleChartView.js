@@ -57,8 +57,7 @@ define([
         },
 
         /**
-        * Create the _y1AccessorList and _y2AccessorList arrays containing the variable names used to display values on
-        * the y1 and y2 axis.
+        * Create the usabelAccessorData that holds only the verified and enabled accessors from the accessorData structure.
         */
         updateAccessorList: function () {
             var self = this;
@@ -106,7 +105,7 @@ define([
             self.params.yMaxpx = self.params.rMaxpx + self.params.marginTop;
             self.params.xMinpx = self.params.rMaxpx + self.params.marginLeft;
             self.params.xMaxpx = self.params.chartWidth - self.params.rMaxpx - self.params.marginRight;
-            if (!self.params.xScale) {
+            if( !self.params.xScale ) {
                 self.params.xScale = d3.scaleLinear().domain( rangeX ).range([self.params.xMinpx, self.params.xMaxpx]);//.nice( self.params.xTicks );
             }
             // Create the scales for every Y range and for every R range.
@@ -125,7 +124,7 @@ define([
 
         /**
          * Renders an empty chart.
-         * Changes chart dimensions if it already exists.
+         * Resizes chart dimensions if chart already exists.
          */
         renderSVG: function () {
             var self = this;
@@ -163,7 +162,7 @@ define([
             var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.yMinpx - self.params.yMaxpx + 2 * self.params.rMaxpx).tickPadding(5).ticks(self.params.xTicks);
             var y1Axis = d3.axisLeft(self.params.y1Scale).tickSize(-(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.rMaxpx)).tickPadding(5).ticks(self.params.yTicks);
             var y2Axis = d3.axisRight(self.params.y2Scale).tickSize(-(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.rMaxpx)).tickPadding(5).ticks(self.params.yTicks);
-            var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
+            var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
             svg.select(".axis.x-axis").call( xAxis );
             if( self.params.y1Scale ) {
                 svg.select(".axis.y1-axis").call( y1Axis );

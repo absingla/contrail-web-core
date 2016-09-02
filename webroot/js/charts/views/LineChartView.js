@@ -27,19 +27,6 @@ define([
             this.eventObject = _.extend({}, Backbone.Events);
         },
 
-        updateAccessorList: function () {
-            var self = this;
-            self.params._y1AccessorList = [];
-            self.params._y2AccessorList = [];
-            _.each(this.params.accessorData, function (accessor, key) {
-                if (accessor.y === 1) {
-                    self.params._y1AccessorList.push(key);
-                } else if (accessor.y === 2) {
-                    self.params._y2AccessorList.push(key);
-                }
-            });
-        },
-
         /**
          * Calculates the chart dimensions and margins.
          * Use the dimensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
@@ -68,29 +55,63 @@ define([
         },
 
         /**
+        * Create the usabelAccessorData that holds only the verified and enabled accessors from the accessorData structure.
+        */
+        updateAccessorList: function () {
+            var self = this;
+            data = self.getData();
+            self.params.usableAccessorData = {};
+            _.each( self.params.accessorData, function ( accessor, key ) {
+                if( accessor.enable && _.has( data[0], key ) ) {
+                    if( (accessor.y == 1 || accessor.y == 2) ) {
+                        self.params.usableAccessorData[key] = accessor;
+                    }
+                }
+            });
+        },
+
+        /**
          * Use the scales provided in the config or calculate them to fit data in view.
          * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
          */
         calculateScales: function () {
             var self = this;
             var rangeX = self.model.getRangeFor(this.params.xAccessor);
-            var rangeY1 = self.getRangeForAxis(this.params._y1AccessorList);
-            var rangeY2 = self.getRangeForAxis(this.params._y2AccessorList);
+            var ranges = {};
+            // Get the maximum extents (ranges) for all axis.
+            // We can have multiple variables displayed on one Y axis so we need to calculate the maximum extent (range) for every variable
+            // displayed on the Y1 and Y2 axis.
+            _.each( self.params.usableAccessorData, function( accessor, key ) {
+                var range = self.model.getRangeFor( key );
+                var axisName = "y" + accessor.y;
+                if( !ranges[axisName] ) {
+                    // A range for this axis was not computed yet.
+                    ranges[axisName] = range;
+                }
+                else {
+                    // A range for this axis was computed before, check if the new range extends the current one.
+                    if( range[0] < ranges[axisName][0] ) {
+                        ranges[axisName][0] = range[0];
+                    }
+                    if( range[1] > ranges[axisName][1] ) {
+                        ranges[axisName][1] = range[1];
+                    }
+                }
+            });
+            // Now:
+            // ranges.y1 holds the maximum range for all variables displayed on the Y1 axis
+            // ranges.y2 holds the maximum range for all variables displayed on the Y2 axis
 
-            if (!self.params.xScale) {
-                self.params.xScale = d3.scaleLinear();
-            }
-            var xMinpx = self.params.marginLeft;
-            var xMaxpx = self.params.chartWidth - self.params.marginLeft - self.params.marginRight;
-            self.params.xScale.domain(rangeX).range([xMinpx, xMaxpx]);//.nice( self.params.xTicks );
-
-            if (!self.params.y1Scale) {
-                self.params.y1Scale = d3.scaleLinear();
-            }
-            if (!self.params.y2Scale) {
-                self.params.y2Scale = d3.scaleLinear();
+            self.params.yMinpx = self.params.chartHeight - self.params.marginBottom;
+            self.params.yMaxpx = self.params.marginTop;
+            self.params.xMinpx = self.params.marginLeft;
+            self.params.xMaxpx = self.params.chartWidth - self.params.marginRight;
+            if( !self.params.xScale ) {
+                self.params.xScale = d3.scaleLinear().domain( rangeX ).range([self.params.xMinpx, self.params.xMaxpx]);//.nice( self.params.xTicks );
             }
 
+            // TODO: handle stacked line charts.
+            /*
             if (self.params.forceY1) {
                 if (!_.isUndefined(self.params.forceY1[0]))
                     rangeY1[0] = self.params.forceY1[0];
@@ -98,23 +119,26 @@ define([
                 if (!_.isUndefined(self.params.forceY1[1]))
                     rangeY1[1] = self.params.forceY1[1];
             }
-
             if (self.params.forceY2) {
                 if (!_.isUndefined(self.params.forceY2[0]))
                     rangeY2[0] = self.params.forceY2[0];
                 if (!_.isUndefined(self.params.forceY2[1]))
                     rangeY2[1] = self.params.forceY2[1];
             }
+            */
 
-            var yMaxpx = self.params.marginTop;
-            var yMinpx = self.params.chartHeight - self.params.marginBottom - self.params.marginTop;
-            self.params.y1Scale.domain(rangeY1).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
-            self.params.y2Scale.domain(rangeY2).range([yMinpx, yMaxpx]);
+            // Create the scales for every Y range. ie y1Scale and y2Scale.
+            _.each( ranges, function( range, key ) {
+                var scaleName = key + "Scale";
+                if( !self.params[scaleName] ) {
+                    self.params[scaleName] = d3.scaleLinear().domain( range ).range( [self.params.yMinpx, self.params.yMaxpx] );
+                }
+            });
         },
 
         /**
          * Renders an empty chart.
-         * Changes chart dimensions if it already exists.
+         * Resizes chart dimensions if chart already exists.
          */
         renderSVG: function () {
             var self = this;
@@ -124,13 +148,13 @@ define([
             });
             svg.append("g")
                 .attr("class", "axis x-axis")
-                .attr("transform", "translate(0," + ( self.params.y1Scale.range()[1] ) + ")");
+                .attr("transform", "translate(0," + ( self.params.yMaxpx ) + ")");
             svg.append("g")
                 .attr("class", "axis y-axis y1-axis")
-                .attr("transform", "translate(" + ( self.params.xScale.range()[0] ) + ",0)");
+                .attr("transform", "translate(" + ( self.params.xMinpx ) + ",0)");
             svg.append("g")
                 .attr("class", "axis y-axis y2-axis")
-                .attr("transform", "translate(" + ( self.params.xScale.range()[1] ) + ",0)");
+                .attr("transform", "translate(" + ( self.params.xMaxpx ) + ",0)");
             svg.append("g")
                 .attr("class", "lines y1-lines");
             svg.append("g")
@@ -152,21 +176,21 @@ define([
         renderAxis: function () {
             var self = this;
             var xAxis = d3.axisBottom(self.params.xScale)
-                .tickSizeInner(self.params.y1Scale.range()[0] - self.params.y1Scale.range()[1])
-                .tickPadding(5).ticks(self.params.xTicks)
-                .tickFormat(self.params.xFormatter);
+                .tickSizeInner( self.params.yMinpx - self.params.yMaxpx )
+                .tickPadding( 5 ).ticks( self.params.xTicks )
+                .tickFormat( self.params.xFormatter );
 
             var y1Axis = d3.axisLeft(self.params.y1Scale)
-                .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y1Ticks)
-                .tickFormat(self.params.y1Formatter);
+                .tickSize( -(self.params.xMaxpx - self.params.xMinpx) )
+                .tickPadding( 5 ).ticks( self.params.y1Ticks )
+                .tickFormat( self.params.y1Formatter );
 
             var y2Axis = d3.axisRight(self.params.y2Scale)
-                .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y2Ticks)
-                .tickFormat(self.params.y2Formatter);
+                .tickSize( -(self.params.xMaxpx - self.params.xMinpx) )
+                .tickPadding( 5 ).ticks( self.params.y2Ticks )
+                .tickFormat( self.params.y2Formatter );
 
-            var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
+            var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
 
             if (self.params._enableXAxis === "line") {
                 svg.select(".axis.x-axis").call(xAxis);
