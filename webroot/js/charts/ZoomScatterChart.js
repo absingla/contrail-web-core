@@ -200,6 +200,8 @@ define([
             navigation: {
                 enable: false,
                 xAccessor: "x",
+                marginLeft: 50,
+                marginRight: 50,
                 accessorData: {}
             },
             controlPanel: {
@@ -220,7 +222,7 @@ define([
                 yLabelFormat: d3.format(","),
                 xLabelFormat: d3.format(","),
                 xAccessor: "x",
-                sizeAccessor: "size",
+                //sizeAccessor: "size",
                 forceX: [undefined, undefined],
                 forceY: [undefined, undefined],
                 accessorData: {}

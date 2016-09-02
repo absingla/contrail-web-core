@@ -84,6 +84,13 @@ define([
             //Default we draw one chart series with y1 axis
             _y1AccessorList: ["y"],
             _y2AccessorList: []
+        },
+
+        initialize: function( options ) {
+            if( !this._computed ) {
+                this._computed = {};
+            }
+            this._computed = _.extend( this._computed, this.toJSON() );
         }
     });
 

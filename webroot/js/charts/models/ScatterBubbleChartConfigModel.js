@@ -47,6 +47,13 @@ define([
 
             // Variable names to use
             xAccessor: "x"
+        },
+
+        initialize: function( options ) {
+            if( !this._computed ) {
+                this._computed = {};
+            }
+            this._computed = _.extend( this._computed, this.toJSON() );
         }
     });
 

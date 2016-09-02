@@ -11,7 +11,7 @@ define([
         defaults: {
 
             chartWidth: undefined,
-            chartHeight: 100,
+            chartHeight: 200,
 
             duration: 100,
 
@@ -39,10 +39,12 @@ define([
             titleLeft: undefined,
             titleRight: undefined,
 
-            // Variable names to use
-            sizeAccessor: "size",
+            _y1Chart: "line",
+            _y2Chart: "line",
+            _enableXAxis: "line",
+
             xAccessor: "x",
-            yAccessor: "y"
+            accessorData: {}
         }
     });
 

@@ -299,7 +299,7 @@ define([
             var svg = self.svgSelection();
 
             // Draw one line (path) for each Y accessor.
-            // Collect linePathData.
+            // Collect linePathData - one item per Y accessor.
             var linePathData = [];
             var lines = {};
             _.each( self.params.usableAccessorData, function( accessor, key ) {
