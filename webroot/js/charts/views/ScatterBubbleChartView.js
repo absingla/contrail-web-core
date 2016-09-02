@@ -63,24 +63,30 @@ define([
             var self = this;
             data = self.getData();
             self.params.usableAccessorData = {};
+            self.params.yAxisNames = {};
             _.each( self.params.accessorData, function ( accessor, key ) {
                 if( accessor.enable && _.has( data[0], key ) ) {
-                    if( (accessor.y == 1 || accessor.y == 2) && accessor.sizeAccessor && _.has( data[0], accessor.sizeAccessor ) ) {
+                    if( _.isFinite( accessor.y ) && accessor.y >= 0 && accessor.sizeAccessor && _.has( data[0], accessor.sizeAccessor ) ) {
+                        var axisName = "y" + accessor.y;
                         self.params.usableAccessorData[key] = accessor;
+                        if( !_.has( self.params.yAxisNames, axisName ) ) {
+                            self.params.yAxisNames[axisName] = 0;
+                        }
+                        self.params.yAxisNames[axisName]++;
                     }
                 }
             });
         },
 
         /**
-         * Use the scales provided in the config or calculate them to fit data in view.
-         * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
-         */
-        calculateScales: function () {
+        * Get the maximum extents (ranges) for all Y axis.
+        * We can have multiple variables displayed on one Y axis so we need to calculate the maximum extent (range) for every variable
+        * displayed on the Y1, Y2, ... axis.
+        * We do not limit the number of possible Y axis.
+        */
+        getRangesForAllYAccessors: function() {
             var self = this;
-            var rangeX = self.model.getRangeFor( self.params.xAccessor );
             var ranges = {};
-            // Get the maximum extents for all axis.
             _.each( self.params.usableAccessorData, function( accessor, key ) {
                 var range = [ self.model.getRangeFor( key ), self.model.getRangeFor( accessor.sizeAccessor ) ];
                 var axisName = [ "y" + accessor.y, "r" + accessor.shape ];
@@ -99,6 +105,23 @@ define([
                     }
                 });
             });
+            // Now:
+            // ranges.y1 holds the maximum extent (range) for all variables displayed on the Y1 axis
+            // ranges.y2 holds the maximum extent (range) for all variables displayed on the Y2 axis
+            // ranges.y3 ...
+            // ranges.r[shape] holds the maximum extent (range) of the shape's size.
+            return ranges;
+        },
+
+        /**
+         * Use the scales provided in the config or calculate them to fit data in view.
+         * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
+         */
+        calculateScales: function () {
+            var self = this;
+            var rangeX = self.model.getRangeFor( self.params.xAccessor );
+            var ranges = self.getRangesForAllYAccessors();
+            // Calculate the starting and ending positions in pixels of the graph's bounding box.
             self.params.rMinpx = 2;
             self.params.rMaxpx = Math.max( 5, Math.min(self.params.chartWidth, self.params.chartHeight) ) / 25;
             self.params.yMinpx = self.params.chartHeight - self.params.rMaxpx - self.params.marginBottom;
@@ -135,6 +158,7 @@ define([
             svg.append("g")
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.yMaxpx - self.params.rMaxpx ) + ")");
+            // TODO: Do not hardcode number of Y axis. Add Y axis depending on accessor definition (or self.params.yAxisNames).
             svg.append("g")
                 .attr("class", "axis y-axis y1-axis")
                 .attr("transform", "translate(" + ( self.params.xMinpx - self.params.rMaxpx ) + ",0)");
@@ -159,6 +183,7 @@ define([
         renderAxis: function () {
             var self = this;
             // ticks are the mesh lines
+            // TODO: Do not hardcode the number of Y axis.
             var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.yMinpx - self.params.yMaxpx + 2 * self.params.rMaxpx).tickPadding(5).ticks(self.params.xTicks);
             var y1Axis = d3.axisLeft(self.params.y1Scale).tickSize(-(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.rMaxpx)).tickPadding(5).ticks(self.params.yTicks);
             var y2Axis = d3.axisRight(self.params.y2Scale).tickSize(-(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.rMaxpx)).tickPadding(5).ticks(self.params.yTicks);
@@ -184,6 +209,7 @@ define([
             var svgBubbles = svg.select( ".bubbles" ).selectAll( ".bubble-group" ).data( data, function ( d ) {
                 return d.id;
             });
+            // One data element renders as one bubble-group with multiple bubbles in it - one bubble for each Y accessor.
             var svgBubblesGroupEnter = svgBubbles.enter()
                 .append( "g" )
                 .attr( "class", "bubble-group" );
@@ -221,7 +247,7 @@ define([
                         return self.params[scaleYName]( d[key] );
                     })
                     .attr( "r", function( d ) {
-                        return self.params[scaleRName]( d[self.params.sizeAccessor] );
+                        return self.params[scaleRName]( d[accessor.sizeAccessor] );
                     });
             });
             svgBubbles.exit().transition().ease( d3.easeLinear ).duration( self.params.duration )

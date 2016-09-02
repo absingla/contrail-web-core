@@ -10,7 +10,7 @@ define([
     "core-basedir/js/charts/views/DataView",
     "core-basedir/js/charts/models/BarChartConfigModel"
 ], function ($, _, Backbone, d3, DataView, BarChartConfigModel) {
-    var LineChartView = DataView.extend({
+    var BarChartView = DataView.extend({
         tagName: "div",
         className: "bar-chart",
 
@@ -411,5 +411,5 @@ define([
         }
     });
 
-    return LineChartView;
+    return BarChartView;
 });

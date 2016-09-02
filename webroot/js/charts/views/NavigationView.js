@@ -136,6 +136,7 @@ define([
             var self = this;
             _.defer(function () {
                 self.resetParams();
+                self.updateAccessorList();
                 self.calculateDimensions();
                 self.calculateScales();
                 self.renderSVG();

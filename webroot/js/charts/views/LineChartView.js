@@ -55,32 +55,36 @@ define([
         },
 
         /**
-        * Create the usabelAccessorData that holds only the verified and enabled accessors from the accessorData structure.
+        * Create the usableAccessorData that holds only the verified and enabled accessors from the accessorData structure.
         */
         updateAccessorList: function () {
             var self = this;
             data = self.getData();
             self.params.usableAccessorData = {};
+            self.params.yAxisNames = {};
             _.each( self.params.accessorData, function ( accessor, key ) {
                 if( accessor.enable && _.has( data[0], key ) ) {
-                    if( (accessor.y == 1 || accessor.y == 2) ) {
+                    if( _.isFinite( accessor.y ) && accessor.y >= 0 ) {
+                        var axisName = "y" + accessor.y;
                         self.params.usableAccessorData[key] = accessor;
+                        if( !_.has( self.params.yAxisNames, axisName ) ) {
+                            self.params.yAxisNames[axisName] = 0;
+                        }
+                        self.params.yAxisNames[axisName]++;
                     }
                 }
             });
         },
 
         /**
-         * Use the scales provided in the config or calculate them to fit data in view.
-         * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
-         */
-        calculateScales: function () {
+        * Get the maximum extents (ranges) for all Y axis.
+        * We can have multiple variables displayed on one Y axis so we need to calculate the maximum extent (range) for every variable
+        * displayed on the Y1, Y2, ... axis.
+        * We do not limit the number of possible Y axis.
+        */
+        getRangesForAllYAccessors: function() {
             var self = this;
-            var rangeX = self.model.getRangeFor(this.params.xAccessor);
             var ranges = {};
-            // Get the maximum extents (ranges) for all axis.
-            // We can have multiple variables displayed on one Y axis so we need to calculate the maximum extent (range) for every variable
-            // displayed on the Y1 and Y2 axis.
             _.each( self.params.usableAccessorData, function( accessor, key ) {
                 var range = self.model.getRangeFor( key );
                 var axisName = "y" + accessor.y;
@@ -99,9 +103,21 @@ define([
                 }
             });
             // Now:
-            // ranges.y1 holds the maximum range for all variables displayed on the Y1 axis
-            // ranges.y2 holds the maximum range for all variables displayed on the Y2 axis
+            // ranges.y1 holds the maximum extent (range) for all variables displayed on the Y1 axis
+            // ranges.y2 holds the maximum extent (range) for all variables displayed on the Y2 axis
+            // ranges.y3 ...
+            return ranges;
+        },
 
+        /**
+         * Use the scales provided in the config or calculate them to fit data in view.
+         * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
+         */
+        calculateScales: function () {
+            var self = this;
+            var rangeX = self.model.getRangeFor(this.params.xAccessor);
+            var ranges = self.getRangesForAllYAccessors();
+            // Calculate the starting and ending positions in pixels of the graph's bounding box.
             self.params.yMinpx = self.params.chartHeight - self.params.marginBottom;
             self.params.yMaxpx = self.params.marginTop;
             self.params.xMinpx = self.params.marginLeft;
@@ -109,7 +125,6 @@ define([
             if( !self.params.xScale ) {
                 self.params.xScale = d3.scaleLinear().domain( rangeX ).range([self.params.xMinpx, self.params.xMaxpx]);//.nice( self.params.xTicks );
             }
-
             // TODO: handle stacked line charts.
             /*
             if (self.params.forceY1) {
@@ -126,8 +141,7 @@ define([
                     rangeY2[1] = self.params.forceY2[1];
             }
             */
-
-            // Create the scales for every Y range. ie y1Scale and y2Scale.
+            // Create the scales for every Y range. ie y1Scale, y2Scale, ....
             _.each( ranges, function( range, key ) {
                 var scaleName = key + "Scale";
                 if( !self.params[scaleName] ) {
@@ -149,6 +163,7 @@ define([
             svg.append("g")
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.yMaxpx ) + ")");
+            // TODO: Do not hardcode number of Y axis. Add Y axis depending on accessor definition.
             svg.append("g")
                 .attr("class", "axis y-axis y1-axis")
                 .attr("transform", "translate(" + ( self.params.xMinpx ) + ",0)");
@@ -156,9 +171,7 @@ define([
                 .attr("class", "axis y-axis y2-axis")
                 .attr("transform", "translate(" + ( self.params.xMaxpx ) + ",0)");
             svg.append("g")
-                .attr("class", "lines y1-lines");
-            svg.append("g")
-                .attr("class", "lines y2-lines");
+                .attr("class", "lines");
 
             self.svgSelection()
                 .attr("width", self.params.chartWidth)
@@ -217,12 +230,12 @@ define([
             return this.model.getData();
         },
 
-        getLineColor: function(accessor) {
+        getLineColor: function( accessor ) {
             var self = this;
             if (_.has(self.params.accessorData[accessor], "color")) {
                 return self.params.accessorData[accessor].color;
             } else {
-                var axis = self.getYAxis(accessor);
+                var axis = self.params.accessorData[accessor].y;
                 if (!self.params["_y" + axis + "ColorScale"]) {
                     self.params["_y" + axis + "ColorScale"] = d3.scaleOrdinal(d3.schemeCategory20);
                 }
@@ -230,6 +243,7 @@ define([
             }
         },
 
+        /*
         //Return the Y axis accessor belongs to.
         getYAxis: function(accessor) {
             var axis = undefined;
@@ -240,11 +254,12 @@ define([
             }
             return axis;
         },
-
+        */
         /**
          * Calculates the [min, max] for an accessorList
          * @param accessorList
          */
+         /*
         getRangeForAxis: function (accessorList) {
             var self = this,
                 axisRanges = [],
@@ -259,12 +274,14 @@ define([
 
             return domain;
         },
-
+        */
+        /*
         getLineY: function(accessor, dataItem, index) {
             var self = this,
                 axis =  self.getYAxis(accessor);
             return self.params["y" + axis + "Scale"](dataItem[accessor]);
         },
+        */
 
         getTooltipData: function(data, xPos) {
             var self = this,
@@ -281,6 +298,45 @@ define([
             var data = self.getData();
             var svg = self.svgSelection();
 
+            // Draw one line (path) for each Y accessor.
+            // Collect linePathData.
+            var linePathData = [];
+            var lines = {};
+            _.each( self.params.usableAccessorData, function( accessor, key ) {
+                lines[key] = d3.line()
+                    .x( function ( d ) {
+                        return self.params.xScale( d[self.params.xAccessor] );
+                    })
+                    .y( function ( d, i ) {
+                        var scaleYName = "y" + accessor.y + "Scale";
+                        return self.params[scaleYName]( d[key] );
+                    });
+                linePathData.push( key );
+            });
+            console.log("Rendering data in (" + self.id + "): ", data, self.params, self.params.usableAccessorData, linePathData );
+
+            var svgLines = svg.select( ".lines" ).selectAll( ".line" ).data( linePathData, function( d ) { return d; } );
+            svgLines.enter().append( "path" )
+                .attr( "class", function( d ) { return "line line-" + d; } )
+                .on( "mouseover", function( d ) {
+                    var pos = d3.mouse(this);//$(this).offset();
+                    var offset = $(this).offset();
+                    var dataItem = self.getTooltipData( data, pos[0] );
+                    var tooltipConfig = self.getTooltipConfig( dataItem );
+                    self.eventObject.trigger( "mouseover", dataItem, tooltipConfig, offset.left + pos[0], offset.top );
+                    d3.select( this ).classed( "active", true );
+                })
+                .on( "mouseout", function( d ) {
+                    var pos = $(this).offset();
+                    self.eventObject.trigger( "mouseout", d, pos.left, pos.top );
+                    d3.select( this ).classed( "active", false );
+                })
+                .merge( svgLines ).transition().ease( d3.easeLinear ).duration( self.params.duration )
+                .attr( "stroke", function( d ) { return self.getLineColor( d ); } )
+                .attr( "d", function( d ) { return lines[d]( data ) } );
+            svgLines.exit().remove();
+
+            /*
             function renderLine(axisLine, data, accessorList) {
                 var lines = [];
                 _.each(accessorList, function (accessor, index) {
@@ -320,7 +376,6 @@ define([
 
                 });
             }
-
             console.log("Rendering data in (" + self.id + "): ", data, self.params);
             if (self.params._y1Chart === "line") {
                 renderLine(svg.select(".y1-lines"), data, self.params._y1AccessorList);
@@ -328,6 +383,7 @@ define([
             if (self.params._y2Chart === "line") {
                 renderLine(svg.select(".y2-lines"), data, self.params._y2AccessorList);
             }
+            */
         },
 
         render: function () {
