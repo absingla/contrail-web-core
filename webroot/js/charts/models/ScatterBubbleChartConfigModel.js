@@ -49,7 +49,23 @@ define([
             titleRight: undefined,
 
             // Variable names to use
-            xAccessor: "x"
+            xAccessor: "x",
+
+            /**
+             * Provide the default tooltip template config for a data item.
+             * @param data : formatted data item from series
+             */
+            tooltipConfigFn: function(data) {
+                var tooltipConfig = {
+                    title: {name: data.name || "Title", type: data.type || ""},
+                    content: {iconClass: false, info: []},
+                    dimension: {width: 250}
+                };
+                _.each(data, function(value, key) {
+                    tooltipConfig.content.info.push({label: key, value: value});
+                });
+                return tooltipConfig;
+            }
         }
     });
 

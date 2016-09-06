@@ -227,7 +227,8 @@ define([
                     .attr( "r", 0 )
                     .on( "mouseover", function( d ) {
                         var pos = $(this).offset();
-                        self.eventObject.trigger("mouseover", d, pos.left, pos.top);
+                        var tooltipConfig = self.getTooltipConfig(d);
+                        self.eventObject.trigger("mouseover", d, tooltipConfig, pos.left, pos.top);
                         d3.select(this).classed("active", true);
                     })
                     .on( "mouseout", function( d ) {
