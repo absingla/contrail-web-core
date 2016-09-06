@@ -6,9 +6,10 @@ define([
     "jquery",
     "underscore",
     "backbone",
-    "d3-v4"
-], function ($, _, Backbone, d3) {
-    var BarChartConfigModel = Backbone.Model.extend({
+    "d3-v4",
+    "core-basedir/js/charts/models/BaseConfigModel"
+], function( $, _, Backbone, d3, BaseConfigModel ) {
+    var BarChartConfigModel = BaseConfigModel.extend({
         defaults: {
             /// The chart width. If not provided will be calculated by View.
             chartWidth: undefined,

@@ -5,9 +5,10 @@
 define([
     "jquery",
     "underscore",
-    "backbone"
-], function( $, _, Backbone ) {
-    var ScatterBubbleChartConfigModel = Backbone.Model.extend({
+    "backbone",
+    "core-basedir/js/charts/models/BaseConfigModel"
+], function( $, _, Backbone, BaseConfigModel ) {
+    var ScatterBubbleChartConfigModel = BaseConfigModel.extend({
         defaults: {
             /// The chart width. If not provided will be caculated by View.
             chartWidth: undefined,
@@ -29,9 +30,11 @@ define([
             marginBottom: undefined,
             marginLeft: undefined,
             marginRight: undefined,
+            marginInner: undefined,
 
             /// Scales can be provided as a d3 scale or undefined if they need to be calculated.
             xScale: undefined,
+            xRange: undefined,
 
             /// Axis can be provided as a d3 axis or true if they need to be calculated.
             axisTop: false,
@@ -47,13 +50,6 @@ define([
 
             // Variable names to use
             xAccessor: "x"
-        },
-
-        initialize: function( options ) {
-            if( !this._computed ) {
-                this._computed = {};
-            }
-            this._computed = _.extend( this._computed, this.toJSON() );
         }
     });
 

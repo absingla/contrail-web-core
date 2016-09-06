@@ -7,8 +7,9 @@ define([
     "underscore",
     "backbone",
     "d3-v4",
-], function( $, _, Backbone, d3 ) {
-    var LineChartConfigModel = Backbone.Model.extend({
+    "core-basedir/js/charts/models/BaseConfigModel"
+], function( $, _, Backbone, d3, BaseConfigModel ) {
+    var LineChartConfigModel = BaseConfigModel.extend({
         defaults: {
             /// The chart width. If not provided will be caculated by View.
             chartWidth: undefined,

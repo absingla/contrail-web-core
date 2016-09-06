@@ -5,9 +5,10 @@
 define([
     "jquery",
     "underscore",
-    "backbone"
-], function( $, _, Backbone ) {
-    var NavigationComponentConfigModel = Backbone.Model.extend({
+    "backbone",
+    "core-basedir/js/charts/models/BaseConfigModel"
+], function( $, _, Backbone, BaseConfigModel ) {
+    var NavigationComponentConfigModel = BaseConfigModel.extend({
         defaults: {
 
             chartWidth: undefined,

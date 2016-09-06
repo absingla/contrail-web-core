@@ -139,7 +139,7 @@ define([
             $(selector).find(".coCharts-container").remove();
             $(selector).append(chartTemplate(self.chartConfig));
 
-            self.applyStaticData();
+            //self.applyStaticData();
 
             //Common Message View. will be used for rendering info messages and error
             var messageView = new MessageView({

@@ -19,15 +19,12 @@ define(["jquery", "underscore", "backbone", "d3-v4"],
             },
 
             /**
-             * Save the provided view's config to local params JSON object.
+             * Save the config '_computed' parameters in the view's 'params' local object for easier reference (this.params instead of this.config._computed).
              * The view may modify the params object with calculated values.
              */
             resetParams: function () {
-                if (!this.params) {
-                    this.params = {};
-                }
-                this.params = _.extend(this.params, this.config.toJSON());
-                //this.params = this.config.toJSON();
+                this.config.initializeComputedParameters();
+                this.params = this.config._computed;
             },
 
             getTooltipConfig: function(dataItem) {
