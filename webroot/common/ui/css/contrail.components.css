@@ -27,10 +27,11 @@
     color:#3182bd;
 }
 .group-detail-container ul.item-list li .key.label-blue.indent-right{
-    padding-left:15px;
+    padding-left: 30px;
 }
 .group-detail-container ul.item-list li .value {
     color:#777;
+    margin: 0;
 }
 .block-grid-row {
     padding-top: 5px;
@@ -175,6 +176,26 @@
     color: #3182bd !important;
     cursor: pointer;
     font-size: 13px;
+}
+
+/*
+ * Bootstrap Tooltips
+ */
+.tooltip, .tooltip.bottom {
+    margin: 0;
+    padding: 0;
+}
+.tooltip .tooltip-arrow {
+    border: none;
+}
+.tooltip .tooltip-inner {
+    background-color: #FFFFE1;
+    color: #333;
+    text-shadow: none;
+    padding: 5px;
+    border: 1px solid #ccc;
+    font-weight: normal;
+    text-align: left;
 }
 
 /*
