@@ -142,29 +142,11 @@ define([
             var modelConfigForChartType = {
                 line: {
                     parentDataModel: self.chartDataModel,
-                    messageEvent: messageView.eventObject,
-                    formatData: function( data ) {
-                        var lineChartData = []
-                        _.each( data, function( dataItem ) {
-                            if (!dataItem.bar) {
-                                lineChartData = lineChartData.concat( dataItem.values );
-                            }
-                        });
-                        return lineChartData;
-                    }
+                    messageEvent: messageView.eventObject
                 },
                 bar: {
                     parentDataModel: self.chartDataModel,
-                    messageEvent: messageView.eventObject,
-                    formatData: function(data) {
-                        var barChartData = [];
-                        _.each( data, function( dataItem ) {
-                            if (dataItem.bar) {
-                                barChartData = barChartData.concat( dataItem.values );
-                            }
-                        });
-                        return barChartData;
-                    }
+                    messageEvent: messageView.eventObject
                 }
             };
             var compositeYChartDataProvider = new DataProvider({
