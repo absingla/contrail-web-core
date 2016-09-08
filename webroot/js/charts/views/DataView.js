@@ -27,6 +27,21 @@ define(["jquery", "underscore", "backbone", "d3-v4"],
                 this.params = this.config._computed;
             },
 
+            /**
+            * This is how the view gets its data.
+            */
+            getData: function () {
+                return this.model.getData();
+            },
+
+            /**
+            * This is how the view gets the SVG html element selection for rendering.
+            */
+            svgSelection: function () {
+                var self = this;
+                return d3.select(self.$el.get(0)).select("svg#" + self.id);
+            },
+
             getTooltipConfig: function(dataItem) {
                 var self = this,
                     formattedData = {};

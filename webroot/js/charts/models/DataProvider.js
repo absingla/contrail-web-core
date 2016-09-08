@@ -174,8 +174,10 @@ define([
                 min = Infinity;
                 max = -Infinity;
                 _.each(data, function (d) {
-                    if (d[variableName] < min) min = d[variableName];
-                    if (d[variableName] > max) max = d[variableName];
+                    if( _.has( d, variableName ) ) {
+                        if (d[variableName] < min) min = d[variableName];
+                        if (d[variableName] > max) max = d[variableName];
+                    }
                 });
                 if( data.length ) {
                     variableRange = [min, max];

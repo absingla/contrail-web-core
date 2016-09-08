@@ -18,11 +18,12 @@ define([
         className: "line-chart",
         chartType: "line",
 
-        initialize: function (options) {
+        initialize: function ( options ) {
             // TODO: Every model change will trigger a redraw. This might not be desired - dedicated redraw event?
 
             /// The config model
             this.config = options.config;
+            this.axisName = options.axisName;
 
             /// View params hold values from the config and computed values.
             this.resetParams();
@@ -34,10 +35,10 @@ define([
 
         /**
         * Returns the unique name of this component so it can identify itself for the parent.
-        * The component's name is of the following format: [axis_name]-[chartType]
+        * The component's name is of the following format: [axisName]-[chartType] ie. "y1-line".
         */
         getName: function() {
-            return this.params.axisName + "-" + this.chartType;
+            return this.axisName + "-" + this.chartType;
         },
 
         calculateActiveAccessorData: function () {},
@@ -50,6 +51,25 @@ define([
         calculateDimensions: function () {},
 
         /**
+        * Calculates maximum data extents for all axis.
+        * Assumes the params.activeAccessorData for this child view is filled by the parent with the relevent yAccessors for this child only.
+        * Returns an object with following structure: { y1: [0,10], x: [-10,10] }
+        */
+        calculateAxisDomains: function() {
+            var self = this;
+            var domains = { x: self.model.getRangeFor( self.params.xAccessor ) };
+            domains[self.axisName] = [];
+            // TODO: a range may by specified in the accessorData config. No need for calculating it then.
+            _.each( self.params.activeAccessorData, function( accessor, key ) {
+                var domain = self.model.getRangeFor( key );
+                domains[self.axisName] = domains[self.axisName].concat( domain );
+            });
+            domains[self.axisName] = d3.extent( domains[self.axisName] );
+            console.log( "LineChartView domains for " + self.getName() + ": ", domains );
+            return domains;
+        },
+
+        /**
          * Use the scales provided in the config or calculate them to fit data in view.
          * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
          */
@@ -60,11 +80,6 @@ define([
          * Resizes chart dimensions if chart already exists.
          */
         renderSVG: function () {},
-
-        svgSelection: function () {
-            var self = this;
-            return d3.select(self.$el.get(0)).select("svg#" + self.id);
-        },
 
         /**
          * Renders the axis.
@@ -110,10 +125,6 @@ define([
             }
         },
         */
-
-        getData: function () {
-            return this.model.getData();
-        },
 
         getLineColor: function( accessor ) {
             var self = this;
@@ -187,13 +198,15 @@ define([
             // Collect linePathData - one item per Y accessor.
             var linePathData = [];
             var lines = {};
+            var yScaleName = self.axisName + "Scale";
             _.each( self.params.activeAccessorData, function( accessor, key ) {
                 lines[key] = d3.line()
                     .x( function ( d ) {
                         return self.params.xScale( d[self.params.xAccessor] );
                     })
                     .y( function ( d, i ) {
-                        return self.params.yScale( d[key] );
+
+                        return self.params[yScaleName]( d[key] );
                     });
                 linePathData.push( key );
             });

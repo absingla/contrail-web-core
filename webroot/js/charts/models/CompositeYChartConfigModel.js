@@ -8,7 +8,7 @@ define([
     "backbone",
     "core-basedir/js/charts/models/BaseConfigModel"
 ], function( $, _, Backbone, BaseConfigModel ) {
-    var ScatterBubbleChartConfigModel = BaseConfigModel.extend({
+    var CompositeYChartConfigModel = BaseConfigModel.extend({
         defaults: {
             /// The chart width. If not provided will be caculated by View.
             chartWidth: undefined,
@@ -48,26 +48,10 @@ define([
             titleLeft: undefined,
             titleRight: undefined,
 
-            // Variable names to use
-            xAccessor: "x",
-
-            /**
-             * Provide the default tooltip template config for a data item.
-             * @param data : formatted data item from series
-             */
-            tooltipConfigFn: function(data) {
-                var tooltipConfig = {
-                    title: {name: data.name || "Title", type: data.type || ""},
-                    content: {iconClass: false, info: []},
-                    dimension: {width: 250}
-                };
-                _.each(data, function(value, key) {
-                    tooltipConfig.content.info.push({label: key, value: value});
-                });
-                return tooltipConfig;
-            }
+            // x variable name
+            xAccessor: "x"
         }
     });
 
-    return ScatterBubbleChartConfigModel;
+    return CompositeYChartConfigModel;
 });
