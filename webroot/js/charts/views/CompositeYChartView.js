@@ -44,39 +44,41 @@ define([
             data = self.getData();
             self.params.activeAccessorData = {};
             self.params.yAxisInfoArray = [];
-            // Clear the components activeAccessorData.
-            _.each( self.components, function( component ) {
-                component.params.activeAccessorData = {};
-            });
             console.log( "data: ", data );
             // Fill the activeAccessorData structure.
             _.each( self.params.accessorData, function ( accessor, key ) {
-                if( accessor.enable /*&& _.has( data[0], key )*/ ) {
-                    if( _.isFinite( accessor.y ) && accessor.y >= 0 ) {
-                        var axisName = "y" + accessor.y;
-                        self.params.activeAccessorData[key] = accessor;
-                        var foundAxisInfo = _.findWhere( self.params.yAxisInfoArray, { name: axisName } );
-                        if( !foundAxisInfo ) { 
-                        	foundAxisInfo = {
-                            	name: axisName,
-                            	used: 0,
-                            	position: ((accessor.y % 2) ? "left" : "right"),
-                            	num: Math.floor( accessor.y / 2),
-                            	extent: []
-                            };
-                            self.params.yAxisInfoArray.push( foundAxisInfo );
-                        }
-                        foundAxisInfo.used++;
-                        if( accessor.chartType ) {
-                            // Set the activeAccessorData to the appropriate components.
-                            var component = self.getComponent( axisName, accessor.chartType );
-                            if( component ) {
-                                component.params.activeAccessorData[key] = accessor;
+                if( _.isFinite( accessor.y ) && accessor.y >= 0 ) {
+                    var axisName = "y" + accessor.y;
+                    var component = self.getComponent( axisName, accessor.chartType );
+                    if( component ) {
+                        component.params.activeAccessorData = {};
+                        component.params.enable = false;
+                        if( accessor.enable /*&& _.has( data[0], key )*/ ) {
+                            self.params.activeAccessorData[key] = accessor;
+                            var foundAxisInfo = _.findWhere( self.params.yAxisInfoArray, { name: axisName } );
+                            if( !foundAxisInfo ) { 
+                            	foundAxisInfo = {
+                                	name: axisName,
+                                	used: 0,
+                                	position: ((accessor.y % 2) ? "left" : "right"),
+                                	num: Math.floor( accessor.y / 2),
+                                	extent: []
+                                };
+                                self.params.yAxisInfoArray.push( foundAxisInfo );
+                            }
+                            foundAxisInfo.used++;
+                            if( accessor.chartType ) {
+                                // Set the activeAccessorData to the appropriate components.
+                                if( component ) {
+                                    component.params.activeAccessorData[key] = accessor;
+                                    component.params.enable = true;
+                                }
                             }
                         }
                     }
                 }
             });
+            console.log( "CompositeYView activeAccessorData: ", self.params.activeAccessorData );
         },
 
         /**
@@ -118,23 +120,14 @@ define([
         /**
          * Use the scales provided in the config or calculate them to fit data in view.
          * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
-         * Params: yMinpx, yMaxpx, xMinpx, xMaxpx, xRange, xScale
+         * Params: xRange, yRange, xDomain, yDomain, xScale, yScale
          */
         calculateScales: function () {
             var self = this;
-            if( !_.isArray( self.params.xRange ) || self.params.xRange.length < 2 ) {
-            	self.params.xRange = self.model.getRangeFor( self.params.xAccessor );
-            }
-            // Calculate the starting and ending positions in pixels of the graph's bounding box.
-            self.params.yMinpx = self.params.chartHeight - self.params.marginInner - self.params.marginBottom;
-            self.params.yMaxpx = self.params.marginInner + self.params.marginTop;
-            self.params.xMinpx = self.params.marginInner + self.params.marginLeft;
-            self.params.xMaxpx = self.params.chartWidth - self.params.marginInner - self.params.marginRight;
-            if( !self.params.xScale ) {
-                self.params.xScale = d3.scaleLinear().domain( self.params.xRange ).range([self.params.xMinpx, self.params.xMaxpx]);//.nice( self.params.xTicks );
-            }
-
-            self.unifyYScales();
+            // Calculate the starting and ending positions in pixels of the chart data drawing area.
+            self.params.xRange = [self.params.marginInner + self.params.marginLeft, self.params.chartWidth - self.params.marginInner - self.params.marginRight];
+            self.params.yRange = [self.params.chartHeight - self.params.marginInner - self.params.marginBottom, self.params.marginInner + self.params.marginTop];
+            self.saveScales();
         },
 
         getComponent: function( axisName, chartType ) {
@@ -153,11 +146,47 @@ define([
             var self = this;
             var foundComponents = [];
             _.each( self.components, function( component ) {
-                if( component.params.axisName == axisName ) {
+                if( component.axisName == axisName ) {
+                    foundComponents.push( component );
+                }
+                else if( axisName == "x" ) {
                     foundComponents.push( component );
                 }
             });
             return foundComponents;
+        },
+
+        /**
+        * Combine the axis domains (extents) from all enabled components.
+        */
+        combineAxisDomains: function() {
+            var self = this;
+            var domains = {};
+            _.each( self.components, function( component ) {
+                if( component.params.enable ) {
+                    var componentDomains = component.calculateAxisDomains();
+                    _.each( componentDomains, function( domain, axisName ) {
+                        if( !_.has( domains, axisName ) ) {
+                            domains[axisName] = [domain[0], domain[1]];
+                        }
+                        else {
+                            // check if the new domains extent extends the current one
+                            if( domain[0] < domains[axisName][0] ) {
+                                domains[axisName][0] = domain[0];
+                            }
+                            if( domain[1] > domains[axisName][1] ) {
+                                domains[axisName][1] = domain[1];
+                            }
+                        }
+                    });
+                }
+            });
+            // Now:
+            // domains.y1 holds the maximum extent (domain) for all variables displayed on the Y1 axis
+            // domains.y2 holds the maximum extent (domain) for all variables displayed on the Y2 axis
+            // domains.y3 ...
+            // domains.r[shape] holds the maximum extent (domain) of the shape's size.
+            return domains;
         },
 
         /**
@@ -166,6 +195,7 @@ define([
         * displayed on the Y1, Y2, ... axis.
         * We do not limit the number of possible Y axis.
         */
+        /*
         getRangesForAllYAccessors: function() {
             var self = this;
             var ranges = {};
@@ -185,26 +215,31 @@ define([
                     }
                 }
             });
-            // Now:
-            // ranges.y1 holds the maximum extent (range) for all variables displayed on the Y1 axis
-            // ranges.y2 holds the maximum extent (range) for all variables displayed on the Y2 axis
-            // ranges.y3 ...
-            // ranges.r[shape] holds the maximum extent (range) of the shape's size.
             return ranges;
         },
+        */
 
-        unifyYScales: function() {
+        /**
+        * Save all scales in the params and component.params structures.
+        */
+        saveScales: function() {
         	var self = this;
-        	var ranges = self.getRangesForAllYAccessors();
-        	// Now update the scales of the appropriate components.
-        	_.each( self.params.yAxisInfoArray, function( axisInfo ) {
-				axisInfo.extent = ranges[axisInfo.name];
-                axisInfo.scale = d3.scaleLinear().domain( axisInfo.extent ).range( [self.params.yMinpx, self.params.yMaxpx] );
-                _.each( self.getComponents( axisInfo.name ), function( component ) {
-                    component.params.yScale = axisInfo.scale;
-                    component.params.xScale = self.params.xScale;
+        	var domains = self.combineAxisDomains();
+            _.each( domains, function( domain, axisName ) {
+                var domainName = axisName + "Domain";
+                if( !_.isArray( self.config.get( domainName ) ) ) {
+                    self.params[domainName] = domain;
+                }
+                var scaleName = axisName + "Scale";
+                var rangeName = axisName.charAt( 0 ) + "Range";
+                if( !_.isFunction( self.config.get( scaleName ) ) ) {
+                    self.params[scaleName] = d3.scaleLinear().domain( self.params[domainName] ).range( self.params[rangeName] );
+                }
+                // Now update the scales of the appropriate components.
+                _.each( self.getComponents( axisName ), function( component ) {
+                    component.params[scaleName] = self.params[scaleName];
                 });
-        	});
+            });
         },
 
         /**
@@ -217,11 +252,12 @@ define([
             var svg = svgs.enter().append("svg").attr("id", function ( d ) { return d; } );
             svg.append("g")
                 .attr("class", "axis x-axis")
-                .attr("transform", "translate(0," + ( self.params.yMaxpx - self.params.marginInner ) + ")");
-            _.each( self.yAxisInfoArray, function( axisInfo ) {
-            	var translate = self.params.xMinpx - self.params.marginInner;
+                .attr("transform", "translate(0," + ( self.params.yRange[1] - self.params.marginInner ) + ")");
+            console.log( "CompositeYChart renderSVG: ", self.params.yAxisInfoArray );
+            _.each( self.params.yAxisInfoArray, function( axisInfo ) {
+            	var translate = self.params.xRange[0] - self.params.marginInner;
             	if( axisInfo.position == "right" ) {
-            		translate = self.params.xMaxpx + self.params.marginInner;
+            		translate = self.params.xRange[1] + self.params.marginInner;
             	}
             	svg.append("g")
                 .attr("class", "axis y-axis " + axisInfo.name + "-axis")
@@ -230,7 +266,6 @@ define([
             // Handle component groups
             console.log( "CompositeYChartView.renderSVG self.components: ", self.components );
             var svgComponentGroups = self.svgSelection().selectAll( ".component-group" ).data( self.components, function( c ) {
-                console.log( "Component: ", c );
                 var id = 0;
                 if( _.isObject( c ) ) {
                     id = c.getName();
@@ -259,26 +294,23 @@ define([
          */
         renderAxis: function () {
             var self = this;
-            var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.yMinpx - self.params.yMaxpx + 2 * self.params.marginInner).tickPadding(5).ticks(self.params.xTicks);
+            var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.yRange[0] - self.params.yRange[1] + 2 * self.params.marginInner).tickPadding(5).ticks(self.params.xTicks);
             var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
             svg.select( ".axis.x-axis" ).call( xAxis );
             // We render the yAxis here because there may be multiple components for one axis.
             // The parent has aggregated information about all Y axis.
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
                 var yAxis = null;
+                var scaleName = axisInfo.name + "Scale";
                 if( axisInfo.position == "right" ) {
-                    yAxis = d3.axisRight( axisInfo.scale ).tickSize( -(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
+                    yAxis = d3.axisRight( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
                 }
                 else {
-                    yAxis = d3.axisLeft( axisInfo.scale ).tickSize( -(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
+                    yAxis = d3.axisLeft( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
                 }
                 // TODO: handle axis y1 - y2 ticks.
-                svg.select( ".axis.y-axis" + axisInfo.name + "-axis" ).call( yAxis );
+                svg.select( ".axis.y-axis." + axisInfo.name + "-axis" ).call( yAxis );
             });
-        },
-
-        getData: function () {
-            return this.model.getData();
         },
 
         renderData: function () {

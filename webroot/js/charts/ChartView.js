@@ -138,11 +138,12 @@ define([
             var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
             var tooltipView = new TooltipView({config: tooltipConfig});
 
-            var possibleChildViews = { line: LineChartView, bar: LineChartView };
+            var possibleChildViews = { line: LineChartView };
             var modelConfigForChartType = {
                 line: {
                     parentDataModel: self.chartDataModel,
-                    messageEvent: messageView.eventObject,
+                    messageEvent: messageView.eventObject
+                    /*
                     formatData: function( data ) {
                         var lineChartData = []
                         _.each( data, function( dataItem ) {
@@ -152,10 +153,12 @@ define([
                         });
                         return lineChartData;
                     }
+                    */
                 },
                 bar: {
                     parentDataModel: self.chartDataModel,
-                    messageEvent: messageView.eventObject,
+                    messageEvent: messageView.eventObject
+                    /*
                     formatData: function(data) {
                         var barChartData = [];
                         _.each( data, function( dataItem ) {
@@ -165,14 +168,17 @@ define([
                         });
                         return barChartData;
                     }
+                    */
                 }
             };
+            /*
             var compositeYChartDataProvider = new DataProvider({
                 parentDataModel: self.chartDataModel,
                 messageEvent: messageView.eventObject
             });
+            */
             var compositeYChartView = new CompositeYChartView({
-                model: compositeYChartDataProvider,
+                model: self.chartDataModel,
                 config: self.chartConfigModel.get( "mainChart" ),
                 messageEvent: messageView.eventObject,
                 el: $(selector).find( ".coCharts-main-container" ),
@@ -191,20 +197,21 @@ define([
                         return found;
                     });
                     if( !foundComponent ) {
-                        // Instantiate the component
+                        // The child component with this name does not exist yet. Instantiate the child component.
                         _.each( possibleChildViews, function( ChildView, chartType ) {
                             if( chartType == accessor.chartType ) {
-                                var configModel = self.chartConfigModel.get( "mainChart" ).clone();
-                                configModel.set( "axisName", axisName );
                                 var dataProvider = new DataProvider( modelConfigForChartType[accessor.chartType] );
                                 foundComponent = new ChildView({
                                     model: dataProvider,
-                                    config: configModel,
+                                    config: self.chartConfigModel.get( "mainChart" ).clone(),
                                     messageEvent: messageView.eventObject,
                                     el: $(selector).find(".coCharts-main-container"),
-                                    id: self.chartConfig.chartId
+                                    id: self.chartConfig.chartId,
+                                    axisName: axisName
                                 });
+                                // Set any component specific params.
                                 compositeYChartView.components.push( foundComponent );
+                                console.log( "Found component: ", axisName, accessor.chartType, foundComponent );
                             }
                         });
                     }
