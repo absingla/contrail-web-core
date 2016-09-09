@@ -335,7 +335,7 @@ define([
                 var x = d[self.params.xAccessor];
                 _.each( self.params.activeAccessorData, function( accessor, key ) {
                     var y = d[key];
-                    var obj = {
+                    var obj = _.extend({}, d, {
                         id: x + "-" + key,
                         className: "bar bar-" + key,
                         x: self.params.bandScale( x ) + innerBandScale( i ),
@@ -343,7 +343,7 @@ define([
                         h: yScale.range()[0] - yScale( y ),
                         w: innerBandScale.step(),
                         color: self.getBarColor( accessor, key )
-                    };
+                    });
                     flatData.push( obj );
                     i++;
                 });
@@ -358,9 +358,7 @@ define([
                 .attr( "width", function( d ) { return d.w; } )
                 .on("mouseover", function( d ) {
                     var pos = $(this).offset();
-                    // Todo access tooltip config from parent view?.
-                    // var tooltipConfig = self.getTooltipConfig(d);
-                    self.eventObject.trigger("mouseover", d, {}, pos.left, pos.top);
+                    self.eventObject.trigger("mouseover", d, pos.left, pos.top);
                     d3.select(this).classed("active", true);
                 })
                 .on("mouseout", function( d ) {

@@ -220,6 +220,8 @@ define([
             console.log( "compositeYChartView: ", compositeYChartView );
             compositeYChartView.render();
 
+            tooltipView.registerTriggerEvent(compositeYChartView.eventObject, "showTooltip", "hideTooltip");
+
             /*
             if(self.isChartEnabled(self.chartConfigModel.get("mainChart"), "line")) {
                 var lineChartDataProvider = new DataProvider();

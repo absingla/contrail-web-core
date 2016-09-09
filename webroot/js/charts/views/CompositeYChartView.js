@@ -333,6 +333,24 @@ define([
             });
         },
 
+        onMouseOver: function(dataItem, x, y) {
+            var self = this;
+            self.eventObject.trigger("showTooltip", dataItem, self.getTooltipConfig(dataItem), x, y);
+        },
+
+        onMouseOut: function(dataItem, x, y) {
+            var self = this;
+            self.eventObject.trigger("hideTooltip", dataItem, x, y);
+        },
+
+        startEventListeners: function() {
+            var self = this;
+            _.each(self.components, function(component) {
+                self.listenTo(component.eventObject, "mouseover", self.onMouseOver);
+                self.listenTo(component.eventObject, "mouseout", self.onMouseOut);
+            });
+        },
+
         render: function () {
             var self = this;
             _.defer(function () {
@@ -343,6 +361,7 @@ define([
                 self.renderSVG();
                 self.renderAxis();
                 self.renderData();
+                self.startEventListeners();
             });
             return self;
         }
