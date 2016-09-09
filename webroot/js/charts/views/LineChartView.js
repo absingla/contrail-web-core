@@ -136,8 +136,9 @@ define([
                     var pos = d3.mouse(this);//$(this).offset();
                     var offset = $(this).offset();
                     var dataItem = self.getTooltipData( data, pos[0] );
-                    var tooltipConfig = self.getTooltipConfig( dataItem );
-                    self.eventObject.trigger( "mouseover", dataItem, tooltipConfig, offset.left + pos[0], offset.top );
+                    //Todo access tooltip config fn from parent view?.
+                    //var tooltipConfig = self.getTooltipConfig( dataItem );
+                    self.eventObject.trigger( "mouseover", dataItem, {}, offset.left + pos[0], offset.top );
                     d3.select( this ).classed( "active", true );
                 })
                 .on( "mouseout", function( d ) {

@@ -358,8 +358,9 @@ define([
                 .attr( "width", function( d ) { return d.w; } )
                 .on("mouseover", function( d ) {
                     var pos = $(this).offset();
-                    var tooltipConfig = self.getTooltipConfig(d);
-                    self.eventObject.trigger("mouseover", d, tooltipConfig, pos.left, pos.top);
+                    // Todo access tooltip config from parent view?.
+                    // var tooltipConfig = self.getTooltipConfig(d);
+                    self.eventObject.trigger("mouseover", d, {}, pos.left, pos.top);
                     d3.select(this).classed("active", true);
                 })
                 .on("mouseout", function( d ) {
