@@ -7,29 +7,40 @@ define([
     "underscore",
     "backbone",
     "d3-v4",
-    "core-basedir/js/charts/views/DataView",
-    "core-basedir/js/charts/models/BarChartConfigModel"
-], function ($, _, Backbone, d3, DataView, BarChartConfigModel) {
+    "core-basedir/js/charts/views/DataView"
+], function( $, _, Backbone, d3, DataView ) {
     var BarChartView = DataView.extend({
         tagName: "div",
         className: "bar-chart",
+        chartType: "bar",
 
-        initialize: function (options) {
+        initialize: function ( options ) {
             /// The config model
-            this.config = (options.config) ? options.config : new BarChartConfigModel();
+            this.config = options.config;
+            this.axisName = options.axisName;
 
             /// View params hold values from the config and computed values.
             this.resetParams();
 
-            this.listenTo(this.model, "change", this.render);
-            this.listenTo(this.config, "change", this.render);
+            // TODO: should child react to model and config changes?
+            //this.listenTo(this.model, "change", this.render);
+            //this.listenTo(this.config, "change", this.render);
             this.eventObject = _.extend({}, Backbone.Events);
         },
 
-        getData: function () {
-            return this.model.getData();
+        /**
+        * Returns the unique name of this component so it can identify itself for the parent.
+        * The component's name is of the following format: [axisName]-[chartType] ie. "y1-line".
+        */
+        getName: function() {
+            return this.axisName + "-" + this.chartType;
         },
 
+        getYScale: function() {
+            return this.params[this.axisName + "Scale"];
+        },
+
+        /*
         //Return number of Bar charts on axis
         getChartCount: function (yAxisNumber) {
             var self = this;
@@ -108,20 +119,22 @@ define([
                 axisNum = self.getYAxis(accessor);
             return (self.params._chartCanvasHeight - self.params["y" + axisNum +"Scale"](dataItem[accessor]));
         },
+        */
 
-        getBarColor: function(accessor) {
+        getBarColor: function( accessor, key ) {
             var self = this;
-            if (_.has(self.params.accessorData[accessor], "color")) {
-                return self.params.accessorData[accessor].color;
+            if( _.has( accessor, "color") ) {
+                return accessor.color;
             } else {
-                var axis = self.getYAxis(accessor);
-                if (!self.params["_y" + axis + "ColorScale"]) {
+                var axis = accessor.y;
+                if( !self.params["_y" + axis + "ColorScale"] ) {
                     self.params["_y" + axis + "ColorScale"] = d3.scaleOrdinal(d3.schemeCategory20);
                 }
-                return self.params["_y" + axis + "ColorScale"](accessor);
+                return self.params["_y" + axis + "ColorScale"](key);
             }
         },
 
+        /*
         updateAccessorList: function () {
             var self = this;
             self.params._y1AccessorList = [];
@@ -147,12 +160,14 @@ define([
             });
             return accessorList4Render;
         },
+        */
 
         /**
          * Calculates the chart dimensions and margins.
          * Use the dimensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
          * This method should be called before rendering because the available dimensions could have changed.
          */
+         /*
         calculateDimensions: function () {
             var self = this;
             if (!self.params.chartWidth) {
@@ -177,11 +192,13 @@ define([
             self.params._chartCanvasWidth = self.params.chartWidth - self.params.marginLeft - self.params.marginRight;
             self.params._chartCanvasHeight = self.params.chartHeight - self.params.marginTop - self.params.marginBottom;
         },
+        */
 
         /**
          * Calculates the [min, max] for an accessorList
          * @param accessorList
          */
+        /*
         getRangeForAxis: function (accessorList) {
             var self = this,
                 data = self.getData(),
@@ -217,11 +234,13 @@ define([
             });
             return accessorDomain;
         },
+        */
 
         /**
          * Use the scales provided in the config or calculate them to fit data in view.
          * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
          */
+         /*
         calculateScales: function () {
             var self = this;
 
@@ -261,7 +280,37 @@ define([
             if (!self.params.y2Scale) {
                 self.params.y2Scale = d3.scaleLinear().domain(rangeY2).range([yMinpx, yMaxpx]);//.nice( self.params.yTicks );
             }
+        },
+        */
 
+        /**
+        * Called by the parent in order to calculate maximum data extents for all of this child's axis.
+        * Assumes the params.activeAccessorData for this child view is filled by the parent with the relevent yAccessors for this child only.
+        * Returns an object with following structure: { y1: [0,10], x: [-10,10] }
+        */
+        calculateAxisDomains: function() {
+            var self = this;
+            var domains = { x: self.model.getRangeFor( self.params.xAccessor ) };
+            domains[self.axisName] = [];
+            // TODO: a range may by specified in the accessorData config. No need for calculating it then.
+            _.each( self.params.activeAccessorData, function( accessor, key ) {
+                var domain = self.model.getRangeFor( key );
+                // TODO: handle stacked.
+                domains[self.axisName] = domains[self.axisName].concat( domain );
+            });
+            domains[self.axisName] = d3.extent( domains[self.axisName] );
+            console.log( "BarChartView domains for " + self.getName() + ": ", domains );
+            return domains;
+        },
+
+        /**
+         * Called by the parent when all scales have been saved in this child's params.
+         * Can be used by the child to perform any additional calculations.
+         */
+        calculateScales: function () {
+            var self = this;
+            var xValues = _.pluck( self.getData(), self.params.xAccessor );
+            self.params.bandScale = d3.scaleBand().domain( xValues ).rangeRound( self.params.xScale.range() ).paddingInner( 0.1 ).paddingOuter( 0 );
         },
 
         /**
@@ -269,84 +318,64 @@ define([
          * Changes chart dimensions if it already exists.
          */
         renderSVG: function () {
-            var self = this;
-            var svgs = d3.select(self.$el.get(0)).selectAll("svg").data([self.id]);
-            var svg = svgs.enter().append("svg").attr("id", function (d) {
-                return d;
-            });
-            svg.append("g")
-                .attr("class", "axis x-axis")
-                .attr("transform", "translate(0," + ( self.params.y1Scale.range()[1] ) + ")");
-            svg.append("g")
-                .attr("class", "axis y-axis y1-axis")
-                .attr("transform", "translate(" + ( self.params.xScale.range()[0] ) + ",0)");
-            svg.append("g")
-                .attr("class", "axis y-axis y2-axis")
-                .attr("transform", "translate(" + ( self.params.xScale.range()[1] ) + ",0)");
-            svg.append("g")
-                .attr("class", "y1bars");
-            svg.append("g")
-                .attr("class", "y2bars");
-
-            self.svgSelection()
-                .attr("width", self.params.chartWidth)
-                .attr("height", self.params.chartHeight);
-        },
-
-        svgSelection: function () {
-            var self = this;
-            return d3.select(self.$el.get(0)).select("svg#" + self.id);
-        },
-
-        /**
-         * Renders the axis.
-         */
-        renderAxis: function () {
-            var self = this;
-            var xAxis = d3.axisBottom(self.params.xScale)
-                .tickSizeInner(self.params.y1Scale.range()[0] - self.params.y1Scale.range()[1])
-                .tickPadding(5).ticks(self.params.xTicks)
-                .tickFormat(self.params.xFormatter);
-
-            var y1Axis = d3.axisLeft(self.params.y1Scale)
-                .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y1Ticks)
-                .tickFormat(self.params.y1Formatter);
-
-            var y2Axis = d3.axisRight(self.params.y2Scale)
-                .tickSize(-(self.params.xScale.range()[1] - self.params.xScale.range()[0]))
-                .tickPadding(5).ticks(self.params.y2Ticks)
-                .tickFormat(self.params.y2Formatter);
-
-            var svg = self.svgSelection().transition().ease(d3.easeLinear).duration(self.params.duration);
-
-            if (self.params._enableXAxis === "bar") {
-                svg.select(".axis.x-axis").call(xAxis);
-            }
-            if (self.params._y1Chart === "bar") {
-                var y1TickValues = y1Axis.scale().ticks(y1Axis.ticks()[0]);
-                self.config.set({
-                    y1AxisYCoordinates: y1TickValues.map(function(yVal){ return y1Axis.scale()(yVal);})
-                });
-                svg.select(".axis.y1-axis").call(y1Axis);
-            }
-            if (self.params._y2Chart === "bar") {
-                //Y2 axis ticks position should match Y1 axis.
-                //If Y1 coordinates exist, find the corresponding coordinates on Y2 Axis scale.
-                if (self.params.y1AxisYCoordinates) {
-                    var tickValues = self.params.y1AxisYCoordinates.map(function(d){return y2Axis.scale().invert(d)});
-                    y2Axis.tickValues(tickValues);
-                }
-                svg.select(".axis.y2-axis").call(y2Axis);
-            }
         },
 
         renderData: function () {
             var self = this;
             var data = self.getData();
+            var yScale = self.getYScale();
 
+            // Create a flat data structure
+            var flatData = [];
+            var i;
+            var numOfAccessors = _.keys( self.params.activeAccessorData ).length;
+            var innerBandScale = d3.scaleBand().domain( d3.range( numOfAccessors ) ).range( [0, self.params.bandScale.step()] ).paddingInner( 0.1 ).paddingOuter( 0 );
+            _.each( data, function( d ) {
+                i = 0;
+                var x = d[self.params.xAccessor];
+                _.each( self.params.activeAccessorData, function( accessor, key ) {
+                    var y = d[key];
+                    var obj = {
+                        id: x + "-" + key,
+                        className: "bar bar-" + key,
+                        x: self.params.bandScale( x ) + innerBandScale( i ),
+                        y: yScale( y ),
+                        h: yScale.range()[0] - yScale( y ),
+                        w: innerBandScale.step(),
+                        color: self.getBarColor( accessor, key )
+                    };
+                    flatData.push( obj );
+                    i++;
+                });
+            });
+            console.log("Rendering data in BarChartView: ", flatData, self.params, self.getName() );
+            var svgBarGroups = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bar" ).data( flatData );
+            svgBarGroups.enter().append( "rect" )
+                .attr( "class", function( d ) { return d.className; } )
+                .attr( "x", function( d ) { return d.x; } )
+                .attr( "y", yScale.range()[0] )
+                .attr( "height", 0 )
+                .attr( "width", function( d ) { return d.w; } )
+                .on("mouseover", function( d ) {
+                    var pos = $(this).offset();
+                    var tooltipConfig = self.getTooltipConfig(d);
+                    self.eventObject.trigger("mouseover", d, tooltipConfig, pos.left, pos.top);
+                    d3.select(this).classed("active", true);
+                })
+                .on("mouseout", function( d ) {
+                    var pos = $(this).offset();
+                    self.eventObject.trigger("mouseout", d, pos.left, pos.top);
+                    d3.select(this).classed("active", false);
+                })
+                .merge( svgBarGroups ).transition().ease( d3.easeLinear ).duration( self.params.duration )
+                .attr( "fill", function( d ) { return d.color; } )
+                .attr( "x", function( d ) { return d.x; } )
+                .attr( "y", function( d ) { return d.y; } )
+                .attr( "height", function( d ) { return d.h; } )
+                .attr( "width", function( d ) { return d.w; } );
+
+            /*
             this.params._renderData = data;
-
             function renderBars(axisBar, data, accessorList) {
                 accessorList = self.getAccessorListForRender(accessorList);
                 _.each(accessorList, function (accessor, index) {
@@ -394,17 +423,13 @@ define([
                 // Render Y2 bars
                 renderBars(svg.select(".y2-bars"), data, self.params._y2AccessorList);
             }
+            */
         },
 
         render: function () {
             var self = this;
             _.defer(function () {
                 self.resetParams();
-                self.updateAccessorList();
-                self.calculateDimensions();
-                self.calculateScales();
-                self.renderSVG();
-                self.renderAxis();
                 self.renderData();
             });
             return self;

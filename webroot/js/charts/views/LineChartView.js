@@ -19,8 +19,6 @@ define([
         chartType: "line",
 
         initialize: function ( options ) {
-            // TODO: Every model change will trigger a redraw. This might not be desired - dedicated redraw event?
-
             /// The config model
             this.config = options.config;
             this.axisName = options.axisName;
@@ -28,6 +26,7 @@ define([
             /// View params hold values from the config and computed values.
             this.resetParams();
 
+            // TODO: should child react to model and config changes?
             //this.listenTo(this.model, "change", this.render);
             //this.listenTo(this.config, "change", this.render);
             this.eventObject = _.extend({}, Backbone.Events);
@@ -41,17 +40,12 @@ define([
             return this.axisName + "-" + this.chartType;
         },
 
-        calculateActiveAccessorData: function () {},
+        getYScale: function() {
+            return this.params[this.axisName + "Scale"];
+        },
 
         /**
-         * Calculates the chart dimensions and margins.
-         * Use the dimensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
-         * This method should be called before rendering because the available dimensions could have changed.
-         */
-        calculateDimensions: function () {},
-
-        /**
-        * Calculates maximum data extents for all axis.
+        * Called by the parent in order to calculate maximum data extents for all of this child's axis.
         * Assumes the params.activeAccessorData for this child view is filled by the parent with the relevent yAccessors for this child only.
         * Returns an object with following structure: { y1: [0,10], x: [-10,10] }
         */
@@ -70,114 +64,30 @@ define([
         },
 
         /**
-         * Use the scales provided in the config or calculate them to fit data in view.
-         * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
+         * Called by the parent when all scales have been saved in this child's params.
+         * Can be used by the child to perform any additional calculations.
          */
         calculateScales: function () {},
 
         /**
-         * Renders an empty chart.
-         * Resizes chart dimensions if chart already exists.
+         * Called by the parent to allow the child to add some initialization code into the provided entering selection.
          */
-        renderSVG: function () {},
-
-        /**
-         * Renders the axis.
-         */
-        /*
-        renderAxis: function () {
-            var self = this;
-            var xAxis = d3.axisBottom(self.params.xScale)
-                .tickSizeInner( self.params.yMinpx - self.params.yMaxpx )
-                .tickPadding( 5 ).ticks( self.params.xTicks )
-                .tickFormat( self.params.xFormatter );
-
-            var y1Axis = d3.axisLeft(self.params.y1Scale)
-                .tickSize( -(self.params.xMaxpx - self.params.xMinpx) )
-                .tickPadding( 5 ).ticks( self.params.y1Ticks )
-                .tickFormat( self.params.y1Formatter );
-
-            var y2Axis = d3.axisRight(self.params.y2Scale)
-                .tickSize( -(self.params.xMaxpx - self.params.xMinpx) )
-                .tickPadding( 5 ).ticks( self.params.y2Ticks )
-                .tickFormat( self.params.y2Formatter );
-
-            var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
-
-            if (self.params._enableXAxis === "line") {
-                svg.select(".axis.x-axis").call(xAxis);
-            }
-            if (self.params._y1Chart === "line") {
-                var y1TickValues = y1Axis.scale().ticks(y1Axis.ticks()[0]);
-                self.config.set({
-                    y1AxisYCoordinates: y1TickValues.map(function(yVal){ return y1Axis.scale()(yVal);})
-                });
-                svg.select(".axis.y1-axis").call(y1Axis);
-            }
-            if (self.params._y2Chart === "line") {
-                //Y2 axis ticks position should match Y1 axis.
-                //If Y1 coordinates exist, find the corresponding coordinates on Y2 Axis scale.
-                if (self.params.y1AxisYCoordinates) {
-                     var tickValues = self.params.y1AxisYCoordinates.map(function(d){return y2Axis.scale().invert(d)});
-                    y2Axis.tickValues(tickValues);
-                }
-                svg.select(".axis.y2-axis").call(y2Axis);
-            }
+        renderSVG: function ( enteringSelection ) {
+            enteringSelection.append( "g" ).attr( "class", "lines" );
         },
-        */
 
-        getLineColor: function( accessor ) {
+        getLineColor: function( accessorKey ) {
             var self = this;
-            if (_.has(self.params.accessorData[accessor], "color")) {
-                return self.params.accessorData[accessor].color;
+            if (_.has(self.params.accessorData[accessorKey], "color")) {
+                return self.params.accessorData[accessorKey].color;
             } else {
-                var axis = self.params.accessorData[accessor].y;
+                var axis = self.params.accessorData[accessorKey].y;
                 if (!self.params["_y" + axis + "ColorScale"]) {
                     self.params["_y" + axis + "ColorScale"] = d3.scaleOrdinal(d3.schemeCategory20);
                 }
-                return self.params["_y" + axis + "ColorScale"](accessor);
+                return self.params["_y" + axis + "ColorScale"](accessorKey);
             }
         },
-
-        /*
-        //Return the Y axis accessor belongs to.
-        getYAxis: function(accessor) {
-            var axis = undefined;
-            if (_.contains(this.params._y1AccessorList, accessor)) {
-                axis = 1;
-            } else if (_.contains(this.params._y2AccessorList, accessor)) {
-                axis = 2;
-            }
-            return axis;
-        },
-        */
-        /**
-         * Calculates the [min, max] for an accessorList
-         * @param accessorList
-         */
-         /*
-        getRangeForAxis: function (accessorList) {
-            var self = this,
-                axisRanges = [],
-                domain = [undefined, undefined];
-
-            if (accessorList.length > 0) {
-                _.each(accessorList, function (accessor) {
-                    axisRanges = axisRanges.concat(self.model.getRangeFor(accessor));
-                });
-                domain = d3.extent(axisRanges);
-            }
-
-            return domain;
-        },
-        */
-        /*
-        getLineY: function(accessor, dataItem, index) {
-            var self = this,
-                axis =  self.getYAxis(accessor);
-            return self.params["y" + axis + "Scale"](dataItem[accessor]);
-        },
-        */
 
         getTooltipData: function( data, xPos ) {
             var self = this,
@@ -195,26 +105,33 @@ define([
             var svg = self.svgSelection().select( "g.component-" + self.getName() );
 
             // Draw one line (path) for each Y accessor.
-            // Collect linePathData - one item per Y accessor.
+            // Collect linePathData - one line per Y accessor.
             var linePathData = [];
             var lines = {};
-            var yScaleName = self.axisName + "Scale";
+            var zeroLine = d3.line()
+                .x( function ( d ) {
+                    return self.params.xScale( d[self.params.xAccessor] );
+                })
+                .y( function ( d ) {
+                    return yScale.range()[0];
+                });
+            var yScale = self.getYScale();
             _.each( self.params.activeAccessorData, function( accessor, key ) {
                 lines[key] = d3.line()
                     .x( function ( d ) {
                         return self.params.xScale( d[self.params.xAccessor] );
                     })
-                    .y( function ( d, i ) {
-
-                        return self.params[yScaleName]( d[key] );
+                    .y( function ( d ) {
+                        return yScale( d[key] );
                     });
                 linePathData.push( key );
             });
-            console.log("Rendering data in (" + self.id + "): ", data, self.params, linePathData, self.getName() );
+            console.log("Rendering data in LineChartView: ", data, self.params, linePathData, self.getName() );
 
             var svgLines = svg.selectAll( ".line" ).data( linePathData, function( d ) { return d; } );
             svgLines.enter().append( "path" )
                 .attr( "class", function( d ) { return "line line-" + d; } )
+                .attr( "d", function( d ) { return zeroLine( data ) } )
                 .on( "mouseover", function( d ) {
                     var pos = d3.mouse(this);//$(this).offset();
                     var offset = $(this).offset();

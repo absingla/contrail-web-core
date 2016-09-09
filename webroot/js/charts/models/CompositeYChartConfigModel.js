@@ -17,7 +17,7 @@ define([
             chartHeight: undefined,
 
             /// Duration of chart transitions.
-            duration: 100,
+            duration: 300,
 
             xTicks: 10,
             yTicks: 10,

@@ -45,14 +45,17 @@ define([
             self.params.activeAccessorData = {};
             self.params.yAxisInfoArray = [];
             console.log( "data: ", data );
+            // Initialize the components activeAccessorData structure
+            _.each( self.components, function( component ) {
+                component.params.activeAccessorData = {};
+                component.params.enable = false;
+            });
             // Fill the activeAccessorData structure.
             _.each( self.params.accessorData, function ( accessor, key ) {
                 if( _.isFinite( accessor.y ) && accessor.y >= 0 ) {
                     var axisName = "y" + accessor.y;
                     var component = self.getComponent( axisName, accessor.chartType );
                     if( component ) {
-                        component.params.activeAccessorData = {};
-                        component.params.enable = false;
                         if( accessor.enable /*&& _.has( data[0], key )*/ ) {
                             self.params.activeAccessorData[key] = accessor;
                             var foundAxisInfo = _.findWhere( self.params.yAxisInfoArray, { name: axisName } );
@@ -61,8 +64,7 @@ define([
                                 	name: axisName,
                                 	used: 0,
                                 	position: ((accessor.y % 2) ? "left" : "right"),
-                                	num: Math.floor( accessor.y / 2),
-                                	extent: []
+                                	num: Math.floor( (accessor.y - 1) / 2)
                                 };
                                 self.params.yAxisInfoArray.push( foundAxisInfo );
                             }
@@ -128,6 +130,12 @@ define([
             self.params.xRange = [self.params.marginInner + self.params.marginLeft, self.params.chartWidth - self.params.marginInner - self.params.marginRight];
             self.params.yRange = [self.params.chartHeight - self.params.marginInner - self.params.marginBottom, self.params.marginInner + self.params.marginTop];
             self.saveScales();
+            // Now let every component perform it's own calculations based on the provided X and Y scales.
+            _.each( self.components, function( component ) {
+                if( _.isFunction( component.calculateScales ) ) {
+                    component.calculateScales();
+                }
+            });
         },
 
         getComponent: function( axisName, chartType ) {
@@ -190,36 +198,6 @@ define([
         },
 
         /**
-        * Get the maximum extents (ranges) for all Y axis.
-        * We can have multiple variables displayed on one Y axis so we need to calculate the maximum extent (range) for every variable
-        * displayed on the Y1, Y2, ... axis.
-        * We do not limit the number of possible Y axis.
-        */
-        /*
-        getRangesForAllYAccessors: function() {
-            var self = this;
-            var ranges = {};
-            _.each( self.params.activeAccessorData, function( accessor, key ) {
-                var range = self.model.getRangeFor( key );
-                var axisName = "y" + accessor.y;
-                if( !ranges[axisName] ) {
-                    ranges[axisName] = [range[0], range[1]];
-                }
-                else {
-                    // check if the new range extends the current one
-                    if( range[0] < ranges[axisName][0] ) {
-                        ranges[axisName][0] = range[0];
-                    }
-                    if( range[1] > ranges[axisName][1] ) {
-                        ranges[axisName][1] = range[1];
-                    }
-                }
-            });
-            return ranges;
-        },
-        */
-
-        /**
         * Save all scales in the params and component.params structures.
         */
         saveScales: function() {
@@ -233,6 +211,7 @@ define([
                 var scaleName = axisName + "Scale";
                 var rangeName = axisName.charAt( 0 ) + "Range";
                 if( !_.isFunction( self.config.get( scaleName ) ) ) {
+                    // TODO: a scale type may be provided in the accessorData structure.
                     self.params[scaleName] = d3.scaleLinear().domain( self.params[domainName] ).range( self.params[rangeName] );
                 }
                 // Now update the scales of the appropriate components.
@@ -253,7 +232,7 @@ define([
             svg.append("g")
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.yRange[1] - self.params.marginInner ) + ")");
-            console.log( "CompositeYChart renderSVG: ", self.params.yAxisInfoArray );
+            console.log( "CompositeYChart.renderSVG yAxisInfoArray: ", self.params.yAxisInfoArray );
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
             	var translate = self.params.xRange[0] - self.params.marginInner;
             	if( axisInfo.position == "right" ) {
@@ -264,7 +243,7 @@ define([
                 .attr("transform", "translate(" + translate + ",0)");
             });
             // Handle component groups
-            console.log( "CompositeYChartView.renderSVG self.components: ", self.components );
+            console.log( "CompositeYChartView.renderSVG components: ", self.components );
             var svgComponentGroups = self.svgSelection().selectAll( ".component-group" ).data( self.components, function( c ) {
                 var id = 0;
                 if( _.isObject( c ) ) {
@@ -276,7 +255,13 @@ define([
                 return id;
             });
             svgComponentGroups.enter().append( "g" )
-                .attr( "class", function( component ) { return "component-group component-" + component.getName(); } );
+                .attr( "class", function( component ) { return "component-group component-" + component.getName() + " " + component.className; } );
+            // Every component can add a one time (enter) code into it's component group.
+            svgComponentGroups.enter().each( function( component ) {
+                if( _.isFunction( component.renderSVG ) ) {
+                     d3.select( this ).select( ".component-" + component.getName() ).call( component.renderSVG );
+                }
+            });
             svgComponentGroups.exit().remove();
             // Handle (re)size.
             self.svgSelection()
@@ -299,17 +284,26 @@ define([
             svg.select( ".axis.x-axis" ).call( xAxis );
             // We render the yAxis here because there may be multiple components for one axis.
             // The parent has aggregated information about all Y axis.
+            var referenceYScale = null;
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
-                var yAxis = null;
                 var scaleName = axisInfo.name + "Scale";
                 if( axisInfo.position == "right" ) {
-                    yAxis = d3.axisRight( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
+                    axisInfo.yAxis = d3.axisRight( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
                 }
                 else {
-                    yAxis = d3.axisLeft( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
+                    axisInfo.yAxis = d3.axisLeft( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
                 }
-                // TODO: handle axis y1 - y2 ticks.
-                svg.select( ".axis.y-axis." + axisInfo.name + "-axis" ).call( yAxis );
+                if( !referenceYScale ) {
+                    referenceYScale = self.params[scaleName];
+                }
+                else {
+                    // This is not the first Y axis so adjust the tick values to the first axis tick values.
+                    var referenceTickValues = _.map( referenceYScale.ticks( self.params.yTicks ), function( tickValue ) {
+                        return axisInfo.yAxis.scale().invert( referenceYScale( tickValue ) );
+                    });
+                    axisInfo.yAxis = axisInfo.yAxis.tickValues( referenceTickValues );
+                }
+                svg.select( ".axis.y-axis." + axisInfo.name + "-axis" ).call( axisInfo.yAxis );
             });
         },
 

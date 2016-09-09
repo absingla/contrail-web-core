@@ -138,7 +138,7 @@ define([
             var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
             var tooltipView = new TooltipView({config: tooltipConfig});
 
-            var possibleChildViews = { line: LineChartView };
+            var possibleChildViews = { line: LineChartView, bar: BarChartView };
             var modelConfigForChartType = {
                 line: {
                     parentDataModel: self.chartDataModel,
@@ -268,6 +268,7 @@ define([
 
         },
 
+        /*
         _renderChartComponents: function() {
             var self = this;
             _.each(self.chartComponents, function(component) {
@@ -275,6 +276,7 @@ define([
                 component.render();
             });
         }
+        */
     });
 
     function getChartConfig(selector, chartOptions) {

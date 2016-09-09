@@ -361,9 +361,11 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     shape-rendering: crispEdges;
 }
 
+/*
 .coCharts-container .tick:first-child line, .coCharts-container .tick:last-child line {
     visibility: hidden;
 }
+*/
 
 .coCharts-container .axis path, .contrail .axis line {
     fill: none;
@@ -371,17 +373,11 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     stroke-width: 1px;
 }
 
-.coCharts-container .bar-chart .bar {
-    fill-opacity: .75;
-}
-
-.coCharts-container .bar-chart .bar.active {
-    fill-opacity: 1;
-}
-
+/*
 .coCharts-container .line-chart .line {
     fill: none;
 }
+*/
 
 .coCharts-container .axis-label {
     text-anchor: middle;
@@ -478,7 +474,7 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     stroke: #358cbf;
     cursor: pointer
 }
-
+/* Line chart is a child view so it does not have it's own axis now.
 .line-chart .axis.x-axis .domain {
     display: none
 }
@@ -506,10 +502,18 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     font-size: 11px;
     fill: #666
 }
-
+*/
 .line-chart .line {
     fill: none;
     stroke-width: 2
+}
+
+.bar-chart .bar {
+    fill-opacity: .75;
+}
+
+.bar-chart .bar.active {
+    fill-opacity: 1;
 }
 
 .navigation-view .page-links {
