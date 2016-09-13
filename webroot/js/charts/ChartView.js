@@ -203,7 +203,7 @@ define([
                                 var dataProvider = new DataProvider( modelConfigForChartType[accessor.chartType] );
                                 foundComponent = new ChildView({
                                     model: dataProvider,
-                                    config: self.chartConfigModel.get( "mainChart" ).clone(),
+                                    config: self.chartConfigModel.get( "mainChart" ),
                                     messageEvent: messageView.eventObject,
                                     el: $(selector).find(".coCharts-main-container"),
                                     id: self.chartConfig.chartId,

@@ -19,8 +19,7 @@ define([
             this.config = options.config;
             this.axisName = options.axisName;
 
-            /// View params hold values from the config and computed values.
-            this.resetParams();
+            // The child's params are reset by parent.
 
             // TODO: should child react to model and config changes?
             //this.listenTo(this.model, "change", this.render);
@@ -300,6 +299,7 @@ define([
             });
             domains[self.axisName] = d3.extent( domains[self.axisName] );
             console.log( "BarChartView domains for " + self.getName() + ": ", domains );
+            self.params.handledAxisNames = _.keys( domains );
             return domains;
         },
 
@@ -348,8 +348,9 @@ define([
                     i++;
                 });
             });
+            // Render the flat data structure
             console.log("Rendering data in BarChartView: ", flatData, self.params, self.getName() );
-            var svgBarGroups = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bar" ).data( flatData );
+            var svgBarGroups = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bar" ).data( flatData, function( d ) { return d.id; } );
             svgBarGroups.enter().append( "rect" )
                 .attr( "class", function( d ) { return d.className; } )
                 .attr( "x", function( d ) { return d.x; } )
@@ -372,6 +373,7 @@ define([
                 .attr( "y", function( d ) { return d.y; } )
                 .attr( "height", function( d ) { return d.h; } )
                 .attr( "width", function( d ) { return d.w; } );
+            svgBarGroups.exit().remove();
 
             /*
             this.params._renderData = data;
@@ -428,7 +430,6 @@ define([
         render: function () {
             var self = this;
             _.defer(function () {
-                self.resetParams();
                 self.renderData();
             });
             return self;

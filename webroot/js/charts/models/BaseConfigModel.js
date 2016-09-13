@@ -10,17 +10,22 @@ define([
 	var BaseConfigModel = Backbone.Model.extend({
 
         initialize: function( options ) {
-            this.initializeComputedParameters();
         },
 
 		/**
         * Initialize the computed parameters with the config parameters.
         */
-        initializeComputedParameters: function() {
-            if( !this._computed ) {
-                this._computed = {};
+        initializedComputedParameters: function() {
+            this._computed = {};
+            return _.extend( this._computed, this.toJSON() );
+        },
+
+        initializedComputedParametersForChild: function( childIndex ) {
+            if( !_.isArray( this._computedForChild ) ) {
+                this._computedForChild = [];
             }
-            _.extend( this._computed, this.toJSON() );
+            this._computedForChild[childIndex] = {};
+            return _.extend( this._computedForChild[childIndex], this.toJSON() );
         }
 	});
 

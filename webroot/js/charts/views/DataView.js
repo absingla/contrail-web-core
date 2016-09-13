@@ -23,8 +23,11 @@ define(["jquery", "underscore", "backbone", "d3-v4"],
              * The view may modify the params object with calculated values.
              */
             resetParams: function () {
-                this.config.initializeComputedParameters();
-                this.params = this.config._computed;
+                this.params = this.config.initializedComputedParameters();
+            },
+
+            resetParamsForChild: function( childIndex ) {
+                this.params = this.config.initializedComputedParametersForChild( childIndex );
             },
 
             /**

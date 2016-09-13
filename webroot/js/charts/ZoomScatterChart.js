@@ -10,6 +10,8 @@ define([
     "core-basedir/js/charts/models/DataProvider",
     "core-basedir/js/charts/models/ScatterBubbleChartConfigModel",
     "core-basedir/js/charts/views/ScatterBubbleChartView",
+    "core-basedir/js/charts/models/CompositeYChartConfigModel",
+    "core-basedir/js/charts/views/CompositeYChartView",
     "core-basedir/js/charts/models/NavigationComponentConfigModel",
     "core-basedir/js/charts/views/NavigationView",
     "core-basedir/js/charts/models/TooltipComponentConfigModel",
@@ -18,6 +20,7 @@ define([
     "core-basedir/js/charts/views/MessageView",
 ], function (ContrailListModel, ContrailView, d3, DataModel, DataProvider,
              ScatterBubbleChartConfigModel, ScatterBubbleChartView,
+             CompositeYChartConfigModel, CompositeYChartView,
              NavigationComponentConfigModel, NavigationView,
              TooltipComponentConfigModel, TooltipView,
              MessageComponentConfigModel, MessageView) {
@@ -164,6 +167,7 @@ define([
             // $(selector).find(".coCharts-control-panel-container").append(variableSelectorView.render().el);
 
             // NavigationView
+            /*
             var navigationComponentConfigModel = new NavigationComponentConfigModel(self.chartConfig.navigation);
             var navigationView = new NavigationView({
                 model: dataProvider,
@@ -172,10 +176,30 @@ define([
                 id: "navigationView"
             });
             $(selector).find(".coCharts-navigation-container").append(navigationView.render().el);
+            */
 
             // Create a chartView providing an available DOM element to render in.
-            var mainChartDataProvider = navigationView.getFocusDataProvider();
-            var mainChartViewConfigModel = new ScatterBubbleChartConfigModel(self.chartConfig.mainChart);
+            //var mainChartDataProvider = navigationView.getFocusDataProvider();
+            var mainChartViewConfigModel = new ScatterBubbleChartConfigModel( self.chartConfig.mainChart );
+            var compositeYChartView = new CompositeYChartView({
+                //model: mainChartDataProvider,
+                model: dataProvider,
+                config: mainChartViewConfigModel,
+                el: $(selector).find(".coCharts-main-container"),
+                id: self.chartConfig.chartId
+            });
+            var subChartView = new ScatterBubbleChartView({
+                //model: mainChartDataProvider,
+                model: dataProvider,
+                config: mainChartViewConfigModel,
+                el: $(selector).find(".coCharts-main-container"),
+                id: self.chartConfig.chartId,
+                axisName: "y2"
+            });
+            compositeYChartView.components.push( subChartView );
+            compositeYChartView.render();
+
+            /*
             var mainChartView = new ScatterBubbleChartView({
                 model: mainChartDataProvider,
                 config: mainChartViewConfigModel,
@@ -183,11 +207,12 @@ define([
                 id: self.chartConfig.chartId
             });
             mainChartView.render();
+            */
 
             // TooltipView
             var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
             var tooltipView = new TooltipView({config: tooltipConfig});
-            tooltipView.registerTriggerEvent(mainChartView.eventObject, "mouseover", "mouseout");
+            tooltipView.registerTriggerEvent(compositeYChartView.eventObject, "mouseover", "mouseout");
         }
     });
 

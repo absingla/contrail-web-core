@@ -23,8 +23,7 @@ define([
             this.config = options.config;
             this.axisName = options.axisName;
 
-            /// View params hold values from the config and computed values.
-            this.resetParams();
+            // The child's params are reset by parent.
 
             // TODO: should child react to model and config changes?
             //this.listenTo(this.model, "change", this.render);
@@ -60,6 +59,7 @@ define([
             });
             domains[self.axisName] = d3.extent( domains[self.axisName] );
             console.log( "LineChartView domains for " + self.getName() + ": ", domains );
+            self.params.handledAxisNames = _.keys( domains );
             return domains;
         },
 
@@ -202,14 +202,6 @@ define([
         render: function () {
             var self = this;
             _.defer(function () {
-                self.resetParams();
-                /*
-                self.updateAccessorList();
-                self.calculateDimensions();
-                self.calculateScales();
-                self.renderSVG();
-                self.renderAxis();
-                */
                 self.renderData();
             });
             return self;

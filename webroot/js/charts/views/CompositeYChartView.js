@@ -35,6 +35,16 @@ define([
             $( window ).resize( throttled );
         },
 
+        resetParams: function() {
+            // Reset parents params
+            this.params = this.config.initializedComputedParameters();
+            // Reset params for all children.
+            // This way every child component can have access to parents config and still have its own computed params stored in config.
+            _.each( this.components, function( component, i ) {
+                component.resetParamsForChild( i );
+            });
+        },
+
         /**
         * Calculates the activeAccessorData that holds only the verified and enabled accessors from the accessorData structure.
         * Params: activeAccessorData, yAxisInfoArray
@@ -154,10 +164,7 @@ define([
             var self = this;
             var foundComponents = [];
             _.each( self.components, function( component ) {
-                if( component.axisName == axisName ) {
-                    foundComponents.push( component );
-                }
-                else if( axisName == "x" ) {
+                if( _.contains( component.params.handledAxisNames, axisName ) ) {
                     foundComponents.push( component );
                 }
             });
@@ -210,7 +217,7 @@ define([
                 }
                 var scaleName = axisName + "Scale";
                 var rangeName = axisName.charAt( 0 ) + "Range";
-                if( !_.isFunction( self.config.get( scaleName ) ) ) {
+                if( !_.isFunction( self.config.get( scaleName ) ) && self.params[rangeName] ) {
                     // TODO: a scale type may be provided in the accessorData structure.
                     self.params[scaleName] = d3.scaleLinear().domain( self.params[domainName] ).range( self.params[rangeName] );
                 }

@@ -11,206 +11,162 @@ define([
         className: "scatter-bubble-chart",
         chartType: "scatterBubble",
 
-        initialize: function (options) {
-            var self = this;
-            // TODO: Every model change will trigger a redraw. This might not be desired - dedicated redraw event?
-
+        initialize: function ( options ) {
             /// The config model
-            self.config = options.config;
+            this.config = options.config;
+            this.axisName = options.axisName;
 
-            /// View params hold values from the config and computed values.
-            self.resetParams();
+            // The child's params are reset by parent.
 
-            self.listenTo(self.model, "change", self.render);
-            self.listenTo(self.config, "change", self.render);
-            self.eventObject = _.extend({}, Backbone.Events);
-            var throttled = _.throttle( function() {
-                self.render();
-            }, 100 );
-            $( window ).resize( throttled );
+            // TODO: should child react to model and config changes?
+            //this.listenTo(this.model, "change", this.render);
+            //this.listenTo(this.config, "change", this.render);
+            this.eventObject = _.extend({}, Backbone.Events);
         },
 
         /**
-         * Calculates the chart dimensions and margins.
-         * Use the dimensions provided in the config. If not provided use all available width of container and 3/4 of this width for height.
-         * This method should be called before rendering because the available dimensions could have changed.
-         */
-        calculateDimmensions: function () {
+        * Returns the unique name of this component so it can identify itself for the parent.
+        * The component's name is of the following format: [axisName]-[chartType] ie. "y1-line".
+        */
+        getName: function() {
+            return this.axisName + "-" + this.chartType;
+        },
+
+        getYScale: function() {
+            return this.params[this.axisName + "Scale"];
+        },
+
+        getBubbleColor: function( accessor, key ) {
             var self = this;
-            if (!self.params.chartWidth) {
-                self.params.chartWidth = self.$el.width();
+            if( _.has( accessor, "color") ) {
+                return accessor.color;
+            } else {
+                var axis = accessor.y;
+                if( !self.params["_y" + axis + "ColorScale"] ) {
+                    self.params["_y" + axis + "ColorScale"] = d3.scaleOrdinal(d3.schemeCategory20);
+                }
+                return self.params["_y" + axis + "ColorScale"](key);
             }
-            if (!self.params.chartHeight) {
-                self.params.chartHeight = Math.round(3 * self.params.chartWidth / 4);
-            }
-            var elementsThatNeedMargins = {title: 30, axis: 30};
-            _.each(["Top", "Bottom", "Left", "Right"], function (side) {
-                if (!self.params["margin" + side]) {
-                    self.params["margin" + side] = self.params.margin;
-                    _.each(elementsThatNeedMargins, function (marginAdd, key) {
-                        if (self.params[key + side]) {
-                            // The side margin was undefined and we need addition room (for axis, title, etc.)
-                            self.params["margin" + side] += marginAdd;
-                        }
-                    });
+        },
+
+        /**
+        * Called by the parent in order to calculate maximum data extents for all of this child's axis.
+        * Assumes the params.activeAccessorData for this child view is filled by the parent with the relevent yAccessors for this child only.
+        * Returns an object with following structure: { y1: [0,10], x: [-10,10] }
+        */
+        calculateAxisDomains: function() {
+            var self = this;
+            var domains = { x: self.model.getRangeFor( self.params.xAccessor ) };
+            domains[self.axisName] = [];
+            // TODO: a domain may by specified in the accessorData config or in params. No need for calculating it then.
+            _.each( self.params.activeAccessorData, function( accessor, key ) {
+                var domain = self.model.getRangeFor( key );
+                domains[self.axisName] = domains[self.axisName].concat( domain );
+                if( accessor.sizeAccessor && accessor.shape ) {
+                    var sizeAxisName = "r" + accessor.shape;
+                    if( !domains[sizeAxisName] ) {
+                        domains[sizeAxisName] = [];
+                    }
+                    domains[sizeAxisName] = domains[sizeAxisName].concat( self.model.getRangeFor( accessor.sizeAccessor ) );
                 }
             });
-        },
-
-        /**
-        * Create the usabelAccessorData that holds only the verified and enabled accessors from the accessorData structure.
-        */
-        updateAccessorList: function () {
-            var self = this;
-            data = self.getData();
-            self.params.usableAccessorData = {};
-            self.params.yAxisNames = {};
-            _.each( self.params.accessorData, function ( accessor, key ) {
-                if( accessor.enable && _.has( data[0], key ) ) {
-                    if( _.isFinite( accessor.y ) && accessor.y >= 0 && accessor.sizeAccessor && _.has( data[0], accessor.sizeAccessor ) ) {
-                        var axisName = "y" + accessor.y;
-                        self.params.usableAccessorData[key] = accessor;
-                        if( !_.has( self.params.yAxisNames, axisName ) ) {
-                            self.params.yAxisNames[axisName] = 0;
-                        }
-                        self.params.yAxisNames[axisName]++;
-                    }
-                }
+            _.each( domains, function( domain, key ) {
+                domains[key] = d3.extent( domain );
             });
+            console.log( "ScatterBubbleChartView domains for " + self.getName() + ": ", domains );
+            self.params.handledAxisNames = _.keys( domains );
+            return domains;
         },
 
         /**
-        * Get the maximum extents (ranges) for all Y axis.
-        * We can have multiple variables displayed on one Y axis so we need to calculate the maximum extent (range) for every variable
-        * displayed on the Y1, Y2, ... axis.
-        * We do not limit the number of possible Y axis.
-        */
-        getRangesForAllYAccessors: function() {
-            var self = this;
-            var ranges = {};
-            _.each( self.params.usableAccessorData, function( accessor, key ) {
-                var range = [ self.model.getRangeFor( key ), self.model.getRangeFor( accessor.sizeAccessor ) ];
-                var axisName = [ "y" + accessor.y, "r" + accessor.shape ];
-                _.each( d3.range( 2 ), function( i ) {
-                    if( !ranges[axisName[i]] ) {
-                        ranges[axisName[i]] = range[i];
-                    }
-                    else {
-                        // check if the new range extends the current one
-                        if( range[i][0] < ranges[axisName[i]][0] ) {
-                            ranges[axisName[i]][0] = range[i][0];
-                        }
-                        if( range[i][1] > ranges[axisName[i]][1] ) {
-                            ranges[axisName[i]][1] = range[i][1];
-                        }
-                    }
-                });
-            });
-            // Now:
-            // ranges.y1 holds the maximum extent (range) for all variables displayed on the Y1 axis
-            // ranges.y2 holds the maximum extent (range) for all variables displayed on the Y2 axis
-            // ranges.y3 ...
-            // ranges.r[shape] holds the maximum extent (range) of the shape's size.
-            return ranges;
-        },
-
-        /**
-         * Use the scales provided in the config or calculate them to fit data in view.
-         * Assumes to have the range values available in the DataProvider (model) and the chart dimensions available in params.
+         * Called by the parent when all scales have been saved in this child's params.
+         * Can be used by the child to perform any additional calculations.
          */
         calculateScales: function () {
+            // Calculate the r scales. Calculatation done by parent based on shape domains.
+            // A scatter bubble chart adds additional axis - one for every bubble shape - for example rcircle, rsquare, ...
+            /*
             var self = this;
-            var rangeX = self.model.getRangeFor( self.params.xAccessor );
-            var ranges = self.getRangesForAllYAccessors();
-            // Calculate the starting and ending positions in pixels of the graph's bounding box.
-            self.params.rMinpx = 2;
-            self.params.rMaxpx = Math.max( 5, Math.min(self.params.chartWidth, self.params.chartHeight) ) / 25;
-            self.params.yMinpx = self.params.chartHeight - self.params.rMaxpx - self.params.marginBottom;
-            self.params.yMaxpx = self.params.rMaxpx + self.params.marginTop;
-            self.params.xMinpx = self.params.rMaxpx + self.params.marginLeft;
-            self.params.xMaxpx = self.params.chartWidth - self.params.rMaxpx - self.params.marginRight;
-            if( !self.params.xScale ) {
-                self.params.xScale = d3.scaleLinear().domain( rangeX ).range([self.params.xMinpx, self.params.xMaxpx]);//.nice( self.params.xTicks );
-            }
-            // Create the scales for every Y range and for every R range.
-            _.each( ranges, function( range, key ) {
-                var scaleName = key + "Scale";
-                if( !self.params[scaleName] ) {
-                    if( key.charAt(0) == 'r' ) {
-                        self.params[scaleName] = d3.scaleLinear().domain( range ).range([self.params.rMinpx, self.params.rMaxpx]);
-                    }
-                    else {
-                        self.params[scaleName] = d3.scaleLinear().domain( range ).range([self.params.yMinpx, self.params.yMaxpx]);
-                    }
+            _.each( self.params.activeAccessorData, function( accessor, key ) {
+                if( accessor.sizeAccessor ) {
+                    var scaleName = "r" + accessor.sizeAccessor + "Scale";
+                    var sizeDomainName = "r" + accessor.sizeAccessor + "Domain";
+                    var innerRange = [ 2, Math.max( 2, self.params.innerMargin ) ];
+                    self.params[scaleName] = d3.scaleLinear().domain( self.params[sizeDomainName] ).range( innerRange );
                 }
             });
+            */
         },
 
         /**
-         * Renders an empty chart.
-         * Resizes chart dimensions if chart already exists.
+         * Called by the parent to allow the child to add some initialization code into the provided entering selection.
          */
-        renderSVG: function () {
-            var self = this;
-            var svgs = d3.select(self.$el.get(0)).selectAll("svg").data([self.id]);
-            var svg = svgs.enter().append("svg").attr("id", function (d) {
-                return d;
-            });
-            svg.append("g")
-                .attr("class", "axis x-axis")
-                .attr("transform", "translate(0," + ( self.params.yMaxpx - self.params.rMaxpx ) + ")");
-            // TODO: Do not hardcode number of Y axis. Add every Y axis depending on the self.params.accessorData definition (or self.params.yAxisNames).
-            svg.append("g")
-                .attr("class", "axis y-axis y1-axis")
-                .attr("transform", "translate(" + ( self.params.xMinpx - self.params.rMaxpx ) + ",0)");
-            svg.append("g")
-                .attr("class", "axis y-axis y2-axis")
-                .attr("transform", "translate(" + ( self.params.xMaxpx + self.params.rMaxpx ) + ",0)");
-            svg.append("g")
-                .attr("class", "bubbles");
-            self.svgSelection()
-                .attr("width", self.params.chartWidth)
-                .attr("height", self.params.chartHeight);
+        renderSVG: function ( enteringSelection ) {
+            enteringSelection.append( "g" ).attr( "class", "bubbles" );
         },
 
-        svgSelection: function () {
-            var self = this;
-            return d3.select(self.$el.get(0)).select("svg#" + self.id);
+        shapeEnterFunctions: { circle: "shapeEnterCircle" },
+        shapeEditFunctions: { circle: "shapeEditCircle" },
+        
+        shapeEnterCircle: function( d, selection ) {
+            selection.append( "circle" )
+                .attr( "class", d.className )
+                .attr( "cx", d.x )
+                .attr( "cy", d.y )
+                .attr( "r", 0 );
         },
 
-        /**
-         * Renders the axis.
-         */
-        renderAxis: function () {
-            var self = this;
-            // ticks are the mesh lines
-            // TODO: Do not hardcode the number of Y axis.
-            var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.yMinpx - self.params.yMaxpx + 2 * self.params.rMaxpx).tickPadding(5).ticks(self.params.xTicks);
-            var y1Axis = d3.axisLeft(self.params.y1Scale).tickSize(-(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.rMaxpx)).tickPadding(5).ticks(self.params.yTicks);
-            var y2Axis = d3.axisRight(self.params.y2Scale).tickSize(-(self.params.xMaxpx - self.params.xMinpx + 2 * self.params.rMaxpx)).tickPadding(5).ticks(self.params.yTicks);
-            var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
-            svg.select(".axis.x-axis").call( xAxis );
-            if( self.params.y1Scale ) {
-                svg.select(".axis.y1-axis").call( y1Axis );
-            }
-            if( self.params.y2Scale ) {
-                svg.select(".axis.y2-axis").call( y2Axis );
-            }
-        },
-
-        getData: function () {
-            return this.model.getData();
+        shapeEditCircle: function( d, selection ) {
+            selection
+                .attr( "cx", d.x )
+                .attr( "cy", d.y )
+                .attr( "r", d.r );
+            console.log( "shapeEditCircle: ", d, selection );
         },
 
         renderData: function () {
             var self = this;
             var data = self.getData();
-            console.log("Rendering data in (" + self.id + "): ", data, self.params);
-            var svg = self.svgSelection();
-            var svgBubbles = svg.select( ".bubbles" ).selectAll( ".bubble-group" ).data( data, function ( d ) {
-                return d.id;
+            var yScale = self.getYScale();
+
+            // Create a flat data structure
+            var flatData = [];
+            _.each( data, function( d ) {
+                var x = d[self.params.xAccessor];
+                _.each( self.params.activeAccessorData, function( accessor, key ) {
+                    var y = d[key];
+                    var rScaleName = "r" + accessor.shape + "Scale";
+                    var obj = _.extend({}, d, {
+                        id: x + "-" + key,
+                        className: "bubble bubble-" + key,
+                        selectClassName: ".bubble-" + key,
+                        x: self.params.xScale( x ),
+                        y: yScale( y ),
+                        shape: accessor.shape,
+                        r: self.params[rScaleName]( d[accessor.sizeAccessor] ),
+                        color: self.getBubbleColor( accessor, key )
+                    });
+                    flatData.push( obj );
+                });
             });
-            // One data element renders as one bubble-group with multiple bubbles in it - one bubble for each Y accessor.
+            console.log( "Rendering data in ScatterBubbleChart: ", flatData, self.params, self.getName() );
+            var svg = self.svgSelection();
+            var svgBubbles = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bubble" ).data( flatData, function( d ) { return d.id; } );
+            svgBubbles.enter()
+                .each( function( d ) {
+                    self[self.shapeEnterFunctions[d.shape]]( d, d3.select( this ) );
+                });
+            svgBubbles = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bubble" ).data( flatData, function( d ) { return d.id; } );
+            svgBubbles.transition().ease( d3.easeLinear ).duration( self.params.duration )
+            /*
+                .attr( "cx", function( d ) { return d.x; } )
+                .attr( "cy", function( d ) { return d.y; } )
+                .attr( "r", function( d ) { return d.r; } );
+            */
+                .each( function( d ) {
+                    self[self.shapeEditFunctions[d.shape]]( d, d3.select( this ) );
+                });
+            /*
             var svgBubblesGroupEnter = svgBubbles.enter()
                 .append( "g" )
                 .attr( "class", "bubble-group" );
@@ -252,6 +208,7 @@ define([
                         return self.params[scaleRName]( d[accessor.sizeAccessor] );
                     });
             });
+            */
             svgBubbles.exit().transition().ease( d3.easeLinear ).duration( self.params.duration )
                 .attr( "r", 0 )
                 .remove();
@@ -260,12 +217,6 @@ define([
         render: function () {
             var self = this;
             _.defer(function () {
-                self.resetParams();
-                self.updateAccessorList();
-                self.calculateDimmensions();
-                self.calculateScales();
-                self.renderSVG();
-                self.renderAxis();
                 self.renderData();
             });
             return self;
