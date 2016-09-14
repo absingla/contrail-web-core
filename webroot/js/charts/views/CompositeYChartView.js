@@ -262,7 +262,9 @@ define([
                 return id;
             });
             svgComponentGroups.enter().append( "g" )
-                .attr( "class", function( component ) { return "component-group component-" + component.getName() + " " + component.className; } );
+                .attr( "class", function( component ) {
+                    return "component-group component-" + component.getName() + " " + component.className;
+                } );
             // Every component can add a one time (enter) code into it's component group.
             svgComponentGroups.enter().each( function( component ) {
                 if( _.isFunction( component.renderSVG ) ) {
@@ -305,7 +307,9 @@ define([
          */
         renderAxis: function () {
             var self = this;
-            var xAxis = d3.axisBottom(self.params.xScale).tickSizeInner(self.params.yRange[0] - self.params.yRange[1] + 2 * self.params.marginInner).tickPadding(5).ticks(self.params.xTicks);
+            var xAxis = d3.axisBottom(self.params.xScale)
+                .tickSizeInner(self.params.yRange[0] - self.params.yRange[1] + 2 * self.params.marginInner)
+                .tickPadding(5).ticks(self.params.xTicks);
             var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
             svg.select( ".axis.x-axis" ).call( xAxis );
             // We render the yAxis here because there may be multiple components for one axis.
@@ -314,10 +318,14 @@ define([
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
                 var scaleName = axisInfo.name + "Scale";
                 if( axisInfo.position == "right" ) {
-                    axisInfo.yAxis = d3.axisRight( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
+                    axisInfo.yAxis = d3.axisRight( self.params[scaleName] )
+                        .tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) )
+                        .tickPadding(5).ticks( self.params.yTicks );
                 }
                 else {
-                    axisInfo.yAxis = d3.axisLeft( self.params[scaleName] ).tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) ).tickPadding(5).ticks( self.params.yTicks );
+                    axisInfo.yAxis = d3.axisLeft( self.params[scaleName] )
+                        .tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) )
+                        .tickPadding(5).ticks( self.params.yTicks );
                 }
                 if( !referenceYScale ) {
                     referenceYScale = self.params[scaleName];
