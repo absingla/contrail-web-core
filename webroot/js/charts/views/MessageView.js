@@ -36,6 +36,18 @@ define([
             }
         },
 
+        /**
+        * If a component wants to show any massege it will trigger the "message" event on it's eventObject.
+        * Here we register a handler to such an event.
+        */
+        registerComponentMessageEvent: function( componentEventObject ) {
+            this.listenTo( componentEventObject, "message", this.handleComponentMessage );
+        },
+
+        handleComponentMessage: function( messageObj ) {
+            // TODO: do something with the component's message
+        },
+
         renderMessage: function (messageObj, error) {
             var self = this;
             self.container.find("." + self.className).remove();

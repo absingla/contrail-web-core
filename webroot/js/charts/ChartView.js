@@ -11,22 +11,22 @@ define([
     "core-basedir/js/charts/models/DataProvider",
     "core-basedir/js/charts/models/CompositeYChartConfigModel",
     "core-basedir/js/charts/views/CompositeYChartView",
-    "core-basedir/js/charts/views/LineChartView",
-    "core-basedir/js/charts/views/BarChartView",
     "core-basedir/js/charts/models/TooltipComponentConfigModel",
     "core-basedir/js/charts/views/TooltipView",
     "core-basedir/js/charts/models/MessageComponentConfigModel",
     "core-basedir/js/charts/views/MessageView",
-    "core-basedir/js/charts/views/ControlPanelView",
+    "core-basedir/js/charts/models/NavigationComponentConfigModel",
+    "core-basedir/js/charts/views/NavigationView",
     "core-basedir/js/charts/models/ControlPanelConfigModel",
+    "core-basedir/js/charts/views/ControlPanelView"
 ], function( 
-    Backbone, ContrailListModel, ContrailView, d3, DataModel, DataProvider,
+    Backbone, ContrailListModel, ContrailView, d3,
+    DataModel, DataProvider,
     CompositeYChartConfigModel, CompositeYChartView,
-    LineChartView,
-    BarChartView,
     TooltipComponentConfigModel, TooltipView,
     MessageComponentConfigModel, MessageView,
-    ControlPanelView, ControlPanelConfigModel
+    NavigationComponentConfigModel, NavigationView,
+    ControlPanelConfigModel, ControlPanelView
 ) {
     var ChartView = ContrailView.extend({
         render: function () {
@@ -38,33 +38,45 @@ define([
             if (contrail.checkIfExist(viewConfig.modelKey) && contrail.checkIfExist(modelMap[viewConfig.modelKey])) {
                 self.model = modelMap[viewConfig.modelKey];
             }
-
             if (self.model === null && viewConfig.modelConfig !== null) {
                 self.model = new ContrailListModel(viewConfig.modelConfig);
             }
-
-            self.chartConfig = getChartConfig(selector, viewConfig.chartOptions);
-            self.chartConfigModel = new Backbone.Model(self.chartConfig);
-
+            self.chartConfig = getChartConfig( selector, viewConfig.chartOptions );
             if (self.model !== null) {
-
-                self.chartDataModel = new DataModel({dataParser: self.chartConfig.dataParser});
+                self.chartDataModel = new DataModel( {dataParser: self.chartConfig.dataParser} );
                 self.updateChartDataStatus();
-
                 self.model.onAllRequestsComplete.subscribe(function () {
                     self.updateChartDataModel();
                     self.renderChart(selector);
                 });
-
                 if (viewConfig.loadChartInChunks) {
                     self.model.onDataUpdate.subscribe(function () {
                         self.updateChartDataModel();
                     });
                 }
-
                 self.renderChart(selector);
             }
-
+            // Can be used for component instatiation automation. Not used.
+            var configToComponentMapping = [
+                {
+                    config: "message",
+                    configModel: MessageComponentConfigModel,
+                    viewId: "messageView",
+                    findContainerBy: ".coCharts-main-container"
+                },
+                {
+                    config: "navigation",
+                    configModel: NavigationComponentConfigModel,
+                    viewId: "navigationView",
+                    findElBy: ".coCharts-navigation-container"
+                },
+                {
+                    config: "mainChart",
+                    configModel: CompositeYChartConfigModel,
+                    viewId: "chartView",
+                    findElBy: ".coCharts-main-container"
+                }
+            ];
         },
 
         updateChartDataModel: function (status) {
@@ -103,109 +115,94 @@ define([
         },
 
         updateChartConfigModel: function(updatedData) {
+            var self = this;
             self.chartConfigModel.set({mainChart:{accessorData: updatedData}});
         },
 
-        isChartEnabled: function(chartModel, chartType) {
-            var self = this,
-                chartConfigModel = chartModel || self.chartConfigModel.get("mainChart");
-
-            return (chartConfigModel.get("y1Chart") === chartType || chartConfigModel.get("y2Chart") === chartType) ? true : false;
+        isEnabledComponent: function( configName ) {
+            var self = this;
+            var enabled = false;
+            if( _.isObject( self.chartConfig[configName] ) ) {
+                enabled = true;
+            }
+            return enabled;
         },
 
         renderChart: function (selector) {
-            var self = this,
-                chartTemplate = contrail.getTemplate4Id("coCharts-chart-template");
+            var self = this;
+            var chartTemplate = contrail.getTemplate4Id( "coCharts-chart-template" );
 
-            //Todo can we re-use without removing elements?
-            $(selector).find(".coCharts-container").remove();
-            $(selector).append(chartTemplate(self.chartConfig));
+            // TODO: can we re-use without removing elements?
+            $(selector).find( ".coCharts-container" ).remove();
+            $(selector).append( chartTemplate( self.chartConfig ) );
 
-            //Common Message View. will be used for rendering info messages and error
-            var messageView = new MessageView({
-                config: self.chartConfigModel.get("message"),
-                id: "messageView",
-                container: $(selector).find(".coCharts-main-container")
-            });
+            var messageView = null;
+            var tooltipView = null;
+            var navigationView = null;
+            var compositeYChartView = null;
+            var controlPanelView = null;
+            var chartDataModel = self.chartDataModel;
 
-            //One of the way to bind to message events of already created model 
-            messageView.registerModelDataStatusEvents(self.chartDataModel);
-
-            // TooltipView
-            var tooltipConfig = new TooltipComponentConfigModel(self.chartConfig.tooltip);
-            var tooltipView = new TooltipView({config: tooltipConfig});
-
-            var possibleChildViews = { line: LineChartView, bar: BarChartView };
-            var modelConfigForChartType = {
-                line: {
-                    parentDataModel: self.chartDataModel,
-                    messageEvent: messageView.eventObject
-                },
-                bar: {
-                    parentDataModel: self.chartDataModel,
-                    messageEvent: messageView.eventObject
+            // TODO: automate the component instantiation code below to be config driven
+            if( self.isEnabledComponent( "message" ) ) {
+                // Common Message View. will be used for rendering info messages and error
+                // TODO: id should be config based
+                messageView = new MessageView({
+                    config: new MessageComponentConfigModel( self.chartConfig.message ),
+                    id: "messageView",
+                    container: $(selector).find( ".coCharts-main-container" )
+                });
+                messageView.render();
+                //One way to bind to message events of already created model 
+                messageView.registerModelDataStatusEvents( chartDataModel );
+            }
+            if( self.isEnabledComponent( "tooltip" ) ) {
+                tooltipView = new TooltipView({
+                    config: new TooltipComponentConfigModel( self.chartConfig.tooltip )
+                });
+                tooltipView.render();
+            }
+            if( self.isEnabledComponent( "navigation" ) ) {
+                // TODO: id should be config based
+                navigationView = new NavigationView({
+                    model: chartDataModel,
+                    config: new NavigationComponentConfigModel( self.chartConfig.navigation ),
+                    id: "navigationView",
+                    el: $(selector).find( ".coCharts-navigation-container" )
+                });
+                //$(selector).find(".coCharts-navigation-container").append(navigationView.render().el);
+                navigationView.render();
+                // The remaining components dataModel will be the one fetched from the navigationView.
+                chartDataModel = navigationView.getFocusDataProvider();
+                if( messageView ) {
+                    messageView.registerComponentMessageEvent( navigationView.eventObject );
                 }
-            };
-            /*
-            var compositeYChartDataProvider = new DataProvider({
-                parentDataModel: self.chartDataModel,
-                messageEvent: messageView.eventObject
-            });
-            */
-            var compositeYChartView = new CompositeYChartView({
-                model: self.chartDataModel,
-                config: self.chartConfigModel.get( "mainChart" ),
-                messageEvent: messageView.eventObject,
-                el: $(selector).find( ".coCharts-main-container" ),
-                id: self.chartConfig.chartId
-            });
-            // Fill the possible child components.
-            _.each( self.chartConfigModel.get( "mainChart" ).get( "accessorData" ), function( accessor, key ) {
-                var axisName = "y" + accessor.y;
-                if( accessor.chartType ) {
-                    var componentName = axisName + "-" + accessor.chartType;
-                    var foundComponent = _.find( compositeYChartView.components, function( component ) {
-                        var found = false;
-                        if( component.getName() == componentName ) {
-                            found = true;
-                        }
-                        return found;
-                    });
-                    if( !foundComponent ) {
-                        // The child component with this name does not exist yet. Instantiate the child component.
-                        _.each( possibleChildViews, function( ChildView, chartType ) {
-                            if( chartType == accessor.chartType ) {
-                                var dataProvider = new DataProvider( modelConfigForChartType[accessor.chartType] );
-                                foundComponent = new ChildView({
-                                    model: dataProvider,
-                                    config: self.chartConfigModel.get( "mainChart" ),
-                                    messageEvent: messageView.eventObject,
-                                    el: $(selector).find(".coCharts-main-container"),
-                                    id: self.chartConfig.chartId,
-                                    axisName: axisName
-                                });
-                                // Set any component specific params.
-                                compositeYChartView.components.push( foundComponent );
-                                console.log( "Found component: ", axisName, accessor.chartType, foundComponent );
-                            }
-                        });
-                    }
+            }
+            if( self.isEnabledComponent( "mainChart" ) ) {
+                compositeYChartView = new CompositeYChartView({
+                    model: chartDataModel,
+                    config: new CompositeYChartConfigModel( self.chartConfig.mainChart ),
+                    el: $(selector).find( ".coCharts-main-container" ),
+                    id: self.chartConfig.chartId
+                });
+                console.log( "compositeYChartView: ", compositeYChartView );
+                compositeYChartView.render();
+                if( messageView ) {
+                    messageView.registerComponentMessageEvent( compositeYChartView.eventObject );
                 }
-            });
-            console.log( "compositeYChartView: ", compositeYChartView );
-            compositeYChartView.render();
-
-            tooltipView.registerTriggerEvent(compositeYChartView.eventObject, "showTooltip", "hideTooltip");
-
-            //ControlPanel
-            // var controlPanelConfigModel = new ControlPanelConfigModel(self.chartConfigModel.get("mainChart"));
-            // var controlPanelView = new ControlPanelView({
-            //     config: self.chartConfigModel.get("mainChart"),
-            //     el: $(selector).find(".coCharts-control-panel-container")
-            // });
-            // controlPanelView.render();
-            // self.registerConfigChangeEvent(controlPanelView.eventObject);
-
+                if( tooltipView ) {
+                    tooltipView.registerTriggerEvent( compositeYChartView.eventObject, "showTooltip", "hideTooltip" );
+                }
+            }
+            if( self.isEnabledComponent( "controlPanel" ) ) {
+                // var controlPanelConfigModel = new ControlPanelConfigModel(self.chartConfigModel.get("mainChart"));
+                // var controlPanelView = new ControlPanelView({
+                //     config: self.chartConfigModel.get("mainChart"),
+                //     el: $(selector).find(".coCharts-control-panel-container")
+                // });
+                // controlPanelView.render();
+                // self.registerConfigChangeEvent(controlPanelView.eventObject);
+            }
         },
 
     });
@@ -264,13 +261,7 @@ define([
                 statusMessageHandler: cowm.getRequestMessage,
             }
         };
-
         var chartConfig = $.extend(true, {}, defaultChartConfig, chartOptions);
-
-        chartConfig.mainChart = new CompositeYChartConfigModel( chartConfig.mainChart );
-
-        chartConfig.message = new MessageComponentConfigModel(chartConfig.message);
-
         return chartConfig;
     }
 

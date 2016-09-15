@@ -105,6 +105,9 @@ define([
             enteringSelection.append( "g" ).attr( "class", "bubbles" );
         },
 
+        /***
+        * Shape drawing functions. The draw on the entering and edit selections. One drawing function per accessor shape.
+        */
         shapeEnterFunctions: { circle: "shapeEnterCircle" },
         shapeEditFunctions: { circle: "shapeEditCircle" },
         
@@ -121,7 +124,6 @@ define([
                 .attr( "cx", d.x )
                 .attr( "cy", d.y )
                 .attr( "r", d.r );
-            console.log( "shapeEditCircle: ", d, selection );
         },
 
         renderData: function () {

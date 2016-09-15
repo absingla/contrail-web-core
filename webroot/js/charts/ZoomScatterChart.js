@@ -151,7 +151,7 @@ define([
                 container: $(selector).find(".coCharts-main-container")
             });
 
-            //One of the way to bind to message events of already created model 
+            // One way to bind to message events of already created model 
             messageView.registerModelDataStatusEvents(self.chartDataModel);
             
             var dataProvider = new DataProvider({

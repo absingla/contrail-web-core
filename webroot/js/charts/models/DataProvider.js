@@ -91,9 +91,14 @@ define([
          * Calls the parent's setQueryLimit() function. In practice this will iterate down to the DataModel and should cause a data re-fetch with new limits.
          */
         setQueryLimit: function (queryLimit) {
-            if (this.hasParentModel() && _.isFunction(this.getParentModel().setQueryLimit)) {
-                this.getParentModel().setQueryLimit(queryLimit);
+            var self = this;
+            if( self.hasParentModel() && _.isFunction(self.getParentModel().setQueryLimit) ) {
+                self.getParentModel().setQueryLimit(queryLimit);
             }
+            var range = self.getRange();
+            _.each( queryLimit, function( queryRange, key ) {
+                delete range[key];
+            });
         },
 
         getRange: function () {
@@ -146,6 +151,10 @@ define([
                 delete self.get("manualRange")[variableName];
             });
             self.setRange(range);
+        },
+
+        resetAllRanges: function() {
+            this.setDataAndRanges( {}, {} );
         },
 
         /**

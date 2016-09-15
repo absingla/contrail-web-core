@@ -4,8 +4,15 @@
 
 define([
     "jquery", "underscore", "backbone", "d3-v4",
-    "core-basedir/js/charts/views/DataView"
-], function ($, _, Backbone, d3, DataView) {
+    "core-basedir/js/charts/views/DataView",
+    "core-basedir/js/charts/views/LineChartView",
+    "core-basedir/js/charts/views/BarChartView",
+    "core-basedir/js/charts/views/ScatterBubbleChartView"
+], function (
+    $, _, Backbone, d3,
+    DataView,
+    LineChartView, BarChartView, ScatterBubbleChartView
+) {
     var CompositeYChartView = DataView.extend({
     	tagName: "div",
     	chartType: "compositeY",
@@ -21,10 +28,10 @@ define([
             /// View params hold values from the config and computed values.
             self.resetParams();
 
-            self.listenTo(self.model, "change", self.render);
-            self.listenTo(self.config, "change", self.render);
+            self.listenTo( self.model, "change", self.render );
+            self.listenTo( self.config, "change", self.render );
+            self.eventObject = _.extend( {}, Backbone.Events );
             self.handleWindowResize();
-            self.eventObject = _.extend({}, Backbone.Events);
         },
 
         handleWindowResize: function() {
@@ -43,6 +50,41 @@ define([
             _.each( this.components, function( component, i ) {
                 component.resetParamsForChild( i );
             });
+        },
+
+        possibleChildViews: { line: LineChartView, bar: BarChartView, scatterBubble: ScatterBubbleChartView },
+
+        /**
+        * Update the components array based on the accessorData.
+        */
+        updateChildComponents: function() {
+            var self = this;
+            _.each( self.config.get( "accessorData" ), function( accessor, key ) {
+                var axisName = "y" + accessor.y;
+                if( accessor.chartType ) {
+                    var componentName = axisName + "-" + accessor.chartType;
+                    var foundComponent = _.find( self.components, function( component ) { return component.getName() == componentName; } );
+                    if( !foundComponent ) {
+                        // The child component with this name does not exist yet. Instantiate the child component.
+                        _.each( self.possibleChildViews, function( ChildView, chartType ) {
+                            if( chartType == accessor.chartType ) {
+                                // TODO: a way to provide a different model to every child
+                                // TODO: pass eventObject to child?
+                                foundComponent = new ChildView({
+                                    model: self.model,
+                                    config: self.config,
+                                    el: self.el,
+                                    id: self.id,
+                                    axisName: axisName
+                                });
+                                self.components.push( foundComponent );
+                                console.log( "Added child component: ", axisName, accessor.chartType, foundComponent );
+                            }
+                        });
+                    }
+                }
+            });
+            // TODO: component ordering
         },
 
         /**
@@ -361,14 +403,15 @@ define([
         startEventListeners: function() {
             var self = this;
             _.each(self.components, function(component) {
-                self.listenTo(component.eventObject, "mouseover", self.onMouseOver);
-                self.listenTo(component.eventObject, "mouseout", self.onMouseOut);
+                self.listenTo( component.eventObject, "mouseover", self.onMouseOver );
+                self.listenTo( component.eventObject, "mouseout", self.onMouseOut );
             });
         },
 
         render: function () {
             var self = this;
             _.defer(function () {
+                self.updateChildComponents();
                 self.resetParams();
                 self.calculateActiveAccessorData();
                 self.calculateDimmensions();
@@ -377,6 +420,7 @@ define([
                 self.renderAxis();
                 self.renderData();
                 self.startEventListeners();
+                self.eventObject.trigger( "rendered" );
             });
             return self;
         }
