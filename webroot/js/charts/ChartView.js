@@ -54,7 +54,7 @@ define([
                         self.updateChartDataModel();
                     });
                 }
-                self.renderChart(selector);
+                //self.renderChart(selector);
             }
             // Can be used for component instatiation automation. Not used.
             var configToComponentMapping = [
@@ -123,7 +123,9 @@ define([
             var self = this;
             var enabled = false;
             if( _.isObject( self.chartConfig[configName] ) ) {
-                enabled = true;
+                if( self.chartConfig[configName].enable !== false ) {
+                    enabled = true;
+                }
             }
             return enabled;
         },
@@ -141,7 +143,10 @@ define([
             var navigationView = null;
             var compositeYChartView = null;
             var controlPanelView = null;
-            var chartDataModel = self.chartDataModel;
+            var dataProvider = new DataProvider({
+                parentDataModel: self.chartDataModel
+            });
+            console.log( "ChartView renderChart: ", self.chartConfig );
 
             // TODO: automate the component instantiation code below to be config driven
             if( self.isEnabledComponent( "message" ) ) {
@@ -154,7 +159,7 @@ define([
                 });
                 messageView.render();
                 //One way to bind to message events of already created model 
-                messageView.registerModelDataStatusEvents( chartDataModel );
+                messageView.registerModelDataStatusEvents( self.chartDataModel );
             }
             if( self.isEnabledComponent( "tooltip" ) ) {
                 tooltipView = new TooltipView({
@@ -165,27 +170,28 @@ define([
             if( self.isEnabledComponent( "navigation" ) ) {
                 // TODO: id should be config based
                 navigationView = new NavigationView({
-                    model: chartDataModel,
+                    model: dataProvider,
                     config: new NavigationComponentConfigModel( self.chartConfig.navigation ),
                     id: "navigationView",
                     el: $(selector).find( ".coCharts-navigation-container" )
                 });
                 //$(selector).find(".coCharts-navigation-container").append(navigationView.render().el);
+                console.log( "NavigationView: ", navigationView );
                 navigationView.render();
                 // The remaining components dataModel will be the one fetched from the navigationView.
-                chartDataModel = navigationView.getFocusDataProvider();
+                dataProvider = navigationView.getFocusDataProvider();
                 if( messageView ) {
                     messageView.registerComponentMessageEvent( navigationView.eventObject );
                 }
             }
             if( self.isEnabledComponent( "mainChart" ) ) {
                 compositeYChartView = new CompositeYChartView({
-                    model: chartDataModel,
+                    model: dataProvider,
                     config: new CompositeYChartConfigModel( self.chartConfig.mainChart ),
                     el: $(selector).find( ".coCharts-main-container" ),
                     id: self.chartConfig.chartId
                 });
-                console.log( "compositeYChartView: ", compositeYChartView );
+                console.log( "MainChart: ", compositeYChartView );
                 compositeYChartView.render();
                 if( messageView ) {
                     messageView.registerComponentMessageEvent( compositeYChartView.eventObject );
@@ -222,6 +228,8 @@ define([
             dataParser: null,
             navigation: {
                 enable: false,
+                chartHeight: 200,
+                chartWidth: chartWidth,
                 xAccessor: "x",
                 accessorData: {}
             },
@@ -259,6 +267,9 @@ define([
                 noDataMessage: "No Data Found",
                 dataStatusMessage: true,
                 statusMessageHandler: cowm.getRequestMessage,
+            },
+            tooltip: {
+                // TODO: tooltip config here
             }
         };
         var chartConfig = $.extend(true, {}, defaultChartConfig, chartOptions);

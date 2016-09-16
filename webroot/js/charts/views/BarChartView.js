@@ -13,6 +13,7 @@ define([
         tagName: "div",
         className: "bar-chart",
         chartType: "bar",
+        renderOrder: 100,
 
         initialize: function ( options ) {
             /// The config model

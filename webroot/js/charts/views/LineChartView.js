@@ -17,6 +17,7 @@ define([
         tagName: "div",
         className: "line-chart",
         chartType: "line",
+        renderOrder: 10,
 
         initialize: function ( options ) {
             /// The config model

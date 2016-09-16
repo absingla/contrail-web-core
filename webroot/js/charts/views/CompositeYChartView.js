@@ -24,12 +24,13 @@ define([
             /// The config model
             self.config = options.config;
             self.components = [];
+            console.log( "CompositeYChartView initialize" );
 
             /// View params hold values from the config and computed values.
-            self.resetParams();
+            //self.resetParams();
 
-            self.listenTo( self.model, "change", self.render );
-            self.listenTo( self.config, "change", self.render );
+            self.listenTo( self.model, "change", self.dataModelChanged );
+            self.listenTo( self.config, "change", self.configModelChanged );
             self.eventObject = _.extend( {}, Backbone.Events );
             self.handleWindowResize();
         },
@@ -78,13 +79,13 @@ define([
                                     axisName: axisName
                                 });
                                 self.components.push( foundComponent );
-                                console.log( "Added child component: ", axisName, accessor.chartType, foundComponent );
                             }
                         });
                     }
                 }
             });
-            // TODO: component ordering
+            // Order the components so the highest order components get rendered first.
+            self.components.sort( function( a, b ) { return b.renderOrder - a.renderOrder; } );
         },
 
         /**
@@ -96,7 +97,7 @@ define([
             data = self.getData();
             self.params.activeAccessorData = {};
             self.params.yAxisInfoArray = [];
-            console.log( "data: ", data );
+            console.log( "data (" + self.config.get( "tab" ) + "): ", data );
             // Initialize the components activeAccessorData structure
             _.each( self.components, function( component ) {
                 component.params.activeAccessorData = {};
@@ -132,7 +133,6 @@ define([
                     }
                 }
             });
-            console.log( "CompositeYView activeAccessorData: ", self.params.activeAccessorData );
         },
 
         /**
@@ -235,6 +235,15 @@ define([
                                 domains[axisName][1] = domain[1];
                             }
                         }
+                        // Override axis domain based on axis config.
+                        if( self.hasAxisConfig( axisName, 'domain' ) ) {
+                            if( !_.isUndefined( self.params.axis[axisName].domain[0] ) ) {
+                                domains[axisName][0] = self.params.axis[axisName].domain[0];
+                            }
+                            if( !_.isUndefined( self.params.axis[axisName].domain[1] ) ) {
+                                domains[axisName][1] = self.params.axis[axisName].domain[1];
+                            }
+                        }
                     });
                 }
             });
@@ -260,8 +269,22 @@ define([
                 var scaleName = axisName + "Scale";
                 var rangeName = axisName.charAt( 0 ) + "Range";
                 if( !_.isFunction( self.config.get( scaleName ) ) && self.params[rangeName] ) {
-                    // TODO: a scale type may be provided in the accessorData structure.
-                    self.params[scaleName] = d3.scaleLinear().domain( self.params[domainName] ).range( self.params[rangeName] );
+                    var baseScale = null;
+                    if( self.hasAxisConfig( axisName, 'scale' ) ) {
+                        if( _.isFunction( self.params.axis[axisName].scale ) ) {
+                            baseScale = self.params.axis[axisName].scale;
+                        }
+                        else {
+                            baseScale = d3[self.params.axis[axisName].scale]();
+                        }
+                    }
+                    else if( axisName == "x" ) {
+                        baseScale = d3.scaleTime();
+                    }
+                    else {
+                        baseScale = d3.scaleLinear();
+                    }
+                    self.params[scaleName] = baseScale.domain( self.params[domainName] ).range( self.params[rangeName] );
                 }
                 // Now update the scales of the appropriate components.
                 _.each( self.getComponents( axisName ), function( component ) {
@@ -281,7 +304,6 @@ define([
             svg.append("g")
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.yRange[1] - self.params.marginInner ) + ")");
-            console.log( "CompositeYChart.renderSVG yAxisInfoArray: ", self.params.yAxisInfoArray );
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
             	var translate = self.params.xRange[0] - self.params.marginInner;
             	if( axisInfo.position == "right" ) {
@@ -292,7 +314,6 @@ define([
                 .attr("transform", "translate(" + translate + ",0)");
             });
             // Handle component groups
-            console.log( "CompositeYChartView.renderSVG components: ", self.components );
             var svgComponentGroups = self.svgSelection().selectAll( ".component-group" ).data( self.components, function( c ) {
                 var id = 0;
                 if( _.isObject( c ) ) {
@@ -340,8 +361,12 @@ define([
                 }
             });
             var tooltipConfig = self.params.getTooltipTemplateConfig(formattedData);
-
             return tooltipConfig;
+        },
+
+        hasAxisConfig: function( axisName, axisConfigParam ) {
+            var self = this;
+            return _.isObject( self.params.axis ) && _.isObject( self.params.axis[axisName] ) && !_.isUndefined( self.params.axis[axisName][axisConfigParam] );
         },
 
         /**
@@ -349,9 +374,13 @@ define([
          */
         renderAxis: function () {
             var self = this;
-            var xAxis = d3.axisBottom(self.params.xScale)
-                .tickSizeInner(self.params.yRange[0] - self.params.yRange[1] + 2 * self.params.marginInner)
-                .tickPadding(5).ticks(self.params.xTicks);
+            var xAxis = d3.axisBottom( self.params.xScale )
+                .tickSizeInner( self.params.yRange[0] - self.params.yRange[1] + 2 * self.params.marginInner )
+                .tickPadding( 5 )
+                .ticks( self.params.xTicks );
+            if( self.hasAxisConfig( 'x', 'formatter' ) ) {
+                xAxis = xAxis.tickFormat( self.params.axis.x.formatter );
+            }
             var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
             svg.select( ".axis.x-axis" ).call( xAxis );
             // We render the yAxis here because there may be multiple components for one axis.
@@ -378,6 +407,9 @@ define([
                         return axisInfo.yAxis.scale().invert( referenceYScale( tickValue ) );
                     });
                     axisInfo.yAxis = axisInfo.yAxis.tickValues( referenceTickValues );
+                }
+                if( self.hasAxisConfig( axisInfo.name, 'formatter' ) ) {
+                    axisInfo.yAxis = axisInfo.yAxis.tickFormat( self.params.axis[axisInfo.name].formatter );
                 }
                 svg.select( ".axis.y-axis." + axisInfo.name + "-axis" ).call( axisInfo.yAxis );
             });
@@ -408,20 +440,31 @@ define([
             });
         },
 
+        dataModelChanged: function() {
+            this.render();
+        },
+
+        configModelChanged: function() {
+            this.render();
+        },
+
         render: function () {
             var self = this;
-            _.defer(function () {
-                self.updateChildComponents();
-                self.resetParams();
-                self.calculateActiveAccessorData();
-                self.calculateDimmensions();
-                self.calculateScales();
-                self.renderSVG();
-                self.renderAxis();
-                self.renderData();
-                self.startEventListeners();
-                self.eventObject.trigger( "rendered" );
-            });
+            if( self.config ) {
+                _.defer(function () {
+                    self.updateChildComponents();
+                    self.resetParams();
+                    self.calculateActiveAccessorData();
+                    self.calculateDimmensions();
+                    self.calculateScales();
+                    self.renderSVG();
+                    self.renderAxis();
+                    self.renderData();
+                    self.startEventListeners();
+                    console.log( "CompositeView " + self.config.get( "tab" ) + " render end." );
+                    self.eventObject.trigger( "rendered" );
+                });
+            }
             return self;
         }
     });

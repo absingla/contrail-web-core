@@ -105,6 +105,10 @@ define([
             return this.get("range");
         },
 
+        getManualRange: function() {
+            return this.get( "manualRange" );
+        },
+
         getRangeFor: function (variableName) {
             var range = this.getRange();
             if (!_.has(range, variableName)) {

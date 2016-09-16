@@ -10,6 +10,7 @@ define([
         tagName: "div",
         className: "scatter-bubble-chart",
         chartType: "scatterBubble",
+        renderOrder: 50,
 
         initialize: function ( options ) {
             /// The config model

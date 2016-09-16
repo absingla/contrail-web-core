@@ -22,7 +22,7 @@ define([
         initialize: function (options) {
             var self = this;
             self.config = options.config;
-            self.resetParams();
+            //self.resetParams();
             self.template = contrail.getTemplate4Id( "coCharts-navigation-panel" );
 
             // NavigationView does not react itself to model changes. Instead it listens to compositeYChartView render events
@@ -63,10 +63,6 @@ define([
                     prevWindowSize = prevWindowXMax - prevWindowXMin;
                 }
             }
-            // Prepare the scales for setting the new window position.
-            self.resetParams();
-            self.calculateDimensions();
-            self.calculateScales();
             // Try to keep the same data window. Move it if exceeds data range.
             if( !_.isUndefined(prevWindowXMin) && !_.isUndefined(prevWindowXMax) ) {
                 var xMin = prevWindowXMin;
@@ -151,6 +147,7 @@ define([
         */
         chartRendered: function() {
             var self = this;
+            self.params = self.compositeYChartView.params;
             if( self.isModelChanged ) {
                 self.handleModelChange();
                 self.isModelChanged = false;
@@ -164,11 +161,12 @@ define([
         */
         renderBrush: function () {
             var self = this;
+            console.log( "NavigationView renderBrush: ", self.params );
             var x = self.params.xAccessor;
             if( !self.brush ) {
                 var svg = self.svgSelection();
                 self.brush = d3.brushX()
-                    .extent( [[self.params.xRange[0], self.params.yRange[0]], [self.params.xRange[1], self.params.yRange[1]]] )
+                    .extent( [[self.params.xRange[0], self.params.yRange[1]], [self.params.xRange[1], self.params.yRange[0]]] )
                     .handleSize( 10 )
                     .on( "brush", function () {
                         var dataWindow = d3.event.selection;
