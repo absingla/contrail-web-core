@@ -60,7 +60,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'vectorizer'                  : coreWebDir + '/assets/joint/js/vectorizer',
         'joint.layout.DirectedGraph'  : coreWebDir + '/assets/joint/js/joint.layout.DirectedGraph',
         'joint'                       : coreWebDir + '/assets/joint/js/joint.clean',
-        'joint.contrail'              : coreWebDir + '/js/joint.contrail',
+        'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
 
         'core-alarm-utils'            :  coreWebDir + '/js/common/core.alarms.utils',
         'core-alarm-parsers'          :  coreWebDir + '/js/common/core.alarms.parsers',
@@ -82,10 +82,11 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'json-model'                  : coreWebDir + "/js/models/JsonModel",
         'json-edit-view'              : coreWebDir + '/js/views/JsonEditView',
         'jquery-ui'                   : coreWebDir + '/assets/jquery-ui/js/jquery-ui.min',
-        'schema-model'               : coreWebDir + '/js/models/SchemaModel',
-        'view-config-generator'      : coreWebDir + '/js/common/view.config.generator',
+        'schema-model'                : coreWebDir + '/js/models/SchemaModel',
+        'view-config-generator'       : coreWebDir + '/js/common/view.config.generator',
         'iframe-view'                 : coreWebDir + '/js/views/IframeView',
-        'jdorn-jsoneditor'            : coreWebDir + '/assets/jdorn-jsoneditor/js/jdorn-jsoneditor'
+        'jdorn-jsoneditor'            : coreWebDir + '/assets/jdorn-jsoneditor/js/jdorn-jsoneditor',
+        'qe-module'                   : coreWebDir + '/reports/qe/ui/js/qe.module'
     };
 
     //Separate out aliases that need to be there for both prod & dev environments
@@ -107,6 +108,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'contrail-model'              : coreWebDir + '/js/models/ContrailModel',
             'contrail-view-model'         : coreWebDir + '/js/models/ContrailViewModel',
             'contrail-list-model'         : coreWebDir + '/js/models/ContrailListModel',
+            'contrail-element'            : coreWebDir + '/js/models/ContrailElement',
             'lodash'                      : coreWebDir + '/assets/lodash/lodash.min',
             'crossfilter'                 : coreWebDir + '/assets/crossfilter/js/crossfilter',
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
@@ -166,7 +168,6 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'analyzer-utils'            : coreWebDir + "/js/analyzer-utils",
             'config_global'             : coreWebDir + "/js/config_global",
             'contrail-layout'           : coreWebDir + '/js/contrail-layout',
-            'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
             'contrail-common'           : coreWebDir + "/js/contrail-common",
             'uuid'                      : coreWebDir + "/js/uuid",
             'protocol'                  : coreWebDir + "/js/protocol",
@@ -179,10 +180,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
 
             'infoboxes'                   : coreWebDir + '/js/views/InfoboxesView',
             'barchart-cf'                 : coreWebDir + '/js/views/BarChartView',
-
-             //'core.app.utils'              : coreWebDir + "/js/common/core.app.utils",
             'storage-init'                : 'empty:',
-            'contrail-element'            : coreWebDir + '/js/models/ContrailElement',
             'coCharts'                    : coreWebDir + '/js/lbcharts/coreCharts'
         };
         //Merge common (for both prod & dev) alias
@@ -194,10 +192,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'controller-basedir'          : coreBaseDir,
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
             'knockout'                    : coreWebDir + '/assets/knockout/knockout',
-            'knockback'                   : coreWebDir + '/assets/backbone/knockback.min',
-            'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd',
-            'joint.contrail': coreWebDir + '/js/common/joint.contrail',
-            'contrail-element': coreWebDir + '/js/models/ContrailElement'
+            'knockback'                 : coreWebDir + '/assets/backbone/knockback.min',
+            'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd'
         }
         //Merge common (for both prod & dev) alias
         for(var currAlias in prodAliasMap)
@@ -424,12 +420,14 @@ var coreBundles = {
             'core-contrail-form-elements',
             'chart-utils',
             'text!core-basedir/common/ui/templates/core.common.tmpl',
+            'core-basedir/js/common/graph.utils',
             'contrail-remote-data-handler',
             'cf-datasource',
             'contrail-view',
             'contrail-model',
             'contrail-view-model',
             'contrail-list-model',
+            'contrail-element',
             'lodash',
             'crossfilter',
             'text',
@@ -507,6 +505,22 @@ var coreBundles = {
             'xdate',
             'ipv6',
             'jsonpath'
+        ],
+        'qe-module': [
+            'core-basedir/reports/qe/ui/js/common/qe.utils',
+            'core-basedir/reports/qe/ui/js/common/qe.parsers',
+            'core-basedir/reports/qe/ui/js/common/qe.grid.config',
+            'core-basedir/reports/qe/ui/js/common/qe.model.config',
+            'core-basedir/reports/qe/ui/js/views/QueryEngineView',
+            'core-basedir/reports/qe/ui/js/views/QueryQueueView',
+            'core-basedir/reports/qe/ui/js/views/QueryTextView',
+            'core-basedir/reports/qe/ui/js/views/ObjectLogsFormView',
+            'core-basedir/reports/qe/ui/js/views/SystemLogsFormView',
+            'core-basedir/reports/qe/ui/js/views/StatQueryFormView',
+            'core-basedir/reports/qe/ui/js/models/ContrailListModelGroup',
+            'core-basedir/reports/qe/ui/js/models/ObjectLogsFormModel',
+            'core-basedir/reports/qe/ui/js/models/StatQueryFormModel',
+            'core-basedir/reports/qe/ui/js/models/SystemLogsFormModel'
         ]
     };
 

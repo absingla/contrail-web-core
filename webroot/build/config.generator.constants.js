@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2015 Juniper Networks, Inc. All rights reserved.
+ */
+
 var constants = {};
 
 /**
@@ -19,110 +23,6 @@ constants.coreBaseUrl = "./"
 
 constants.coreModules  = [
     {
-        enabled: true,
-        name: './js/common/core.init',
-        include: [
-            'core-utils',
-            'core-constants',
-            'core-formatters',
-            'core-cache',
-            'core-labels',
-            'core-messages',
-            'core-views-default-config',
-
-            'core-basedir/js/common/qe.utils',
-            'core-basedir/js/common/qe.model.config',
-            'core-basedir/js/common/qe.grid.config',
-            'core-basedir/js/common/qe.parsers',
-            'core-basedir/js/common/chart.utils',
-            'text!common/ui/templates/core.common.tmpl',
-
-            'contrail-remote-data-handler',
-            'layout-handler',
-            'menu-handler',
-            'content-handler',
-
-            'contrail-view',
-            'graph-view',
-            'query-form-view',
-
-            'contrail-model',
-            'contrail-view-model',
-            'contrail-list-model',
-            'contrail-graph-model',
-            'query-form-model',
-            'query-or-model',
-            'query-and-model',
-            'mon-infra-node-list-model',
-            'mon-infra-log-list-model',
-
-            //TODO following views that access these refs, change to path and update this.
-            //'infoboxes-view',
-            'barchart-cf',
-            'mon-infra-alert-list-view',
-            'mon-infra-alert-grid-view',
-            'mon-infra-log-list-view',
-            'mon-infra-sysinfo-view',
-            'mon-infra-dashboard-view',
-
-            'core-basedir/js/views/AccordianView',
-            'core-basedir/js/views/BarChartInfoView',
-            'core-basedir/js/views/BreadcrumbDropdownView',
-            'core-basedir/js/views/BreadcrumbTextView',
-            'core-basedir/js/views/ChartView',
-            'core-basedir/js/views/ControlPanelView',
-            'core-basedir/js/views/DetailsView',
-            'core-basedir/js/views/DonutChartView',
-            'core-basedir/js/views/FormAutoCompleteTextBoxView',
-            'core-basedir/js/views/FormButtonView',
-            'core-basedir/js/views/FormCheckboxView',
-            'core-basedir/js/views/FormCollectionView',
-            'core-basedir/js/views/FormComboboxView',
-            'core-basedir/js/views/FormCompositeView',
-            'core-basedir/js/views/FormDateTimePickerView',
-            'core-basedir/js/views/FormDropdownView',
-            'core-basedir/js/views/FormEditableGridView',
-            'core-basedir/js/views/FormGridView',
-            'core-basedir/js/views/FormHierarchicalDropdownView',
-            'core-basedir/js/views/FormInputView',
-            'core-basedir/js/views/FormMultiselectView',
-            'core-basedir/js/views/FormNumericTextboxView',
-            'core-basedir/js/views/FormRadioButtonView',
-            'core-basedir/js/views/FormTextAreaView',
-            'core-basedir/js/views/FormTextView',
-            'core-basedir/js/views/GridView',
-            'core-basedir/js/views/GridFooterView',
-            'core-basedir/js/views/HeatChartView',
-            'core-basedir/js/views/HorizontalBarChartView',
-            'core-basedir/js/views/InfoboxesView',
-            'core-basedir/js/views/LineBarWithFocusChartView',
-            'core-basedir/js/views/LineWithFocusChartView',
-            'core-basedir/js/views/LoginWindowView',
-            'core-basedir/js/views/MultiBarChartView',
-            'core-basedir/js/views/MultiDonutChartView',
-            'core-basedir/js/views/NodeConsoleLogsView',
-            'core-basedir/js/views/QueryFilterView',
-            'core-basedir/js/views/QueryResultGridView',
-            'core-basedir/js/views/QueryResultLineChartView',
-            'core-basedir/js/views/QuerySelectView',
-            'core-basedir/js/views/QueryWhereView',
-            'core-basedir/js/views/ScatterChartView',
-            'core-basedir/js/views/SectionView',
-            'core-basedir/js/views/SparklineView',
-            'core-basedir/js/views/TabsView',
-            'core-basedir/js/views/WidgetView',
-            'core-basedir/js/views/WizardView',
-            'core-basedir/js/views/ZoomScatterChartView',
-            'core-basedir/js/views/MonitorInfraDashboardView',
-        ],
-        exclude: [
-            './js/common/core.app',
-            'underscore',
-            'backbone',
-            'knockout',
-            'knockback'
-        ]
-    },{
         enabled: true,
         name: 'core-bundle',
         exclude: [
@@ -168,6 +68,35 @@ constants.coreModules  = [
         override: {
             wrapShim: false
         }
+    },
+    {
+        enabled: true,
+        name: 'qe-module',
+        include: [
+            'core-basedir/reports/qe/ui/js/common/qe.utils',
+            'core-basedir/reports/qe/ui/js/common/qe.parsers',
+            'core-basedir/reports/qe/ui/js/common/qe.grid.config',
+            'core-basedir/reports/qe/ui/js/common/qe.model.config',
+            'core-basedir/reports/qe/ui/js/views/QueryEngineView',
+            'core-basedir/reports/qe/ui/js/views/QueryQueueView',
+            'core-basedir/reports/qe/ui/js/views/QueryTextView',
+            'core-basedir/reports/qe/ui/js/views/ObjectLogsFormView',
+            'core-basedir/reports/qe/ui/js/views/SystemLogsFormView',
+            'core-basedir/reports/qe/ui/js/views/StatQueryFormView',
+            'core-basedir/reports/qe/ui/js/models/ContrailListModelGroup',
+            'core-basedir/reports/qe/ui/js/models/ObjectLogsFormModel',
+            'core-basedir/reports/qe/ui/js/models/StatQueryFormModel',
+            'core-basedir/reports/qe/ui/js/models/SystemLogsFormModel'
+        ],
+        exclude: [
+            'underscore',
+            'moment',
+            'contrail-view',
+            'contrail-model',
+            'core-basedir/js/views/ZoomScatterChartView',
+            'core-basedir/js/views/LineWithFocusChartView',
+            'text!core-basedir/reports/qe/ui/templates/qe.tmpl'
+        ]
     }
 ];
 constants.coreFileExclusionRegExp = constants.defaultFileExclusionRegExp;
@@ -197,7 +126,6 @@ constants.controllerModules = [
             "query-form-model",
             "query-or-model",
             "query-and-model",
-            // "core-init",
             "core-basedir/js/views/LoginWindowView"
         ]
     },
@@ -228,7 +156,6 @@ constants.controllerModules = [
         exclude: [
             'underscore',
             'cf-datasource',
-            // 'core-init',
             'contrail-view',
             'controller-init',
             'contrail-model',
@@ -267,7 +194,6 @@ constants.controllerModules = [
             'dagre',
             'joint',
             'joint.contrail',
-            // 'core-init',
             'contrail-view',
             'contrail-view-model',
             'core-basedir/js/views/ZoomScatterChartView',
@@ -277,34 +203,25 @@ constants.controllerModules = [
     },
     {
         enabled: true,
-        name: 'qe-module',
+        name: 'controller-qe-module',
         include: [
-            'controller-basedir/reports/qe/ui/js/views/QueryEngineView',
-            'controller-basedir/reports/qe/ui/js/views/QueryQueueView',
-            'controller-basedir/reports/qe/ui/js/views/QueryTextView',
+            'controller-basedir/reports/qe/ui/js/views/ControllerQEView',
             'controller-basedir/reports/qe/ui/js/views/FlowSeriesFormView',
             'controller-basedir/reports/qe/ui/js/views/FlowRecordFormView',
             'controller-basedir/reports/qe/ui/js/views/FlowDetailsTabView',
-            'controller-basedir/reports/qe/ui/js/views/ObjectLogsFormView',
-            'controller-basedir/reports/qe/ui/js/views/SystemLogsFormView',
             'controller-basedir/reports/qe/ui/js/views/SessionAnalyzerView',
-            'controller-basedir/reports/qe/ui/js/views/StatQueryFormView',
-            'controller-basedir/reports/qe/ui/js/models/ContrailListModelGroup',
             'controller-basedir/reports/qe/ui/js/models/SessionAnalyzerModel',
             'controller-basedir/reports/qe/ui/js/models/FlowRecordFormModel',
-            'controller-basedir/reports/qe/ui/js/models/FlowSeriesFormModel',
-            'controller-basedir/reports/qe/ui/js/models/ObjectLogsFormModel',
-            'controller-basedir/reports/qe/ui/js/models/StatQueryFormModel',
-            'controller-basedir/reports/qe/ui/js/models/SystemLogsFormModel'
+            'controller-basedir/reports/qe/ui/js/models/FlowSeriesFormModel'
         ],
         exclude: [
             'underscore',
-            // 'core-init',
             'contrail-view',
             'contrail-model',
             'core-basedir/js/views/ZoomScatterChartView',
             'core-basedir/js/views/LineWithFocusChartView',
-            'controller-init'
+            'controller-init',
+            'core-basedir/reports/qe/ui/js/models/ContrailListModelGroup'
         ]
     }
 ];
