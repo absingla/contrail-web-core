@@ -1923,22 +1923,22 @@
 
 <script type="text/x-handlebars-template" id="core-control-panel-filter-2-col-template">
 <div class="control-panel-filter-container">
-    <div class="row">
+    <div class="">
         <p class="control-panel-filter-title">
             <span class="pull-left control-panel-filter-title-icon"><i class="fa fa-filter"></i></span>
             <span class="pull-left control-panel-filter-title-text">Filter</span>
             <span class="pull-right control-panel-filter-close"><i class="fa fa-remove"></i></span>
         </p>
     </div>
-    <div class="row control-panel-filter-body">
+    <div class="control-panel-filter-body">
         {{#each viewConfig.groups}}
             <div class="col-xs-6">
             {{#each this}}
-                    <div class="control-panel-filter-group row">
+                    <div class="control-panel-filter-group margin10">
                         {{#IfCompare title false operator='!='}}
                         <h6 class="control-panel-group-filter-title">{{title}}</h6>
                         {{/IfCompare}}
-                        <div id="control-panel-filter-group-items-{{id}}" class="row control-panel-filter-group-items padding-5-0;">
+                        <div id="control-panel-filter-group-items-{{id}}" class="control-panel-filter-group-items padding-5-0;">
                             {{#IfCompare type 'checkbox-circle' operator='=='}}
                             {{#each items}}
                                 <div class="control-panel-filter-group-item">

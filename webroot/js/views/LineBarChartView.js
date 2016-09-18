@@ -6,8 +6,9 @@ define([
     'underscore',
     'contrail-view',
     'core-basedir/js/lbcharts/LineBarChart',
-    'contrail-list-model'
-], function (_, ContrailView, LineBarChartContainer, ContrailListModel) {
+    'contrail-list-model',
+    'chart-utils'
+], function (_, ContrailView, LineBarChartContainer, ContrailListModel, chUtils) {
     var LineBarChartView = ContrailView.extend({
         render: function () {
             var viewConfig = this.attributes.viewConfig,
@@ -129,7 +130,7 @@ define([
                      */
                     widgetConfig.viewConfig.controls.right.custom.filterY = $.extend(true,
                         {
-                            iconClass: 'icon-filter',
+                            iconClass: 'fa fa-filter',
                             title: 'Filter Y Axis',
                             events: cowu.getFilterEvent(),
                             viewConfig: getWidgetFilterViewConfig(selector, configDataObj)
