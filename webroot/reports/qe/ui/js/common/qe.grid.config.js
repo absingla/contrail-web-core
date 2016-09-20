@@ -31,12 +31,12 @@ define([
                 };
 
             if(tableType === cowc.QE_STAT_TABLE_TYPE || tableType === cowc.QE_OBJECT_TABLE_TYPE){
-                if (!_.isNil(defaultColumnDisplayMap[selectValue])) {
+                if (contrail.checkIfExist(defaultColumnDisplayMap[selectValue])) {
                     $.extend(columnConfig, defaultColumnDisplayMap[selectValue]);
                 }
             }
 
-            if (!_.isNil(columnDisplayMap[tableName])) {
+            if (contrail.checkIfExist(columnDisplayMap[tableName])) {
                 $.each(columnDisplayMap[tableName], function (fieldIndex, fieldValue) {
                     if (fieldValue.select === selectValue) {
                         $.extend(columnConfig, fieldValue.display);
@@ -1754,7 +1754,7 @@ define([
                     width:500, searchable:true,
                     formatter: function(r, c, v, cd, dc) {
                         var xmlMessage = [];
-                        if (!_.isNil(dc.Xmlmessage)) {
+                        if (contrail.checkIfExist(dc.Xmlmessage)) {
                             if (!$.isPlainObject(dc.Xmlmessage)) {
                                 dc.XmlmessageJSON = cowu.formatXML2JSON(dc.Xmlmessage);
 
@@ -1957,11 +1957,11 @@ define([
                 body: {
                     options: {
                         checkboxSelectable: false,
-                        fixedRowHeight: !_.isNil(gridOptions.fixedRowHeight) ? gridOptions.fixedRowHeight : 30,
+                        fixedRowHeight: contrail.checkIfExist(gridOptions.fixedRowHeight) ? gridOptions.fixedRowHeight : 30,
                         forceFitColumns: false,
                         defaultDataStatusMessage: false,
-                        actionCell: !_.isNil(gridOptions.actionCell) ? gridOptions.actionCell : false,
-                        actionCellPosition: !_.isNil(gridOptions.actionCellPosition) ? gridOptions.actionCellPosition : "end"
+                        actionCell: contrail.checkIfExist(gridOptions.actionCell) ? gridOptions.actionCell : false,
+                        actionCellPosition: contrail.checkIfExist(gridOptions.actionCellPosition) ? gridOptions.actionCellPosition : "end"
                     },
                     dataSource: {
                         remote: {
