@@ -43,24 +43,24 @@
         document.getElementById('tabTitle').innerHTML = hostname.substring(0,15)+'... | Contrail';
     </script>
 
-    <link rel="stylesheet" href="/css/contrail.thirdparty.unified.css"/>
-    <!--<link rel="stylesheet" href="/css/contrail.unified.css"/>-->
-    <link rel="stylesheet" href="/css/contrail.init.css"/>
-    <link rel="stylesheet" href="/css/contrail.theme.css"/>
-    <link rel="stylesheet" href="/css/contrail.theme.layout.css"/>
-    <link rel="stylesheet" href="/css/contrail.theme.elements.css"/>
-    <link rel="stylesheet" href="/css/contrail.responsive.css"/>
-    <link rel="stylesheet" href="/css/contrail.grid.css"/>
-    <link rel="stylesheet" href="/css/contrail.form.elements.css"/>
-    <link rel="stylesheet" href="/css/contrail.components.css"/>
-    <link rel="stylesheet" href="/css/contrail.chart.css"/>
-    <link rel="stylesheet" href="/css/contrail.graph.css"/>
-    <link rel="stylesheet" href="/css/contrail.custom.css"/>
-    <link rel="stylesheet" href="/css/contrail.font.css"/>
-    <link rel="stylesheet" href="/css/login.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.thirdparty.unified.css"/>
+    <!--<link rel="stylesheet" href="/common/ui/css/contrail.unified.css"/>-->
+    <link rel="stylesheet" href="/common/ui/css/contrail.init.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.theme.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.theme.layout.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.theme.elements.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.responsive.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.grid.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.form.elements.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.components.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.chart.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.graph.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.custom.css"/>
+    <link rel="stylesheet" href="/common/ui/css/contrail.font.css"/>
+    <link rel="stylesheet" href="/common/ui/css/login.css"/>
 
     <!--[if lte IE 8]>
-    <link rel="stylesheet" href="/css/contrail-ie.min.css?built_at="/>
+    <link rel="stylesheet" href="/common/ui/css/contrail-ie.min.css?built_at="/>
     <![endif]-->
 
     <!--[if IE 7]>
@@ -124,6 +124,11 @@
 <script type="text/x-handlebars-template" id="app-container-tmpl">
 
     <div id="pageHeader" class="navbar navbar-default ace-save-state">
+        <div id="error-container" class="alert-error">
+           <div id="msg-container"><span class="error-font-weight">Error : </span><span id="error-msg-container"></span></div>
+           <div id="error-close-icon"><button id="close-error-popup" class="btn btn-mini"><i class="fa fa-times"></i></button></div>
+        </div>
+        <div id="success-msg-container"><div id="success-text-container"></div></div>
         <div id="navbar-container" class="navbar-container ace-save-state">
             <button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler" data-target="#sidebar">
                 <i class="fa fa-bars"></i>
@@ -138,9 +143,9 @@
                 <img class="logo" src="/img/sdn-logo.png"/>
             </a>
             <ul style="width:330px" class="nav ace-nav pull-right">
-                <li id="user-profile" class="customHide pull-right">
+                <li id="user-profile" class="hidden pull-right">
                     <a data-toggle="dropdown" href="#" class="user-menu dropdown-toggle">
-                        <i class="fa fa-user icon-only fa-2"></i>
+                        <i class="fa fa-user icon-only"></i>
                         <span id="user_info"></span>
                         <i class="fa fa-caret-down"></i>
                     </a>
@@ -151,12 +156,18 @@
                         </li>
                     </ul>
                 </li>
+                <li id="page-help" class="page-help pull-right">
+                    <a id="page-help-toggle-btn" class="page-help-toggle-btn">
+                        <i class="fa fa-question-circle"></i>
+                        <span>Help</span>
+                    </a>
+                </li>
                 <li id="region-profile">
                     <div id="regionDD" style="padding-bottom:6px"></div>
                 </li>
                 <li id="alarms-popup-link" onclick="cowu.loadAlertsPopup();" class="pull-right">
                     <a href="javascript:void(0);">
-                        <i class="fa fa-bell icon-only fa-2"></i>
+                        <i class="fa fa-bell icon-only"></i>
                         <span id="alert_info">Alarms</span>
                     </a>
                 </li>
@@ -165,46 +176,32 @@
     </div>
 
     <div id="main-container" class="main-container ace-save-state">
-
         <div id="sidebar" class="sidebar responsive ace-save-state" data-sidebar=true" data-sidebar-scroll="true" data-sidebar-hover="true">
-            <div class="sidebar-shortcuts" id="sidebar-shortcuts">
-
-            </div>  <!--#sidebar-shortcuts-->
+            <div class="sidebar-shortcuts" id="sidebar-shortcuts"></div>
             <ul id="menu" class="nav nav-list"></ul>
-        </div> <!-- #sidebar -->
+        </div>
 
         <div id="main-content" class="main-content">
-        <div class="main-content-inner">
-            <div id="breadcrumbs" class="breadcrumbs ace-save-state fixed">
-                <ul id="breadcrumb" class="breadcrumb">
-                </ul> <!--.breadcrumb-->
-                <!-- <div class="hardrefresh breadcrumb" style="display:none">
-                    <span> <i class="fa fa-time" style="cursor:default"></i></span><span data-bind="text:timeObj.timeStr"></span>
-                    <span class="loading"><i class="fa fa-spinner fa-spin"></i></span>
-                    <span class="refresh" title="refresh" style="color: #3182bd;cursor:pointer">Refresh</i></span>
-                </div> -->
-                <div id="page-help" class="page-help">
-                    <div id="page-help-toggle-btn" class="page-help-toggle-btn">
-                        <i class="page-help-toggle-text ace-icon fa fa-question bigger-150"></i>
+            <div class="main-content-inner">
+                <div id="breadcrumbs" class="breadcrumbs ace-save-state fixed">
+                    <ul id="breadcrumb" class="breadcrumb"></ul>
+                    <div id="nav-search" class="nav-search">
+                        <form id="search-form" onsubmit="searchSiteMap();">
+                            <span class="input-icon">
+                                <input id="nav-search-input" type="text" placeholder="Search Sitemap" class="input-medium search-query nav-search-input" autocomplete="off">
+                                <i class="fa fa-search" id="nav-search-icon"></i>
+                            </span>
+                        </form>
                     </div>
                 </div>
-                <div id="nav-search" class="nav-search">
-                    <form id="search-form" onsubmit="searchSiteMap();">
-                        <span class="input-icon">
-                            <input id="nav-search-input" type="text" placeholder="Search Sitemap" class="input-medium search-query nav-search-input" autocomplete="off">
-                            <i class="fa fa-search" id="nav-search-icon"></i>
-                        </span>
-                    </form>
+                <div id="page-content" class="page-content">
+                    <div id='content-container'></div>
                 </div>
-            </div>
-            <div id="page-content" class="page-content">
-                <div id='content-container'></div>
-            </div>
             </div> <!-- main-content-inner -->
         </div> <!-- /.main-content -->
     </div> <!-- /.container-fluid #main-container -->
     <a href="#" id="back-to-top"><i class="fa fa-angle-double-up icon-only bigger-110"></i>​&nbsp; Back to Top</a>
-    <div class="page-help-container" id="page-help-container" tabindex="-1">
+    <div class="page-help-container" id="page-help-container" tabindex="-1"></div>
 </script>
     <div id="signin-container">
     </div>

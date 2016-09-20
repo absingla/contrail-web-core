@@ -42,6 +42,51 @@ $(document).ready(function () {
         }
     });
 
+    $(document)
+        .off('click', '.group-detail-advanced-action-item')
+        .on('click', '.group-detail-advanced-action-item', function (event) {
+            if (!$(this).hasClass('selected')) {
+                var thisParent = $(this).parents('.group-detail-container'),
+                    newSelectedView = $(this).data('view');
+
+                thisParent.find('.group-detail-item').hideElement();
+                thisParent.find('.group-detail-' + newSelectedView).showElement();
+
+                thisParent.find('.group-detail-advanced-action-item').removeClass('selected');
+                $(this).addClass('selected');
+
+                if (contrail.checkIfExist($(this).parents('.slick-row-detail').data('cgrid'))) {
+                    $(this).parents('.contrail-grid').data('contrailGrid').adjustDetailRowHeight($(this).parents('.slick-row-detail').data('cgrid'));
+                }
+            }
+        });
+
+    $(document)
+        .off('click', '.input-type-toggle-action')
+        .on('click', '.input-type-toggle-action', function (event) {
+            var input = $(this).parent().find('input');
+            if (input.prop('type') == 'text') {
+                input.prop('type', 'password');
+                $(this).removeClass('blue');
+            } else {
+                input.prop('type', 'text');
+                $(this).addClass('blue');
+            }
+        });
+
+    $(document)
+        .off('click', '.input-type-toggle-action')
+        .on('click', '.input-type-toggle-action', function (event) {
+            var input = $(this).parent().find('input');
+            if (input.prop('type') == 'text') {
+                input.prop('type', 'password');
+                $(this).removeClass('blue');
+            } else {
+                input.prop('type', 'text');
+                $(this).addClass('blue');
+            }
+        });
+
     $(window).on('scroll', function () {
         var scrollHeight = $(document).height() - $(window).height(),
             previousScroll = 0,
@@ -82,10 +127,6 @@ $(document).ready(function () {
     // delete_cookie('_csrf');
 
     $(window).on('hashchange', function () {
-        if (helpHandler != null) {
-            helpHandler.update_sections();
-        }
-
         currHash = cowhu.getState();
         //Don't trigger hashChange if URL hash is updated from code
         //As the corresponding view has already been loaded from the place where hash is updated
@@ -106,38 +147,6 @@ $(document).ready(function () {
 
     //bootstrap v 2.3.1 prevents this event which firefox's middle mouse button "new tab link" action, so we off it!
     $(document).off('click.dropdown-menu');
-
-    function startHelp() {
-        $(document).on('click', '#page-help-toggle-btn', function (event) {
-            event.preventDefault();
-            toggleHelp();
-        });
-
-        $(document).on('click', '.page-help-backdrop', function(e) {
-            if (this.hidden == false) {
-                helpHandler.disable();
-                var toggle_btn = $('#page-help-toggle-btn');
-                toggle_btn.find('.page-help-toggle-text').removeClass('page-help-toggle-text');
-                toggle_btn.parent().toggleClass('active');
-            }
-        });
-
-        //in ajax mode when a content is loaded via ajax, we may want to update help sections
-        $(document).on('ajaxloadcomplete.ace.help', function () {
-            startHelp();
-            helpHandler.update_sections();
-        });
-    }
-
-    function toggleHelp() {
-        helpHandler.toggle();
-
-        var toggle_btn = $('#page-help-toggle-btn');
-        toggle_btn.find('.page-help-toggle-text').removeClass('page-help-toggle-text');
-        toggle_btn.parent().toggleClass('active');
-    }
-
-    startHelp();
 
 });
 
@@ -208,6 +217,20 @@ function getWebServerInfo(project, callback,fromCache) {
     }
 };
 
+function startWidgetLoading(selectorId) {
+    $("#" + selectorId + "-loading").show();
+    $("#" + selectorId + "-box").find('a[data-action="collapse"]').hide();
+    $("#" + selectorId + "-box").find('a[data-action="settings"]').hide();
+};
+
+function endWidgetLoading(selectorId) {
+    setTimeout(function(){
+        $("#" + selectorId + "-loading").hide();
+        $("#" + selectorId + "-box").find('a[data-action="collapse"]').show();
+        $("#" + selectorId + "-box").find('a[data-action="settings"]').show();
+    },500);
+};
+
 (function ($) {
     $.extend($.fn, {
         initWidgetHeader:function (data) {
@@ -275,7 +298,8 @@ $.allajax = (function ($) {
     $(document).ajaxComplete(function (event, xhr, settings) {
         var urlHash = window.location.hash;
         var redirectHeader = xhr.getResponseHeader('X-Redirect-Url');
-        if (redirectHeader != null) {
+        if ((redirectHeader != null) ||
+            (cowc.HTTP_STATUS_CODE_AUTHORIZATION_FAILURE == xhr.status)) {
             //Show login-form
             loadUtils.onAuthenticationReq();
             /*//Carry the current hash parameters to redirect URL(login page) such that user will be taken to the same page once he logs in

@@ -9,8 +9,8 @@ define([
     'contrail-model',
     'query-or-model',
     'query-and-model',
-    'core-basedir/js/common/qe.utils'
-], function (_, Backbone, Knockout, ContrailModel, QueryOrModel, QueryAndModel,qewu) {
+    'core-basedir/reports/qe/ui/js/common/qe.utils'
+], function (_, Backbone, Knockout, ContrailModel, QueryOrModel, QueryAndModel, qeUtils) {
     var QueryFormModel = ContrailModel.extend({
         defaultSelectFields: [],
         disableSelectFields: [],
@@ -77,6 +77,10 @@ define([
                     select     : ['name', 'fields.value'],
                     where      : [[{"name": "name", "value": tabletype, "op": 7}]]
                 };
+                self.table_name_data_object({
+                    status: cowc.DATA_REQUEST_STATE_FETCHING,
+                    data: []
+                });
                 $.ajax({
                     url: '/api/qe/table/column/values',
                     type: "POST",
@@ -89,12 +93,19 @@ define([
                         var nameOption = dataValue.name.split(':')[1];
                         resultArr.push(nameOption);
                     });
-                    self.table_name_data_object(resultArr);
+                    self.table_name_data_object({
+                        status: cowc.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY,
+                        data: resultArr
+                    });
                     if(setTableValuesCallbackFn !== null){
                         setTableValuesCallbackFn(self, resultArr);
                     }
                 }).error(function(xhr) {
-                    console.log(xhr);
+                    self.table_name_data_object({
+                        status: cowc.DATA_REQUEST_STATE_ERROR,
+                        error: xhr,
+                        data: []
+                    });
                 });
             };
 
@@ -104,7 +115,7 @@ define([
 
                 fetchTableValues(fromTimeUTC, toTimeUTC);
             } else {
-                qewu.fetchServerCurrentTime(function (serverCurrentTime) {
+                qeUtils.fetchServerCurrentTime(function (serverCurrentTime) {
                     var fromTimeUTC = serverCurrentTime - (timeRange * 1000),
                         toTimeUTC = serverCurrentTime;
 
@@ -118,7 +129,7 @@ define([
                 timeRange = contrailViewModel.attributes.time_range;
 
             if (contrail.checkIfExist(tableName)) {
-                qewu.fetchServerCurrentTime(function(serverCurrentTime) {
+                qeUtils.fetchServerCurrentTime(function(serverCurrentTime) {
                     var fromTimeUTC = serverCurrentTime - (timeRange * 1000),
                         toTimeUTC = serverCurrentTime
 
@@ -166,10 +177,7 @@ define([
             var self = this,
                 model = self.model();
 
-            if (self.table_type() == cowc.QE_OBJECT_TABLE_TYPE) {
-                self.reset(this, null, true, false);
-            } else if (self.table_type() == cowc.QE_STAT_TABLE_TYPE) {
-                // reset everything except time range and table name
+            if (self.table_type() == cowc.QE_OBJECT_TABLE_TYPE || self.table_type() == cowc.QE_STAT_TABLE_TYPE) {
                 self.reset(this, null, false, false);
             }
 
@@ -184,7 +192,7 @@ define([
                 disableFieldArray = [].concat(defaultSelectFields).concat(this.disableSelectFields),
                 disableSubstringArray = this.disableSubstringInSelectFields;
 
-            qewu.adjustHeight4FormTextarea(model.attributes.query_prefix);
+            qeUtils.adjustHeight4FormTextarea(model.attributes.query_prefix);
             if(tableName != '') {
                 $.ajax(ajaxConfig).success(function(response) {
                     var selectFields = getSelectFields4Table(response, disableFieldArray, disableSubstringArray),
@@ -200,13 +208,12 @@ define([
                     });
 
                     setEnable4SelectFields(selectFields, self.select_data_object().enable_map());
+                    setChecked4SelectFields(selectFields, self.select_data_object().checked_map());
                     self.select_data_object().select_fields(selectFields);
 
                     contrailViewModel.attributes.where_data_object['name_option_list'] = whereFields;
 
-                    if (self.table_type() == cowc.QE_OBJECT_TABLE_TYPE) {
-                        self.onChangeTime();
-                    } else if (self.table_type() == cowc.QE_STAT_TABLE_TYPE) {
+                    if (self.table_type() == cowc.QE_OBJECT_TABLE_TYPE || self.table_type() == cowc.QE_STAT_TABLE_TYPE) {
                         self.setTableFieldValues();
                     }
                 }).error(function(xhr) {
@@ -214,7 +221,7 @@ define([
                 });
             }
         },
-        
+
         formatModelConfig: function(modelConfig) {
             var whereOrClausesCollectionModel, filterAndClausesCollectionModel;
 
@@ -229,10 +236,11 @@ define([
 
         saveSelect: function (callbackObj) {
             try {
+                var checkedFields = qeUtils.getCheckedFields(this.select_data_object().checked_map());
                 if (contrail.checkIfFunction(callbackObj.init)) {
                     callbackObj.init();
                 }
-                this.select(this.select_data_object().checked_fields().join(", "));
+                this.select(checkedFields.join(", "));
                 if (contrail.checkIfFunction(callbackObj.success)) {
                     callbackObj.success();
                 }
@@ -249,7 +257,7 @@ define([
                     callbackObj.init();
                 }
 
-                this.where(qewu.parseWhereCollection2String(this));
+                this.where(qeUtils.parseWhereCollection2String(this));
 
                 if (contrail.checkIfFunction(callbackObj.success)) {
                     callbackObj.success();
@@ -267,7 +275,7 @@ define([
                     callbackObj.init();
                 }
 
-                this.filters(qewu.parseFilterCollection2String(this));
+                this.filters(qeUtils.parseFilterCollection2String(this));
 
                 if (contrail.checkIfFunction(callbackObj.success)) {
                     callbackObj.success();
@@ -303,7 +311,7 @@ define([
         },
 
         getSortByOptionList: function(viewModel) {
-            var validSortFields = this.select_data_object().checked_fields(),
+            var validSortFields = qeUtils.getCheckedFields(this.select_data_object().checked_map()),
                 invalidSortFieldsArr = ["T=" , "UUID"],
                 resultSortFieldsDataArr = [];
 
@@ -337,15 +345,15 @@ define([
                 queryReqObj = {};
 
             if(useOldTime != true) {
-                qewu.setUTCTimeObj(this.query_prefix(), formModelAttrs, serverCurrentTime);
+                qeUtils.setUTCTimeObj(this.query_prefix(), formModelAttrs, serverCurrentTime);
             }
 
             self.from_time_utc(formModelAttrs.from_time_utc);
             self.to_time_utc(formModelAttrs.to_time_utc);
 
             queryReqObj['formModelAttrs'] = formModelAttrs;
-            queryReqObj.queryId = qewu.generateQueryUUID();
-            queryReqObj.engQueryStr = qewu.getEngQueryStr(formModelAttrs);
+            queryReqObj.queryId = qeUtils.generateQueryUUID();
+            queryReqObj.engQueryStr = qeUtils.getEngQueryStr(formModelAttrs);
 
             queryReqObj = $.extend(true, self.defaultQueryReqConfig, queryReqObj, customQueryReqObj)
 
@@ -353,9 +361,6 @@ define([
         },
 
         reset: function (data, event, resetTR, resetTable) {
-            var resetTR = contrail.checkIfExist(resetTR) ? resetTR : true,
-                resetTable = contrail.checkIfExist(resetTable) ? resetTable : true;
-
             if(resetTR) {
                 this.time_range(600);
             }
@@ -424,7 +429,7 @@ define([
         isSuffixVisible: function(name) {
             var whereDataObject = this.model().get('where_data_object');
             name = contrail.checkIfFunction(name) ? name() : name;
-            return (qewu.getNameSuffixKey(name, whereDataObject['name_option_list']) != -1);
+            return (qeUtils.getNameSuffixKey(name, whereDataObject['name_option_list']) != -1);
         },
 
         getTimeGranularityUnits: function() {
@@ -511,6 +516,8 @@ define([
                             }
                         });
                         setEnable4SelectFields(selectFields, model.select_data_object().enable_map());
+                        setChecked4SelectFields(selectFields, model.select_data_object().checked_map());
+
                         model.select_data_object().select_fields(selectFields);
 
                         contrailViewModel.attributes.where_data_object['name_option_list'] = whereFields;
@@ -524,6 +531,10 @@ define([
     };
 
     function getTableSchemaColumnMap (tableSchema) {
+        if (_.isEmpty(tableSchema)) {
+            return {};
+        }
+
         var tableSchemaColumnMapObj = {},
             cols = tableSchema.columns;
         for(var i = 0; i < cols.length; i++) {
@@ -534,7 +545,7 @@ define([
     };
 
     function getSelectFields4Table(tableSchema, disableFieldArray, disableSubstringArray) {
-        if ($.isEmptyObject(tableSchema)) {
+        if (_.isEmpty(tableSchema)) {
            return [];
         }
         var tableColumns = tableSchema['columns'],
@@ -568,7 +579,7 @@ define([
     };
 
     function getWhereFields4NameDropdown(tableSchema, tableName, disableWhereFields) {
-        if ($.isEmptyObject(tableSchema)) {
+        if (_.isEmpty(tableSchema)) {
             return [];
         }
         var tableSchemaFormatted = [];
@@ -607,6 +618,43 @@ define([
         for (var i = 0; i < selectFields.length; i++) {
             isEnableMap[selectFields[i]['name']] = ko.observable(true);
         }
+    }
+
+    function setChecked4SelectFields(selectFields, checkedMap) {
+
+        var selectFieldsGroups = {};
+
+        _.each(cowc.SELECT_FIELDS_GROUPS, function(fieldGroupValue, fieldGroupKey) {
+            selectFieldsGroups[fieldGroupValue] = [];
+        });
+
+        for (var key in checkedMap) {
+            delete checkedMap[key];
+        }
+
+        _.each(selectFields, function(selectFieldValue, selectFieldKey) {
+            var key = selectFieldValue.name,
+                aggregateType =  cowl.getFirstCharUpperCase(key.substring(0, key.indexOf('(')));
+
+            if(key == 'T' || key == 'T=' ){
+                selectFieldsGroups["Time Range"].push(key);
+                aggregateType = "Time Range";
+            } else  if(aggregateType == ''){
+                selectFieldsGroups["Non Aggregate"].push(key);
+                aggregateType = "Non Aggregate";
+            } else {
+                selectFieldsGroups[aggregateType].push(key);
+            }
+
+            selectFieldValue['aggregate_type'] = cowl.getFirstCharUpperCase(aggregateType);
+
+        });
+
+        _.each(selectFieldsGroups, function(aggregateFields, aggregateKey) {
+            _.each(aggregateFields, function(fieldValue, fieldKey) {
+                checkedMap[fieldValue] = ko.observable(false);
+            });
+        });
     }
 
     return QueryFormModel;

@@ -58,7 +58,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'vectorizer'                  : coreWebDir + '/assets/joint/js/vectorizer',
         'joint.layout.DirectedGraph'  : coreWebDir + '/assets/joint/js/joint.layout.DirectedGraph',
         'joint'                       : coreWebDir + '/assets/joint/js/joint.clean',
-        'joint.contrail'              : coreWebDir + '/js/joint.contrail',
+        'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
 
         'core-alarm-utils'           :  coreWebDir + '/js/common/core.alarms.utils',
         'core-alarm-parsers'         :  coreWebDir + '/js/common/core.alarms.parsers',
@@ -105,6 +105,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'contrail-model'              : coreWebDir + '/js/models/ContrailModel',
             'contrail-view-model'         : coreWebDir + '/js/models/ContrailViewModel',
             'contrail-list-model'         : coreWebDir + '/js/models/ContrailListModel',
+            'contrail-element'            : coreWebDir + '/js/models/ContrailElement',
             'lodash'                      : coreWebDir + '/assets/lodash/lodash.min',
             'crossfilter'               : coreWebDir + '/assets/crossfilter/js/crossfilter',
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
@@ -125,13 +126,13 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'mon-infra-dashboard-view'    : coreWebDir + '/js/views/MonitorInfraDashboardView',
             //End - core-bundle aliases
             //Start - jquery.dep.libs aliases
-            'jquery.xml2json'           : coreWebDir + '/assets/jquery/js/jquery.xml2json',
-            'jquery.json'               : coreWebDir + "/assets/slickgrid/js/jquery.json-2.3.min",
-            'bootstrap'                 : coreWebDir + '/assets/bootstrap/js/bootstrap',
-            'select2'                   : coreWebDir + "/assets/select2/js/select2.min",
-            'slick.core'                : coreWebDir + "/assets/slickgrid/js/slick.core",
-            'slick.dataview'            : coreWebDir + "/assets/slickgrid/js/slick.dataview",
-            'contrail-elements'         : coreWebDir + "/js/contrail-elements",
+            'jquery.xml2json'            : coreWebDir + '/assets/jquery/js/jquery.xml2json',
+            'jquery.json'                : coreWebDir + "/assets/slickgrid/js/jquery.json-2.3.min",
+            'bootstrap'                  : coreWebDir + '/assets/bootstrap/js/bootstrap',
+            'select2'                    : coreWebDir + "/assets/select2/js/select2.min",
+            'slick.core'                 : coreWebDir + "/assets/slickgrid/js/slick.core",
+            'slick.dataview'             : coreWebDir + "/assets/slickgrid/js/slick.dataview",
+            'core-contrail-form-elements': coreWebDir + "/js/common/core.contrail.form.elements",
             'jquery.timer'              : coreWebDir + '/assets/jquery/js/jquery.timer',
             'jquery.ui.touch-punch'     : coreWebDir + '/assets/jquery/js/jquery.ui.touch-punch.min',
             'jquery.validate'           : coreWebDir + "/assets/jquery/js/jquery.validate.min",
@@ -144,8 +145,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'jquery.datetimepicker'     : coreWebDir + "/assets/datetimepicker/js/jquery.datetimepicker",
             //End - jquery.dep.libs aliases
             //Start - thirdparty-libs aliases
-            'handlebars'                : coreWebDir + "/assets/handlebars/handlebars-v1.3.0",
-            'handlebars-utils'          : coreWebDir + "/js/handlebars-utils",
+            'handlebars'                : coreWebDir + "/assets/handlebars/handlebars",
+            'core-handlebars-utils'          : coreWebDir + "/js/common/core.handlebars.utils",
 
             'slick.grid'                : coreWebDir + "/assets/slickgrid/js/slick.grid",
             'slick.checkboxselectcolumn': coreWebDir + '/assets/slickgrid/js/slick.checkboxselectcolumn',
@@ -163,7 +164,6 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'analyzer-utils'            : coreWebDir + "/js/analyzer-utils",
             'config_global'             : coreWebDir + "/js/config_global",
             'contrail-layout'           : coreWebDir + '/js/contrail-layout',
-            'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
             'contrail-common'           : coreWebDir + "/js/contrail-common",
             'uuid'                      : coreWebDir + "/js/uuid",
             'protocol'                  : coreWebDir + "/js/protocol",
@@ -177,9 +177,9 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'infoboxes'                   : coreWebDir + '/js/views/InfoboxesView',
             'barchart-cf'                 : coreWebDir + '/js/views/BarChartView',
 
-            //'core.app.utils'              : coreWebDir + "/js/common/core.app.utils",
-            'storage-init'                : 'empty:',
-            'contrail-element'            : coreWebDir + '/js/models/ContrailElement'
+            // 'core.app.utils'              : coreWebDir + "/js/common/core.app.utils",
+            'storage-init'                : 'empty:'
+
         };
         //Merge common (for both prod & dev) alias 
         for(var currAlias in devAliasMap)
@@ -191,9 +191,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
             'knockout'                    : coreWebDir + '/assets/knockout/knockout',
             'knockback'                   : coreWebDir + '/assets/backbone/knockback.min',
-            'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd',
-            'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
-            'contrail-element'            : coreWebDir + '/js/models/ContrailElement'
+            'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd'
         }
         //Merge common (for both prod & dev) alias 
         for(var currAlias in prodAliasMap)
@@ -210,7 +208,7 @@ var coreAppMap = {
 
 var coreAppShim =  {
     'core-bundle': {
-        dpes:['nonamd-libs','jquery']
+        deps:['nonamd-libs', 'jquery-ui']
     },
     'jquery' : {
         exports: 'jQuery'
@@ -276,9 +274,6 @@ var coreAppShim =  {
     'jquery.json': {
         deps: ['jquery']
     },
-    'jquery.droppick': {
-        deps: ['jquery']
-    },
     'jquery.datetimepicker': {
         deps: ['jquery']
     },
@@ -312,7 +307,7 @@ var coreAppShim =  {
     'slickgrid-utils': {
         deps: ['jquery','slick.grid','slick.dataview']
     },
-    'contrail-elements': {
+    'core-contrail-form-elements': {
         deps: ['jquery-ui']
     },
     'chart-utils': {
@@ -321,8 +316,8 @@ var coreAppShim =  {
     'web-utils': {
         deps: ['jquery','knockout']
     },
-    'handlebars-utils': {
-        deps: ['jquery','handlebars']
+    'core-handlebars-utils': {
+        deps: ['jquery', 'handlebars']
     },
     'nvd3-plugin': {
         deps: ['nv.d3']
@@ -407,7 +402,6 @@ var coreBundles = {
             'select2',
             'slick.core',
             'slick.dataview',
-            'contrail-elements',
             'jquery.timer',
             'jquery.ui.touch-punch',
             'jquery.validate',
@@ -416,13 +410,13 @@ var coreBundles = {
             'jquery.multiselect.filter',
             'jquery.steps.min',
             'jquery.panzoom',
-            // 'jquery-contextmenu',
             'jquery.event.drag',
-            'jquery.droppick',
             'jquery.datetimepicker'
         ],
         'core-bundle'       : [
             'underscore',
+            'handlebars',
+            'core-handlebars-utils',
             'core-utils',
             'core-hash-utils',
             'core-constants',
@@ -431,14 +425,18 @@ var coreBundles = {
             'core-labels',
             'core-messages',
             'core-views-default-config',
+            'contrail-common',
+            'core-contrail-form-elements',
             'chart-utils',
-            'text!core-basedir/templates/core.common.tmpl',
+            'text!core-basedir/common/ui/templates/core.common.tmpl',
+            'core-basedir/js/common/graph.utils',
             'contrail-remote-data-handler',
             'cf-datasource',
             'contrail-view',
             'contrail-model',
             'contrail-view-model',
             'contrail-list-model',
+            'contrail-elements',
             'lodash',
             'crossfilter',
             'text',
@@ -512,13 +510,10 @@ var coreBundles = {
             'analyzer-utils',
             'config_global',
             'contrail-layout',
-            'handlebars-utils',
-            'contrail-common',
             'uuid',
             'protocol',
             'xdate',
             'ipv6',
-            'handlebars',
             'jsonpath'
         ]
     };

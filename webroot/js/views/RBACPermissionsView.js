@@ -104,10 +104,7 @@ define([
         },
 
         shareViewConfig: function() {
-            var projectPostData = JSON.stringify({data: [{type: "projects",
-                parent_type: "domain",
-                parent_fq_name_str:
-                    contrail.getCookie(cowc.COOKIE_DOMAIN)}]})
+            var projectPostData = JSON.stringify({data: [{type: "projects"}]})
             return  [{
                 elementId: 'share_list',
                 view: "FormEditableGridView",
@@ -148,13 +145,16 @@ define([
                                             _.each(projects, function(project){
                                                 var projName =
                                                     getValueByJsonPath(project,
-                                                    "fq_name;1", "", false);
-                                                if(projName &&
+                                                    "fq_name;1", "", false),
+                                                    projId =
+                                                    getValueByJsonPath(project,
+                                                    "uuid", "", false  );
+                                                if(projId && projName &&
                                                     projName !==
                                                         "default-project") {
                                                     dataSource.push({
                                                         text: projName,
-                                                        value: projName
+                                                        value: projId
                                                     });
                                                 }
                                             });

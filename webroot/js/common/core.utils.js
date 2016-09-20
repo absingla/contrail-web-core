@@ -2,7 +2,11 @@
  * Copyright (c) 2014 Juniper Networks, Inc. All rights reserved.
  */
 
-define(['underscore'], function (_) {
+define([
+    'underscore',
+    'moment',
+    'handlebars'
+], function (_, moment, Handlebars) {
     var serializer = new XMLSerializer(),
         domParser = new DOMParser();
 
@@ -292,6 +296,32 @@ define(['underscore'], function (_) {
             return true;
         };
 
+        this.formatFormData = function (data, option) {
+            var self = this,
+                formattedData = [];
+            if (typeof data[0] === 'object') {
+                if (typeof option.dataValueField !== 'undefined' && typeof option.dataTextField !== 'undefined') {
+                    $.each(data, function (key, val) {
+                        if ('children' in val){
+                            self.formatFormData(val.children, option);
+                        }
+                        data[key][option.dataValueField.apiVar] = val[option.dataValueField.dsVar];
+                        data[key][option.dataTextField.apiVar] = val[option.dataTextField.dsVar];
+                    });
+                }
+            } else {
+                $.each(data, function (key, val) {
+                    formattedData.push({
+                        id: val,
+                        value: String(val),
+                        text: String(val)
+                    });
+                });
+                data = formattedData;
+            }
+            return data;
+        };
+
         this.getEditConfigObj = function (configObj, locks, schema, path) {
             var lock = null,
                 testobj = $.extend(true, {}, configObj);
@@ -467,7 +497,7 @@ define(['underscore'], function (_) {
                 }
             }
         };
-        
+
         this.constructJsonHtmlViewer = function (jsonValue, formatDepth, currentDepth, ignoreKeys) {
             var htmlValue = '',
                 objType = {type: 'object', startTag: '{', endTag: '}'};
@@ -621,23 +651,6 @@ define(['underscore'], function (_) {
             }
         };
 
-        this.handleEmptyGrid4LazyLoading = function(gridId, data, count) {
-            if (contrail.checkIfExist($('#' + gridId).data('contrailGrid'))) {
-                $('#' + gridId).data('contrailGrid').removeGridLoading();
-
-                if (data.length === 0) {
-                    $('#' + gridId).data('contrailGrid').showGridMessage('empty');
-                }
-            } else {
-                count = contrail.checkIfExist(count) ? count : 1;
-                if (count < 5) {
-                    setTimeout(function () {
-                        self.handleEmptyGrid4LazyLoading(gridId, data, count);
-                    }, count * 1000);
-                }
-            }
-        };
-
         /* Detail Template Generator*/
         this.generateBlockListTemplate = function (config, app, parentConfig) {
             var template = '' +
@@ -666,7 +679,7 @@ define(['underscore'], function (_) {
                 var keyValueTemplate = '' +
                     '<li>' +
                         '<div class="row">' +
-                            '<div class="key col-xs-4 ' + (parentConfig.keyClass != null ? parentConfig.keyClass : '') +
+                            '<div class="key col-xs-5 ' + (parentConfig.keyClass != null ? parentConfig.keyClass : '') +
                             ' ' + (configValue.keyClass != null ? configValue.keyClass : '')+'"> {{getLabel "' +
                             configValue.label + '" "' + configValue.key + '" "' + app + '"}} </div>' +
                             '<div class="value col-xs-7 ' + (parentConfig.valueClass != null ? parentConfig.valueClass : '') +
@@ -802,12 +815,12 @@ define(['underscore'], function (_) {
                                         '<div class="list-view">' +
                                             self.generateBlockListTemplate(config.templateGeneratorConfig, app, config) +
                                         '</div>' +
-                                        '<div class="advanced-view hide">' +
+                                        '<div class="advanced-view hidden">' +
                                             '{{{formatGridJSON2HTML this.data' +
                                                 ((contrail.checkIfExist(config.templateGeneratorData) && config.templateGeneratorData !== '') ? '.' + config.templateGeneratorData : '') +
                                             '}}}' +
                                         '</div>' +
-                                        '<div class="contrail-status-view hide">' +
+                                        '<div class="contrail-status-view hidden">' +
                                         '</div>' +
                                     '</div>' +
                                 '</div>' +

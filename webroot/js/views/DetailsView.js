@@ -97,9 +97,9 @@ define([
         $(detailEl).find('[data-action="list-view"]')
             .off('click')
             .on('click', function (event) {
-                $(this).parents('.widget-box').find('.list-view').show();
-                $(this).parents('.widget-box').find('.advanced-view').hide();
-                $(this).parents('.widget-box').find('.contrail-status-view').hide();
+                $(this).parents('.widget-box').find('.list-view').showElement();
+                $(this).parents('.widget-box').find('.advanced-view').hideElement();
+                $(this).parents('.widget-box').find('.contrail-status-view').hideElement();
             });
 
         $(detailEl).find('[data-action="advanced-view"]')
@@ -118,9 +118,9 @@ define([
                         advancedDiv.append(advancedTemplate);
                     })
                 }
-                $(this).parents('.widget-box').find('.advanced-view').show();
-                $(this).parents('.widget-box').find('.list-view').hide();
-                $(this).parents('.widget-box').find('.contrail-status-view').hide();
+                $(this).parents('.widget-box').find('.advanced-view').showElement();
+                $(this).parents('.widget-box').find('.list-view').hideElement();
+                $(this).parents('.widget-box').find('.contrail-status-view').hideElement();
             })
     };
 

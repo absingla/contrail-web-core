@@ -19,22 +19,22 @@ define([
 //          NOTICE  : 2, //Blue
 //          INFO    : 3, //Green
         };
-       this.SEVERITY_TO_TEXT_MAP = {
-               0 : "Critical",
-               1 : "Major",
-               2 : "Minor"
-       };
-       this.COLOR_SEVERITY_MAP = {
-                red : 'error',
-                orange : 'warning',
-                blue : 'default',
-                green : 'okay'
-           };
-       this.SEV_TO_COLOR_MAP = {
-               0 : 'red',
-               1 : 'red',
-               2 : 'orange'
-       }
+        this.SEVERITY_TO_TEXT_MAP = {
+           0 : "Critical",
+           1 : "Major",
+           2 : "Minor"
+        };
+        this.COLOR_SEVERITY_MAP = {
+            red : 'error',
+            orange : 'warning',
+            blue : 'default',
+            green : 'okay'
+        };
+        this.SEV_TO_COLOR_MAP = {
+            0 : 'red',
+            1 : 'red',
+            2 : 'orange'
+        };
         this.PATTERN_IP_ADDRESS  = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/;
         this.PATTERN_SUBNET_MASK = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/(\d|[1-2]\d|3[0-2]))?$/;
         this.PATTERN_MAC_ADDRESS = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
@@ -80,6 +80,7 @@ define([
         //anlytics node template
         //core-2-row-4-column-template
         this.TMPL_4COLUMN__2ROW_CONTENT_VIEW = "core-2-row-4-column-template";
+        this.TMPL_1COLUMN__1ROW_CONTENT_VIEW = "core-1-row-1-column-template";
 
         this.TMPL_ACCORDIAN_VIEW = "core-accordian-view-template";
         this.TMPL_JSON_EDITOR_VIEW = "core-json-editor-view-template";
@@ -111,6 +112,7 @@ define([
         this.TMPL_ELEMENT_NAME = 'core-element-name-template';
 
         this.TMPL_GRID_VIEW = "core-grid-view-template";
+        this.TMPL_GRID_GROUP_DELETE_MODAL_BODY = "core-grid-group-delete-modal-body-template";
 
         this.TMPL_COLLECTION_VIEW = "core-collection-view-template";
         this.TMPL_GEN_COLLECTION_VIEW = "core-generic-collection-view-template";
@@ -166,8 +168,6 @@ define([
         this.TMPL_UNDERLAY_ELEMENT_TOOLTIP = "element-underlay-tooltip-template";
         this.TMPL_ELEMENT_TOOLTIP_TITLE = "element-tooltip-title-template";
         this.TMPL_ELEMENT_TOOLTIP_CONTENT = "element-tooltip-content-template";
-
-        this.TMPL_NETWORK_POLICY_RULE = "network-policy-rule-template";
 
         this.APP_CONTRAIL_CONTROLLER = "contrail-controller";
         this.APP_CONTRAIL_SM = "contrail-sm";
@@ -258,8 +258,9 @@ define([
         this.QE_DEFAULT_LIMIT_150K = "150000";
         this.QE_DEFAULT_LIMIT_50K = "50000";
 
+        this.SELECT_FIELDS_GROUPS = ["Time Range", "Non Aggregate", "Sum", "Avg", "Count", "Min", "Max", "Percentiles"];
+        this.DEFAULT_FS_SELECT_FIELDS = "T=, vrouter, sourcevn, sourceip, destvn, destip, protocol, sport, dport, sum(packets), sum(bytes)";
         this.DEFAULT_FR_SELECT_FIELDS = "vrouter, sourcevn, sourceip, destvn, destip, protocol, sport, dport, setup_time, agg-packets, agg-bytes, action";
-        this.DEFAULT_FS_SELECT_FIELDS = "vrouter, sourcevn, sourceip, destvn, destip, protocol, sport, dport, T=, sum(packets), sum(bytes)";
         this.DEFAULT_SL_SELECT_FIELDS = "MessageTS, Source, ModuleId, Category, Level, NodeType, Messagetype, Xmlmessage";
 
         this.QE_DEFAULT_FILTER = "limit: 150000 & sort_fields:  & sort: asc";
@@ -1032,6 +1033,7 @@ define([
             return cowu.getValueFromTemplate(args);
         };
         this.DEFAULT_COLOR = '#adcfdc';
+        this.HTTP_STATUS_CODE_AUTHORIZATION_FAILURE = 401;
     };
     //Export to global scope
     cowc = new CoreConstants();

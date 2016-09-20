@@ -582,10 +582,12 @@ function ajaxDefErrorHandler(xhr) {
     }
 }
 
-function renderSparkLines(cellNode,row,dataContext,colDef) {
-    $(cellNode).find('.gridSparkline').each(function() {
+function renderSparkLines(cellNode, row, dataContext, colDef) {
+    require(["chart-utils"], function(chUtils) {
+        $(cellNode).find('.gridSparkline').each(function() {
             chUtils.drawSparkLine4Selector(this, 'blue-grid-sparkline', dataContext['histCpuArr']);
         });
+    });
 }
 
 function sort(object) {
@@ -1415,12 +1417,17 @@ function getNodeStatusForSummaryPages(data,page) {
 }
 var dashboardUtils = {
     sortNodesByColor: function(a,b) {
-        // var colorPriorities = [d3Colors['green'],d3Colors['blue'],d3Colors['orange'],d3Colors['red']];
         var d3Colors = cowc.COLOR_SEVERITY_MAP;
-        var colorPriorities = [d3Colors['blue'],d3Colors['green'],d3Colors['orange'],d3Colors['red']];
+        var colorPriorities = [d3Colors['red'],d3Colors['orange'],d3Colors['green'],d3Colors['blue']];
         var aColor = $.inArray(a['color'],colorPriorities);
         var bColor = $.inArray(b['color'],colorPriorities);
-        return aColor-bColor;
+        if(aColor != bColor){
+            return aColor-bColor;
+        } else{
+            if(a['name'] < b['name']) return -1;
+            if(a['name'] > b['name'])  return 1;
+            return 0;
+        }
     },
     getDownNodeCnt : function(data) {
         var downNodes = $.grep(data,function(obj,idx) {
