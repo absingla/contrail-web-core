@@ -59,7 +59,8 @@ define([
             var self = this;
             var domains = { x: self.model.getRangeFor( self.params.xAccessor ) };
             domains[self.axisName] = [];
-            // TODO: a domain may by specified in the accessorData config or in params. No need for calculating it then.
+            // The domains calculated here can be overriden in the axis configuration.
+            // The overrides are handled by the parent.
             _.each( self.params.activeAccessorData, function( accessor, key ) {
                 var domain = self.model.getRangeFor( key );
                 domains[self.axisName] = domains[self.axisName].concat( domain );
@@ -106,7 +107,7 @@ define([
             enteringSelection.append( "g" ).attr( "class", "bubbles" );
         },
 
-        /***
+        /**
         * Shape drawing functions. The draw on the entering and edit selections. One drawing function per accessor shape.
         */
         shapeEnterFunctions: { circle: "shapeEnterCircle" },
@@ -139,7 +140,7 @@ define([
                 _.each( self.params.activeAccessorData, function( accessor, key ) {
                     var y = d[key];
                     var rScaleName = "r" + accessor.shape + "Scale";
-                    var obj = _.extend({}, d, {
+                    var obj = {
                         id: x + "-" + key,
                         className: "bubble bubble-" + key,
                         selectClassName: ".bubble-" + key,
@@ -147,8 +148,9 @@ define([
                         y: yScale( y ),
                         shape: accessor.shape,
                         r: self.params[rScaleName]( d[accessor.sizeAccessor] ),
-                        color: self.getBubbleColor( accessor, key )
-                    });
+                        color: self.getBubbleColor( accessor, key ),
+                        data: d
+                    };
                     flatData.push( obj );
                 });
             });

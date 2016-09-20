@@ -12,15 +12,16 @@ define([
         className: "control-panel",
 
         initialize: function(options) {
+            var self = this
             /// The config model
-            this.config = options.config;
+            self.config = options.config;
 
             /// View params hold values from the config and computed values.
-            this.resetParams();
+            self.resetParams();
 
-            this.listenTo(this.model, "change", this.render);
-            this.listenTo(this.config, "change", this.render);
-            this.eventObject = _.extend({}, Backbone.Events);
+            self.listenTo(this.model, "change", self.render);
+            self.listenTo(this.config, "change", self.render);
+            self.eventObject = _.extend({}, Backbone.Events);
         },
 
         render: function() {

@@ -53,7 +53,8 @@ define([
             var self = this;
             var domains = { x: self.model.getRangeFor( self.params.xAccessor ) };
             domains[self.axisName] = [];
-            // TODO: a range may by specified in the accessorData config. No need for calculating it then.
+            // The domains calculated here can be overriden in the axis configuration.
+            // The overrides are handled by the parent.
             _.each( self.params.activeAccessorData, function( accessor, key ) {
                 var domain = self.model.getRangeFor( key );
                 domains[self.axisName] = domains[self.axisName].concat( domain );
@@ -73,7 +74,7 @@ define([
         /**
          * Called by the parent to allow the child to add some initialization code into the provided entering selection.
          */
-        renderSVG: function ( enteringSelection ) {
+        renderSVG: function( enteringSelection ) {
             enteringSelection.append( "g" ).attr( "class", "lines" );
         },
 

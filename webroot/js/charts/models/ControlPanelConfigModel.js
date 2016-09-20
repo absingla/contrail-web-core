@@ -6,8 +6,9 @@ define([
     "jquery",
     "underscore",
     "backbone",
-], function ($, _, Backbone) {
-    var ControlPanelConfigModel = Backbone.Model.extend({
+    "core-basedir/js/charts/models/BaseConfigModel"
+], function( $, _, Backbone, BaseConfigModel ) {
+    var ControlPanelConfigModel = BaseConfigModel.extend({
         defaults: {
             accessorData: {}
         }

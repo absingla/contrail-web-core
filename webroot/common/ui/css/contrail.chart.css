@@ -449,6 +449,11 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     fill: #666
 }
 
+.coCharts-container .axis.x-axis .axis-label {
+    font-size: 11px;
+    fill: #666
+}
+
 .coCharts-container .axis.y-axis .domain {
     display: none
 }

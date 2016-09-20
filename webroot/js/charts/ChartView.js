@@ -56,27 +56,6 @@ define([
                 }
                 //self.renderChart(selector);
             }
-            // Can be used for component instatiation automation. Not used.
-            var configToComponentMapping = [
-                {
-                    config: "message",
-                    configModel: MessageComponentConfigModel,
-                    viewId: "messageView",
-                    findContainerBy: ".coCharts-main-container"
-                },
-                {
-                    config: "navigation",
-                    configModel: NavigationComponentConfigModel,
-                    viewId: "navigationView",
-                    findElBy: ".coCharts-navigation-container"
-                },
-                {
-                    config: "mainChart",
-                    configModel: CompositeYChartConfigModel,
-                    viewId: "chartView",
-                    findElBy: ".coCharts-main-container"
-                }
-            ];
         },
 
         updateChartDataModel: function (status) {
@@ -201,12 +180,11 @@ define([
                 }
             }
             if( self.isEnabledComponent( "controlPanel" ) ) {
-                // var controlPanelConfigModel = new ControlPanelConfigModel(self.chartConfigModel.get("mainChart"));
-                // var controlPanelView = new ControlPanelView({
-                //     config: self.chartConfigModel.get("mainChart"),
-                //     el: $(selector).find(".coCharts-control-panel-container")
-                // });
-                // controlPanelView.render();
+                var controlPanelView = new ControlPanelView( {
+                    config: new ControlPanelConfigModel( self.chartConfig.controlPanel ),
+                    el: $(selector).find( ".coCharts-control-panel-container" )
+                });
+                controlPanelView.render();
                 // self.registerConfigChangeEvent(controlPanelView.eventObject);
             }
         },
@@ -214,8 +192,8 @@ define([
     });
 
     function getChartConfig(selector, chartOptions) {
-        var chartSelector = $(selector).find(".coCharts-container"),
-            chartWidth = ($(chartSelector).width() > 100) ? $(chartSelector).width() - 10 : undefined;
+        //var chartSelector = $(selector).find(".coCharts-container"),
+        //    chartWidth = ($(chartSelector).width() > 100) ? $(chartSelector).width() - 10 : undefined;
 
         var defaultChartConfig = {
             chartId: "ChartView",
@@ -229,7 +207,7 @@ define([
             navigation: {
                 enable: false,
                 chartHeight: 200,
-                chartWidth: chartWidth,
+                //chartWidth: chartWidth,
                 xAccessor: "x",
                 accessorData: {}
             },
@@ -248,19 +226,19 @@ define([
             },
             mainChart: {
                 chartHeight: 270,
-                chartWidth: chartWidth,
+                //chartWidth: chartWidth,
                 marginTop: 20,
-                marginRight: 50,
+                marginRight: 70,
                 marginBottom: 50,
                 marginLeft: 50,
-                y1Label: "Y1 Axis",
+                //y1Label: "Y1 Axis",
                 xLabel: "X Axis",
-                y1LabelFormat: d3.format(","),
-                xLabelFormat: d3.format(","),
+                //y1LabelFormat: d3.format(","),
+                //xLabelFormat: d3.format(","),
                 xAccessor: "x",
                 xScale: undefined,
-                forceX: [undefined, undefined],
-                forceY: [undefined, undefined],
+                //forceX: [undefined, undefined],
+                //forceY: [undefined, undefined],
                 accessorData: {}
             },
             message: {

@@ -7,11 +7,12 @@ define([
     "core-basedir/js/charts/views/DataView",
     "core-basedir/js/charts/views/LineChartView",
     "core-basedir/js/charts/views/BarChartView",
+    "core-basedir/js/charts/views/StackedBarChartView",
     "core-basedir/js/charts/views/ScatterBubbleChartView"
 ], function (
     $, _, Backbone, d3,
     DataView,
-    LineChartView, BarChartView, ScatterBubbleChartView
+    LineChartView, BarChartView, StackedBarChartView, ScatterBubbleChartView
 ) {
     var CompositeYChartView = DataView.extend({
     	tagName: "div",
@@ -53,7 +54,7 @@ define([
             });
         },
 
-        possibleChildViews: { line: LineChartView, bar: BarChartView, scatterBubble: ScatterBubbleChartView },
+        possibleChildViews: { line: LineChartView, bar: BarChartView, stackedBar: StackedBarChartView, scatterBubble: ScatterBubbleChartView },
 
         /**
         * Update the components array based on the accessorData.
@@ -117,11 +118,13 @@ define([
                                 	name: axisName,
                                 	used: 0,
                                 	position: ((accessor.y % 2) ? "left" : "right"),
-                                	num: Math.floor( (accessor.y - 1) / 2)
+                                	num: Math.floor( (accessor.y - 1) / 2),
+                                    accessors: []
                                 };
                                 self.params.yAxisInfoArray.push( foundAxisInfo );
                             }
                             foundAxisInfo.used++;
+                            foundAxisInfo.accessors.push( key );
                             if( accessor.chartType ) {
                                 // Set the activeAccessorData to the appropriate components.
                                 if( component ) {
@@ -179,7 +182,7 @@ define([
         calculateScales: function () {
             var self = this;
             // Calculate the starting and ending positions in pixels of the chart data drawing area.
-            self.params.xRange = [self.params.marginInner + self.params.marginLeft, self.params.chartWidth - self.params.marginInner - self.params.marginRight];
+            self.params.xRange = [self.params.marginLeft + self.params.marginInner, self.params.chartWidth - self.params.marginRight - self.params.marginInner];
             self.params.yRange = [self.params.chartHeight - self.params.marginInner - self.params.marginBottom, self.params.marginInner + self.params.marginTop];
             self.saveScales();
             // Now let every component perform it's own calculations based on the provided X and Y scales.
@@ -285,6 +288,9 @@ define([
                         baseScale = d3.scaleLinear();
                     }
                     self.params[scaleName] = baseScale.domain( self.params[domainName] ).range( self.params[rangeName] );
+                    if( !self.hasAxisConfig( axisName, 'domain' ) ) {
+                        self.params[scaleName] = self.params[scaleName].nice( self.params.xTicks );
+                    }
                 }
                 // Now update the scales of the appropriate components.
                 _.each( self.getComponents( axisName ), function( component ) {
@@ -299,16 +305,13 @@ define([
          */
         renderSVG: function () {
             var self = this;
+            var translate = self.params.xRange[0] - self.params.marginInner;
             var svgs = d3.select(self.$el.get(0)).selectAll("svg").data([self.id]);
             var svg = svgs.enter().append("svg").attr("id", function ( d ) { return d; } );
             svg.append("g")
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.yRange[1] - self.params.marginInner ) + ")");
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
-            	var translate = self.params.xRange[0] - self.params.marginInner;
-            	if( axisInfo.position == "right" ) {
-            		translate = self.params.xRange[1] + self.params.marginInner;
-            	}
             	svg.append("g")
                 .attr("class", "axis y-axis " + axisInfo.name + "-axis")
                 .attr("transform", "translate(" + translate + ",0)");
@@ -383,14 +386,34 @@ define([
             }
             var svg = self.svgSelection().transition().ease( d3.easeLinear ).duration( self.params.duration );
             svg.select( ".axis.x-axis" ).call( xAxis );
+            // X axis label
+            var xLabelData = [];
+            if( self.params.xLabel ) {
+                xLabelData.push( self.params.xLabel );
+            }
+            var xAxisLabelSvg = self.svgSelection().select( ".axis.x-axis" ).selectAll( ".axis-label" ).data( xLabelData );
+            xAxisLabelSvg.enter()
+                .append( "text" )
+                .attr( "class", "axis-label" )
+                .merge( xAxisLabelSvg ).transition().ease( d3.easeLinear ).duration( self.params.duration )
+                .attr( "x", self.params.xRange[0] + (self.params.xRange[1] - self.params.xRange[0]) / 2 )
+                .attr( "y", self.params.yRange[0] + self.params.marginInner + 10 )
+                .text( function( d ) { return d; } );
+            xAxisLabelSvg.exit().remove();
             // We render the yAxis here because there may be multiple components for one axis.
             // The parent has aggregated information about all Y axis.
             var referenceYScale = null;
+            var yLabelX = 0;
+            var yLabelTransform = "rotate(-90)";
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
                 var scaleName = axisInfo.name + "Scale";
+                yLabelX = 0 - self.params.marginLeft + 12;
+                yLabelTransform = "rotate(-90)";
                 if( axisInfo.position == "right" ) {
+                    yLabelX = self.params.chartWidth - self.params.marginLeft - 12;
+                    yLabelTransform = "rotate(90)";
                     axisInfo.yAxis = d3.axisRight( self.params[scaleName] )
-                        .tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) )
+                        .tickSize( (self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) )
                         .tickPadding(5).ticks( self.params.yTicks );
                 }
                 else {
@@ -412,6 +435,23 @@ define([
                     axisInfo.yAxis = axisInfo.yAxis.tickFormat( self.params.axis[axisInfo.name].formatter );
                 }
                 svg.select( ".axis.y-axis." + axisInfo.name + "-axis" ).call( axisInfo.yAxis );
+                // Y axis label
+                var yLabelData = [];
+                _.each( axisInfo.accessors, function( key ) {
+                    if( self.params.activeAccessorData[key].label ) {
+                        yLabelData.push( self.params.activeAccessorData[key].label );
+                    }
+                });
+                var yAxisLabelSvg = self.svgSelection().select( ".axis.y-axis." + axisInfo.name + "-axis" ).selectAll( ".axis-label" ).data( yLabelData );
+                yAxisLabelSvg.enter()
+                    .append( "text" )
+                    .attr( "class", "axis-label" )
+                    .merge( yAxisLabelSvg ).transition().ease( d3.easeLinear ).duration( self.params.duration )
+                    //.attr( "x", yLabelX )
+                    //.attr( "y", self.params.yRange[1] + (self.params.yRange[0] - self.params.yRange[1]) / 2 )
+                    .attr( "transform", "translate(" + yLabelX + "," + (self.params.yRange[1] + (self.params.yRange[0] - self.params.yRange[1]) / 2) + ") " + yLabelTransform )
+                    .text( function( d ) { return d; } );
+                yAxisLabelSvg.exit().remove();
             });
         },
 

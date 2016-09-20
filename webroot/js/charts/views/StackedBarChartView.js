@@ -9,10 +9,10 @@ define([
     "d3-v4",
     "core-basedir/js/charts/views/DataView"
 ], function( $, _, Backbone, d3, DataView ) {
-    var BarChartView = DataView.extend({
+    var StackedBarChartView = DataView.extend({
         tagName: "div",
         className: "bar-chart",
-        chartType: "bar",
+        chartType: "stackedBar",
         renderOrder: 100,
 
         initialize: function ( options ) {
@@ -286,20 +286,25 @@ define([
         /**
         * Called by the parent in order to calculate maximum data extents for all of this child's axis.
         * Assumes the params.activeAccessorData for this child view is filled by the parent with the relevent yAccessors for this child only.
-        * Returns an object with following structure: { y1: [0,10], x: [-10,10] }
+        * Returns an object with following structure: { y1: [0,10], x: [-10,10] } - axisName: axisDomain
         */
         calculateAxisDomains: function() {
             var self = this;
             var domains = { x: self.model.getRangeFor( self.params.xAccessor ) };
-            domains[self.axisName] = [];
             // The domains calculated here can be overriden in the axis configuration.
             // The overrides are handled by the parent.
             _.each( self.params.activeAccessorData, function( accessor, key ) {
                 var domain = self.model.getRangeFor( key );
-                domains[self.axisName] = domains[self.axisName].concat( domain );
+                if( _.has( domains, self.axisName ) ) {
+                    //domains[self.axisName][0] = Math.min( domain[0], domains[self.axisName][0] );
+                    domains[self.axisName][1] += domain[1];
+                }
+                else {
+                    //domains[self.axisName] = [domain[0], domain[1]];
+                    domains[self.axisName] = [0, domain[1]];
+                }
             });
-            domains[self.axisName] = d3.extent( domains[self.axisName] );
-            console.log( "BarChartView domains for " + self.getName() + ": ", domains );
+            console.log( "StackedBarChartView domains for " + self.getName() + ": ", domains );
             self.params.handledAxisNames = _.keys( domains );
             return domains;
         },
@@ -315,10 +320,9 @@ define([
         },
 
         /**
-         * Renders an empty chart.
-         * Changes chart dimensions if it already exists.
+         * Called by the parent to allow the child to add some initialization code into the provided entering selection.
          */
-        renderSVG: function () {
+        renderSVG: function( enteringSelection ) {
         },
 
         renderData: function () {
@@ -330,22 +334,22 @@ define([
             var flatData = [];
             var i;
             var numOfAccessors = _.keys( self.params.activeAccessorData ).length;
-            var innerBandScale = d3.scaleBand().domain( d3.range( numOfAccessors ) ).range( [0, self.params.bandScale.bandwidth()] ).paddingInner( 0.1 ).paddingOuter( 0 );
             _.each( data, function( d ) {
                 i = 0;
                 var x = d[self.params.xAccessor];
+                var stackedY = yScale.domain()[0];
                 _.each( self.params.activeAccessorData, function( accessor, key ) {
-                    var y = d[key];
                     var obj = {
                         id: x + "-" + key,
                         className: "bar bar-" + key,
-                        x: self.params.bandScale( x ) + innerBandScale( i ),
-                        y: yScale( y ),
-                        h: yScale.range()[0] - yScale( y ),
-                        w: innerBandScale.bandwidth(),
+                        x: self.params.bandScale( x ),
+                        y: yScale( stackedY + d[key] ),
+                        h: yScale.range()[0] - yScale( d[key] ),
+                        w: self.params.bandScale.bandwidth(),
                         color: self.getBarColor( accessor, key ),
                         data: d
                     };
+                    stackedY += d[key];
                     flatData.push( obj );
                     i++;
                 });
@@ -438,5 +442,5 @@ define([
         }
     });
 
-    return BarChartView;
+    return StackedBarChartView;
 });
