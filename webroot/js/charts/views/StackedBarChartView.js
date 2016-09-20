@@ -316,7 +316,12 @@ define([
         calculateScales: function () {
             var self = this;
             var xValues = _.pluck( self.getData(), self.params.xAccessor );
-            self.params.bandScale = d3.scaleBand().domain( xValues ).rangeRound( self.params.xScale.range() ).paddingInner( 0 ).paddingOuter( 0 );
+            var xValuesExtent = d3.extent( xValues );
+            var xRange = [self.params.xScale(xValuesExtent[0]), self.params.xScale(xValuesExtent[1])];
+            var bandWidth = (xRange[1] - xRange[0]) / xValues.length;
+            xRange[0] -= bandWidth / 2;
+            xRange[1] += bandWidth / 2;
+            self.params.bandScale = d3.scaleBand().domain( xValues ).range( xRange ).paddingInner( 0 ).paddingOuter( 0 );
         },
 
         /**

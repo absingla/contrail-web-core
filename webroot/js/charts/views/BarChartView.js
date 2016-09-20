@@ -311,7 +311,12 @@ define([
         calculateScales: function () {
             var self = this;
             var xValues = _.pluck( self.getData(), self.params.xAccessor );
-            self.params.bandScale = d3.scaleBand().domain( xValues ).rangeRound( self.params.xScale.range() ).paddingInner( 0 ).paddingOuter( 0 );
+            var xValuesExtent = d3.extent( xValues );
+            var xRange = [self.params.xScale(xValuesExtent[0]), self.params.xScale(xValuesExtent[1])];
+            var bandWidth = (xRange[1] - xRange[0]) / xValues.length;
+            xRange[0] -= bandWidth / 2;
+            xRange[1] += bandWidth / 2;
+            self.params.bandScale = d3.scaleBand().domain( xValues ).range( xRange ).paddingInner( 0 ).paddingOuter( 0 );
         },
 
         /**
@@ -330,7 +335,7 @@ define([
             var flatData = [];
             var i;
             var numOfAccessors = _.keys( self.params.activeAccessorData ).length;
-            var innerBandScale = d3.scaleBand().domain( d3.range( numOfAccessors ) ).range( [0, self.params.bandScale.bandwidth()] ).paddingInner( 0.1 ).paddingOuter( 0 );
+            var innerBandScale = d3.scaleBand().domain( d3.range( numOfAccessors ) ).range( [0, self.params.bandScale.bandwidth()] ).paddingInner( 0 ).paddingOuter( 0 );
             _.each( data, function( d ) {
                 i = 0;
                 var x = d[self.params.xAccessor];
