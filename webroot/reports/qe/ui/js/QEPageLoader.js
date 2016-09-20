@@ -3,9 +3,8 @@
  */
 
 define([
-    "lodash",
     "core-basedir/reports/qe/ui/js/views/QueryEngineView"
-], function(_, QueryEngineView) {
+], function(QueryEngineView) {
     var QEPageLoader = function() {
         this.load = function (paramObject) {
             var self = this, hashParams = paramObject.hashParams,
@@ -14,7 +13,7 @@ define([
 
             self.qeView = new QueryEngineView();
             self.renderView(renderFn, hashParams);
-            if(!_.isNil(loadingStartedDefObj)) {
+            if(contrail.checkIfExist(loadingStartedDefObj)) {
                 loadingStartedDefObj.resolve();
             }
         };
