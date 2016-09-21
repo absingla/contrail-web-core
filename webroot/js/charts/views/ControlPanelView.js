@@ -6,7 +6,7 @@ define([
     "underscore",
     "backbone",
     "core-basedir/js/charts/views/DataView",
-], function (_, Backbone, DataView) {
+], function( _, Backbone, DataView ) {
     var ControlPanelView = DataView.extend({
         tagName: "div",
         className: "control-panel",
@@ -16,21 +16,31 @@ define([
             /// The config model
             self.config = options.config;
 
-            /// View params hold values from the config and computed values.
-            self.resetParams();
-
-            self.listenTo(this.model, "change", self.render);
+            //self.listenTo(this.model, "change", self.render);
             self.listenTo(this.config, "change", self.render);
             self.eventObject = _.extend({}, Backbone.Events);
         },
 
         render: function() {
             var self = this,
-                controlPanelTemplate = contrail.getTemplate4Id(cowc.TMPL_CONTROL_PANEL),
+                controlPanelTemplate = contrail.getTemplate4Id(cowc.TMPL_CONTROL_PANEL_COMPONENT),
                 controlPanelSelector = self.el;
 
-            $(controlPanelSelector).html(controlPanelTemplate(self.params));
+            self.resetParams();
+            $( controlPanelSelector ).html( controlPanelTemplate( self.params ) );
 
+            _.each( self.params.buttons, function( button ) {
+                if( _.isObject( button.events ) ) {
+                    var $button = $( controlPanelSelector ).find( ".control-panel-item."+button.name );
+                    _.each( button.events, function( eventToTrigger, eventToHandle ) {
+                        $button.on( eventToHandle, function() {
+                            self.eventObject.trigger( eventToTrigger, self.params );
+                        });
+                    });
+                }
+            });
+
+            /*
             if (contrail.checkIfKeyExistInObject(true, self.params, "default.zoom.enabled") && self.params.default.zoom.enabled) {
                 self.params.default.zoom.events(controlPanelSelector);
             }
@@ -69,6 +79,7 @@ define([
                     .off("click", closeFn)
                     .on("click", closeFn);
             }
+            */
         }
     });
 

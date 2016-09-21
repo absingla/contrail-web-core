@@ -18,7 +18,8 @@ define([
     "core-basedir/js/charts/models/NavigationComponentConfigModel",
     "core-basedir/js/charts/views/NavigationView",
     "core-basedir/js/charts/models/ControlPanelConfigModel",
-    "core-basedir/js/charts/views/ControlPanelView"
+    "core-basedir/js/charts/views/ControlPanelView",
+    "core-basedir/js/charts/BindingHandler"
 ], function( 
     Backbone, ContrailListModel, ContrailView, d3,
     DataModel, DataProvider,
@@ -26,7 +27,8 @@ define([
     TooltipComponentConfigModel, TooltipView,
     MessageComponentConfigModel, MessageView,
     NavigationComponentConfigModel, NavigationView,
-    ControlPanelConfigModel, ControlPanelView
+    ControlPanelConfigModel, ControlPanelView,
+    BindingHandler
 ) {
     var ChartView = ContrailView.extend({
         render: function () {
@@ -125,6 +127,7 @@ define([
             var dataProvider = new DataProvider({
                 parentDataModel: self.chartDataModel
             });
+            var bindingHandler = new BindingHandler( self.chartConfig.bindingHandler );
             console.log( "ChartView renderChart: ", self.chartConfig );
 
             // TODO: automate the component instantiation code below to be config driven
@@ -137,6 +140,7 @@ define([
                     container: $(selector).find( ".coCharts-main-container" )
                 });
                 messageView.render();
+                bindingHandler.addComponent( "message", messageView );
                 //One way to bind to message events of already created model 
                 messageView.registerModelDataStatusEvents( self.chartDataModel );
             }
@@ -145,6 +149,7 @@ define([
                     config: new TooltipComponentConfigModel( self.chartConfig.tooltip )
                 });
                 tooltipView.render();
+                bindingHandler.addComponent( "tooltip", tooltipView );
             }
             if( self.isEnabledComponent( "navigation" ) ) {
                 // TODO: id should be config based
@@ -157,6 +162,7 @@ define([
                 //$(selector).find(".coCharts-navigation-container").append(navigationView.render().el);
                 console.log( "NavigationView: ", navigationView );
                 navigationView.render();
+                bindingHandler.addComponent( "navigation", navigationView );
                 // The remaining components dataModel will be the one fetched from the navigationView.
                 dataProvider = navigationView.getFocusDataProvider();
                 if( messageView ) {
@@ -172,6 +178,7 @@ define([
                 });
                 console.log( "MainChart: ", compositeYChartView );
                 compositeYChartView.render();
+                bindingHandler.addComponent( "mainChart", compositeYChartView );
                 if( messageView ) {
                     messageView.registerComponentMessageEvent( compositeYChartView.eventObject );
                 }
@@ -185,8 +192,10 @@ define([
                     el: $(selector).find( ".coCharts-control-panel-container" )
                 });
                 controlPanelView.render();
+                bindingHandler.addComponent( "controlPanel", controlPanelView );
                 // self.registerConfigChangeEvent(controlPanelView.eventObject);
             }
+            bindingHandler.start();
         },
 
     });
@@ -213,6 +222,7 @@ define([
             },
             controlPanel: {
                 enable: false,
+                /*
                 top: false,
                 right: {
                     custom: {
@@ -223,6 +233,7 @@ define([
                     expandedContainerWidth: 350,
                     expandedContainerHeight: 280
                 }
+                */
             },
             mainChart: {
                 chartHeight: 270,

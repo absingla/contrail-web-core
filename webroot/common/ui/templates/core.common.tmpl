@@ -1862,6 +1862,14 @@
     </div>
 </script>
 
+<script type="text/x-handlebars-template" id="core-control-panel-component-template">
+    <div id="control-panel-items" class="control-panel-items pull-right">
+        {{#each buttons}}
+            <div class="control-panel-item {{name}}" title="{{title}}"><i class="{{iconClass}}"></i></div>
+        {{/each}}
+    </div>
+</script>
+
 <script type="text/x-handlebars-template" id="core-control-panel-template">
     <div id="control-panel-items" class="control-panel-items pull-right">
         {{#IfCompare default.zoom.enabled true}}
