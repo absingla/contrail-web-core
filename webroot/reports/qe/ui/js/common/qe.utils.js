@@ -406,7 +406,7 @@ define([
                 aggregateType = columnName.substr(0,firstIndex),
                 aggregateColumnName = columnName.substr(firstIndex + 1,lastIndex - firstIndex - 1);
 
-            if(qeUtils.isAggregateField(columnName) || aggregateType === "AVG" || aggregateType === "PERCENTILES") {
+            if(qeUtils.isAggregateField(columnName) || aggregateType === "PERCENTILES") {
                 return aggregateType.toUpperCase() + " (" + cowl.get(aggregateColumnName) + ")";
             } else {
                 return cowl.get(columnName).replace(")", "");
@@ -417,7 +417,7 @@ define([
             var fieldNameLower = fieldName.toLowerCase(),
                 isAggregate = false;
 
-            var AGGREGATE_PREFIX_ARRAY = ["min(", "max(", "count(", "sum("];
+            var AGGREGATE_PREFIX_ARRAY = ["min(", "max(", "count(", "sum(", "avg("];
 
             for (var i = 0; i < AGGREGATE_PREFIX_ARRAY.length; i++) {
                 if(fieldNameLower.indexOf(AGGREGATE_PREFIX_ARRAY[i]) !== -1) {
