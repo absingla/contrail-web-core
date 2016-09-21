@@ -3,9 +3,9 @@
  */
 
 define([
-    'underscore',
-    'backbone',
-    'contrail-list-model'
+    "lodash",
+    "backbone",
+    "contrail-list-model"
 ], function (_, Backbone, ContrailListModel) {
     var ContrailListModelGroup = Backbone.Model.extend({
 
@@ -17,11 +17,12 @@ define([
             self.errorList = [];
             self.childModelObjs = [];
             self.onAllRequestsCompleteCB = [];
-            self.initDefObj = $.Deferred();
+            // TODO: consider to use the robust deferrable library --- bluebird
+            self.initDefObj = $.Deferred(); // eslint-disable-line
             self.primaryListModel = new ContrailListModel({data: self.getItems()});
 
-            self.onAllRequestsComplete = new Slick.Event();
-            self.onDataUpdate = new Slick.Event();
+            self.onAllRequestsComplete = new window.Slick.Event();
+            self.onDataUpdate = new window.Slick.Event();
 
             //Default subscription to update the dataView.
             self.onAllRequestsComplete.subscribe(function() {
@@ -43,7 +44,7 @@ define([
 
             });
 
-            if (self.modelConfig.childModelConfig.length != 0) {
+            if (self.modelConfig.childModelConfig.length !== 0) {
                 self.initChildModels(self.modelConfig.childModelConfig);
             }
         },
@@ -53,7 +54,7 @@ define([
                 defObjArray = [];
             self.modelConfig.childModelConfig = listModelConfigArray;
             self.createAllChildModels(self.modelConfig.childModelConfig, self.updateData);
-            _.each(self.childModelObjs, function(childModel) {
+            _.forEach(self.childModelObjs, function(childModel) {
                 defObjArray.push(childModel.status);
             });
             self.childModelDefObjs = defObjArray;
@@ -65,8 +66,8 @@ define([
         isRequestInProgress: function() {
             var self = this,
                 inProgress = false;
-            _.each(self.childModelObjs, function(childModel) {
-                if (childModel.status.state() == "pending" && !inProgress) {
+            _.forEach(self.childModelObjs, function(childModel) {
+                if (childModel.status.state() === "pending" && !inProgress) {
                     inProgress = true;
                 }
             });
@@ -77,7 +78,7 @@ define([
             var self = this,
                 items = [];
 
-            _.each(self.childModelObjs, function(childModelObj, idx) {
+            _.forEach(self.childModelObjs, function(childModelObj, idx) {
                 items.push({
                     cgrid: "id_" + idx,
                     key: childModelObj.modelConfig.id,
@@ -85,7 +86,7 @@ define([
                 });
             });
 
-            if (self.data.length == 0) {
+            if (self.data.length === 0) {
                 self.data = items;
             }
 
@@ -104,8 +105,8 @@ define([
 
         updateData: function(data) {
             var self = this;
-            _.each(self.data, function(item) {
-                if(item.key == data.key) {
+            _.forEach(self.data, function(item) {
+                if(item.key === data.key) {
                     item.values = data.values;
                     self.onDataUpdate.notify();
                 }
@@ -119,10 +120,10 @@ define([
         },
 
         createChildModelObj: function(listModelConfig, updateDataCB, errorHandler) {
-            var status = $.Deferred(),
+            var status = $.Deferred(), // eslint-disable-line
                 model = new ContrailListModel(listModelConfig);
 
-            model.onAllRequestsComplete.subscribe(function() {
+            model.onAllRequestsComplete.subscribe(function() { // eslint-disable-line
                 status.resolve(listModelConfig.id);
 
                 if (model.error) {
@@ -134,10 +135,10 @@ define([
             });
 
             model.onDataUpdate.subscribe(function() {
-               return updateDataCB({
-                   key: listModelConfig.id,
-                   values: model.getItems()
-               });
+                return updateDataCB({
+                    key: listModelConfig.id,
+                    values: model.getItems()
+                });
             });
 
             return {
@@ -151,8 +152,8 @@ define([
             var self = this,
                 childModelCollection = [];
 
-            _.each(listModelConfigArray, function(listModelConfig) {
-                childModelCollection.push(self.createChildModelObj(listModelConfig, updateDataFn, errorHandler))
+            _.forEach(listModelConfigArray, function(listModelConfig) {
+                childModelCollection.push(self.createChildModelObj(listModelConfig, updateDataFn, errorHandler));
             });
             self.childModelObjs = childModelCollection;
         }

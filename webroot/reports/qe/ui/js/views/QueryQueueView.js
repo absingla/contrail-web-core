@@ -3,10 +3,10 @@
  */
 
 define([
-    'underscore',
-    'contrail-view',
-    'contrail-list-model',
-    'core-basedir/reports/qe/ui/js/common/qe.grid.config'
+    "underscore",
+    "contrail-view",
+    "contrail-list-model",
+    "core-basedir/reports/qe/ui/js/common/qe.grid.config"
 ], function (_, ContrailView, ContrailListModel, qeGridConfig) {
     var QueryQueueView = ContrailView.extend({
         render: function () {
@@ -21,7 +21,7 @@ define([
             var queueRemoteConfig = {
                 ajaxConfig: {
                     url: "/api/qe/query/queue?queryQueue=" + queryQueueType,
-                    type: 'GET'
+                    type: "GET"
                 },
                 dataParser: function (response) {
                     return response;
@@ -40,7 +40,7 @@ define([
             var self = this,
                 viewConfig = self.attributes.viewConfig,
                 queryQueueType = viewConfig.queueType,
-                pagerOptions = viewConfig['pagerOptions'],
+                pagerOptions = viewConfig.pagerOptions,
                 queueColorMap = [null, null, null, null, null];
 
             var resultsViewConfig = {
@@ -65,7 +65,7 @@ define([
                 queryQueueGridId = cowc.QE_HASH_ELEMENT_PREFIX + queryQueueType + cowc.QE_QUEUE_GRID_SUFFIX,
                 queryQueueResultId = cowc.QE_HASH_ELEMENT_PREFIX + queryQueueType + cowc.QE_QUEUE_RESULT_SUFFIX;
 
-            $(queryQueueGridId).data('contrailGrid').collapse();
+            $(queryQueueGridId).data("contrailGrid").collapse();
 
             if (queryQueueResultTabView === null) {
                 self.renderView4Config($(queryQueueResultId), null, getQueryQueueTabViewConfig(self, queryQueueItem, queryResultType, queueColorMap), null, null, modelMap, function() {
@@ -85,13 +85,13 @@ define([
             var self = this,
                 queryId = queryQueueItem.queryReqObj.queryId,
                 selectStr = queryQueueItem.queryReqObj.formModelAttrs.select,
-                formQueryIdSuffix = '-' + queryId,
+                formQueryIdSuffix = "-" + queryId,
                 queryResultChartId = cowl.QE_QUERY_RESULT_CHART_ID + formQueryIdSuffix,
                 selectArray = selectStr.replace(/ /g, "").split(","),
                 queryResultListModel = modelMap[cowc.UMID_QUERY_RESULT_LIST_MODEL],
                 queryQueueTabId = cowl.QE_QUERY_QUEUE_TABS_ID;
 
-            if (selectArray.indexOf("T=") !== -1 && $('#' + queryResultChartId).length === 0) {
+            if (selectArray.indexOf("T=") !== -1 && $("#" + queryResultChartId).length === 0) {
                 if (!(queryResultListModel.isRequestInProgress()) && queryResultListModel.getItems().length > 0) {
                     queryQueueResultTabView.renderNewTab(queryQueueTabId, getQueryResultChartTabViewConfig(queryQueueItem, self.el.id), false, modelMap, function() {
                         renderCompleteCB();
@@ -118,12 +118,12 @@ define([
                 queryQueueTabId = cowl.QE_QUERY_QUEUE_TABS_ID,
                 queryQueueTabsView = contrail.checkIfExist(childViewMap[queryQueueTabId]) ? childViewMap[queryQueueTabId] : null;
 
-            if (queryQueueTabsView != null) {
+            if (contrail.checkIfExist(queryQueueTabsView)) {
                 queryQueueTabsView.renderNewTab(queryQueueTabId, [sessionAnalyzerViewConfig], true, modelMap, null);
                 //Update the tab color
-                var queryQueueResultGridTabLinkId = cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + '-' + sessionAnalyzerViewConfig.viewConfig.flowRecordQueryId + '-tab-link';
-                var badgeColorKey = $("#" + queryQueueResultGridTabLinkId).data('badge_color_key');
-                $('#' + sessionAnalyzerViewConfig.elementId + '-tab-link').find('.contrail-tab-link-icon').addClass('icon-queue-badge-color-' + badgeColorKey);
+                var queryQueueResultGridTabLinkId = cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + "-" + sessionAnalyzerViewConfig.viewConfig.flowRecordQueryId + "-tab-link";
+                var badgeColorKey = $("#" + queryQueueResultGridTabLinkId).data("badge_color_key");
+                $("#" + sessionAnalyzerViewConfig.elementId + "-tab-link").find(".contrail-tab-link-icon").addClass("icon-queue-badge-color-" + badgeColorKey);
             }
 
         },
@@ -145,14 +145,14 @@ define([
                 },
                 advanceControls: [
                     {
-                        type: 'link',
+                        type: "link",
                         linkElementId: cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID,
                         disabledLink: true,
                         title: cowl.TITLE_DELETE_ALL_QUERY_QUEUE,
-                        iconClass: 'fa fa-trash',
-                        onClick: function (event, gridContainer, key) {
-                            var gridCheckedRows = $(gridContainer).data('contrailGrid').getCheckedRows(),
-                                queryIds = $.map(gridCheckedRows, function(rowValue, rowKey) {
+                        iconClass: "fa fa-trash",
+                        onClick: function (event, gridContainer) {
+                            var gridCheckedRows = $(gridContainer).data("contrailGrid").getCheckedRows(),
+                                queryIds = $.map(gridCheckedRows, function(rowValue) {
                                     return rowValue.queryReqObj.queryId;
                                 });
 
@@ -166,17 +166,17 @@ define([
                     autoRefresh: false,
                     fixedRowHeight: 30,
                     sortable: {
-                        defaultSortCols: {'startTime': {sortAsc: false}}
+                        defaultSortCols: {"startTime": {sortAsc: false}}
                     },
                     detail: {
                         template: cowu.generateDetailTemplateHTML(getDetailsTemplate(), cowc.APP_CONTRAIL_CONTROLLER)
                     },
                     checkboxSelectable: {
-                        onNothingChecked: function(e){
-                            $('#' + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).addClass('disabled-link');
+                        onNothingChecked: function(){
+                            $("#" + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).addClass("disabled-link");
                         },
-                        onSomethingChecked: function(e){
-                            $('#' + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).removeClass('disabled-link');
+                        onSomethingChecked: function(){
+                            $("#" + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).removeClass("disabled-link");
                         }
                     },
                     actionCell: function(dc){
@@ -189,75 +189,75 @@ define([
             },
             columnHeader: {
                 columns: qeGridConfig.getQueueColumnDisplay(function(queryQueueItem) {
-                    viewQueryResultAction (queryQueueItem, queryQueueView, queueColorMap, 'queue');
+                    viewQueryResultAction (queryQueueItem, queryQueueView, queueColorMap, "queue");
                 })
             },
             footer: {
                 pager: contrail.handleIfNull(pagerOptions, { options: { pageSize: 25, pageSizeSelect: [25, 50, 100] } })
             }
         };
-    };
+    }
 
     function getDetailsTemplate() {
         return {
             actions: [],
-            templateGenerator: 'ColumnSectionTemplateGenerator',
+            templateGenerator: "ColumnSectionTemplateGenerator",
             templateGeneratorConfig: {
                 columns: [
                     {
-                        class: 'col-xs-6',
+                        class: "col-xs-6",
                         rows: [
                             {
-                                templateGenerator: 'BlockListTemplateGenerator',
+                                templateGenerator: "BlockListTemplateGenerator",
                                 title: cowl.TITLE_QUERY_PARAMETERS,
                                 advancedViewOptions: false,
                                 templateGeneratorConfig: [
                                     {
-                                        key: 'queryReqObj.formModelAttrs.table_name',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "queryReqObj.formModelAttrs.table_name",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.time_range',
-                                        templateGenerator: 'TextGenerator',
+                                        key: "queryReqObj.formModelAttrs.time_range",
+                                        templateGenerator: "TextGenerator",
                                         templateGeneratorConfig: {
-                                            formatter: 'query-time-range'
+                                            formatter: "query-time-range"
                                         }
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.from_time_utc',
-                                        templateGenerator: 'TextGenerator',
+                                        key: "queryReqObj.formModelAttrs.from_time_utc",
+                                        templateGenerator: "TextGenerator",
                                         templateGeneratorConfig: {
-                                            formatter: 'date'
+                                            formatter: "date"
                                         }
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.to_time_utc',
-                                        templateGenerator: 'TextGenerator',
+                                        key: "queryReqObj.formModelAttrs.to_time_utc",
+                                        templateGenerator: "TextGenerator",
                                         templateGeneratorConfig: {
-                                            formatter: 'date'
+                                            formatter: "date"
                                         }
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.keywords',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "queryReqObj.formModelAttrs.keywords",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.select',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "queryReqObj.formModelAttrs.select",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.filters',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "queryReqObj.formModelAttrs.filters",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.where',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "queryReqObj.formModelAttrs.where",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'queryReqObj.formModelAttrs.direction',
-                                        templateGenerator: 'TextGenerator',
+                                        key: "queryReqObj.formModelAttrs.direction",
+                                        templateGenerator: "TextGenerator",
                                         templateGeneratorConfig: {
-                                            formatter: 'query-direction'
+                                            formatter: "query-direction"
                                         }
                                     }
                                 ]
@@ -265,48 +265,48 @@ define([
                         ]
                     },
                     {
-                        class: 'col-xs-6',
+                        class: "col-xs-6",
                         rows: [
                             {
-                                templateGenerator: 'BlockListTemplateGenerator',
+                                templateGenerator: "BlockListTemplateGenerator",
                                 title: cowl.TITLE_QUERY_STATISTICS,
                                 advancedViewOptions: false,
                                 templateGeneratorConfig: [
                                     {
-                                        key: 'opsQueryId',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "opsQueryId",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'queryReqObj.queryId',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "queryReqObj.queryId",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'startTime',
-                                        templateGenerator: 'TextGenerator',
+                                        key: "startTime",
+                                        templateGenerator: "TextGenerator",
                                         templateGeneratorConfig: {
-                                            formatter: 'date'
+                                            formatter: "date"
                                         }
                                     },
                                     {
-                                        key: 'status',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "status",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'count',
-                                        templateGenerator: 'TextGenerator'
+                                        key: "count",
+                                        templateGenerator: "TextGenerator"
                                     },
                                     {
-                                        key: 'timeTaken',
-                                        templateGenerator: 'TextGenerator',
+                                        key: "timeTaken",
+                                        templateGenerator: "TextGenerator",
                                         templateGeneratorConfig: {
-                                            formatter: 'time-period'
+                                            formatter: "time-period"
                                         }
                                     },
                                     {
-                                        key: 'progress',
-                                        templateGenerator: 'TextGenerator',
+                                        key: "progress",
+                                        templateGenerator: "TextGenerator",
                                         templateGeneratorConfig: {
-                                            formatter: 'percentage'
+                                            formatter: "percentage"
                                         }
                                     },
                                 ]
@@ -315,7 +315,7 @@ define([
                     }
                 ]
             }
-        }
+        };
     }
 
     function getQueueActionColumn(queryQueueView, queryQueueType, queryQueueItem, queueColorMap) {
@@ -327,66 +327,65 @@ define([
             queryFormTimeRange = queryFormModelData.time_range,
             actionCell = [];
 
-        if(status == 'queued'){
+        if(status === "queued"){
             return actionCell;
         }
 
-        if(status != "error") {
+        if(status !== "error") {
             actionCell.push({
                 title: cowl.TITLE_VIEW_QUERY_RESULT,
-                iconClass: 'fa fa-list-alt',
+                iconClass: "fa fa-list-alt",
                 onClick: function(rowIndex){
                     var queryQueueItem = queryQueueListModel.getItem(rowIndex);
-                    viewQueryResultAction (queryQueueItem, queryQueueView, queueColorMap, 'queue');
+                    viewQueryResultAction (queryQueueItem, queryQueueView, queueColorMap, "queue");
 
                 }
             });
 
             actionCell.push({
                 title: cowl.TITLE_MODIFY_QUERY,
-                iconClass: 'fa fa-pencil',
+                iconClass: "fa fa-pencil",
                 onClick: function(rowIndex){
                     var queryQueueItem = queryQueueListModel.getItem(rowIndex);
                     queryQueueItem.queryReqObj.formModelAttrs.time_range = -1;
                     queryQueueItem.queryReqObj.formModelAttrs.show_advanced_options = true;
-                    loadQueryFormPage(queryFormModelData, cowc.QUERY_TYPE_MODIFY)
+                    loadQueryFormPage(queryFormModelData, cowc.QUERY_TYPE_MODIFY);
                 }
             });
-        } else if(errorMessage != null) {
-            if(errorMessage.message != null && errorMessage.message != '') {
+        } else if(contrail.checkIfExist(errorMessage)) {
+            if(contrail.checkIfExist(errorMessage.message) && errorMessage.message !== "") {
                 errorMessage = errorMessage.message;
             }
             actionCell.push({
                 title: cowl.TITLE_VIEW_QUERY_ERROR,
-                iconClass: 'fa fa-exclamation-circle',
-                onClick: function(rowIndex){
+                iconClass: "fa fa-exclamation-circle",
+                onClick: function(){
                     //TODO - create info modal
-                    showInfoWindow(errorMessage, cowl.TITLE_ERROR);
+                    window.showInfoWindow(errorMessage, cowl.TITLE_ERROR);
                 }
             });
         }
 
-        if(queryFormTimeRange !== null && queryFormTimeRange != -1) {
+        if(queryFormTimeRange !== null && queryFormTimeRange !== -1) {
             actionCell.push({
-                title: cowl.  TITLE_RERUN_QUERY,
-                iconClass: 'fa fa-repeat',
-                onClick: function(rowIndex){
-                    var queryQueueItem = queryQueueListModel.getItem(rowIndex);
-                    loadQueryFormPage(queryFormModelData, cowc.QUERY_TYPE_RERUN)
+                title: cowl. TITLE_RERUN_QUERY,
+                iconClass: "fa fa-repeat",
+                onClick: function(){
+                    loadQueryFormPage(queryFormModelData, cowc.QUERY_TYPE_RERUN);
                 }
             });
         }
 
         actionCell.push({
             title: cowl.TITLE_DELETE_QUERY,
-            iconClass: 'fa fa-trash',
-            onClick: function(rowIndex){
-                showDeleteQueueModal(queryQueueView, queryQueueType, [queryId], queueColorMap)
+            iconClass: "fa fa-trash",
+            onClick: function(){
+                showDeleteQueueModal(queryQueueView, queryQueueType, [queryId], queueColorMap);
             }
         });
 
         return actionCell;
-    };
+    }
 
     function viewQueryResultAction (queryQueueItem, queryQueueView, queueColorMap, queryType) {
         if (_.compact(queueColorMap).length < 5) {
@@ -394,34 +393,34 @@ define([
                 queryQueueResultTabView = childViewMap[cowl.QE_QUERY_QUEUE_TABS_ID],
                 queryId = queryQueueItem.queryReqObj.queryId,
                 badgeColorKey = getBadgeColorkey4Value(queueColorMap, null),
-                queryQueueResultGridTabLinkId = cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + '-' + queryId + '-tab-link',
-                queryQueueResultChartTabLinkId = cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + '-' + queryId + '-tab-link',
+                queryQueueResultGridTabLinkId = cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + "-" + queryId + "-tab-link",
+                queryQueueResultChartTabLinkId = cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + "-" + queryId + "-tab-link",
                 gridTabIndex, chartTabIndex;
 
-            if ($('#' + queryQueueResultGridTabLinkId).length === 0) {
+            if ($("#" + queryQueueResultGridTabLinkId).length === 0) {
                 queryQueueView.renderQueryResultGrid(queryQueueItem, queryType, queueColorMap, function() {
-                    $('#label-icon-badge-' + queryId).addClass('icon-queue-badge-color-' + badgeColorKey);
-                    $('#' + queryQueueResultGridTabLinkId).find('.contrail-tab-link-icon').addClass('icon-queue-badge-color-' + badgeColorKey);
-                    $('#' + queryQueueResultGridTabLinkId).data('badge_color_key', badgeColorKey);
+                    $("#label-icon-badge-" + queryId).addClass("icon-queue-badge-color-" + badgeColorKey);
+                    $("#" + queryQueueResultGridTabLinkId).find(".contrail-tab-link-icon").addClass("icon-queue-badge-color-" + badgeColorKey);
+                    $("#" + queryQueueResultGridTabLinkId).data("badge_color_key", badgeColorKey);
 
-                    $('#' + queryQueueResultChartTabLinkId).find('.contrail-tab-link-icon').addClass('icon-queue-badge-color-' + badgeColorKey);
-                    $('#' + queryQueueResultChartTabLinkId).data('badge_color_key', badgeColorKey);
+                    $("#" + queryQueueResultChartTabLinkId).find(".contrail-tab-link-icon").addClass("icon-queue-badge-color-" + badgeColorKey);
+                    $("#" + queryQueueResultChartTabLinkId).data("badge_color_key", badgeColorKey);
                     queueColorMap[badgeColorKey] = queryId;
                 });
             } else {
-                gridTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + '-' + queryId + '-tab'];
+                gridTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + "-" + queryId + "-tab"];
                 if (contrail.checkIfExist(gridTabIndex)) {
-                    queryQueueResultTabView.removeTab(gridTabIndex)
+                    queryQueueResultTabView.removeTab(gridTabIndex);
                 }
 
-                chartTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + '-' + queryId + '-tab'];
+                chartTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + "-" + queryId + "-tab"];
                 if (contrail.checkIfExist(chartTabIndex)) {
-                    queryQueueResultTabView.removeTab(chartTabIndex)
+                    queryQueueResultTabView.removeTab(chartTabIndex);
                 }
             }
         } else {
             //TODO - create info modal
-            showInfoWindow(cowm.QE_MAX_QUERY_QUEUE_RESULT_VIEW_INFO, cowl.TITLE_ERROR);
+            window.showInfoWindow(cowm.QE_MAX_QUERY_QUEUE_RESULT_VIEW_INFO, cowl.TITLE_ERROR);
         }
     }
 
@@ -451,7 +450,7 @@ define([
                 break;
         }
 
-        loadFeature({
+        window.loadFeature({
             p: hashP,
             q: {
                 queryType: queryType,
@@ -466,15 +465,15 @@ define([
 
         cowu.createModal({
             modalId: modalId,
-            className: 'modal-700',
+            className: "modal-700",
             title: cowl.TITLE_DELETE_QUERY,
-            btnName: 'Confirm',
+            btnName: "Confirm",
             body: deleteQueryMessage,
             onSave: function () {
                 var postDataJSON = {queryQueue: queryQueueType, queryIds: queryIds},
                     ajaxConfig = {
-                        url: '/api/qe/query',
-                        type: 'DELETE',
+                        url: "/api/qe/query",
+                        type: "DELETE",
                         data: JSON.stringify(postDataJSON)
                     };
                 contrail.ajaxHandler(ajaxConfig, null, function() {
@@ -483,28 +482,28 @@ define([
                         childViewMap = queryQueueView.childViewMap,
                         queryQueueResultTabView = contrail.checkIfExist(childViewMap[cowl.QE_QUERY_QUEUE_TABS_ID]) ? childViewMap[cowl.QE_QUERY_QUEUE_TABS_ID] : null;
 
-                    $(queryQueueGridId).data('contrailGrid').refreshData();
+                    $(queryQueueGridId).data("contrailGrid").refreshData();
 
                     if (queryQueueResultTabView !== null) {
                         $.each(queryIds, function(queryIdKey, queryIdValue) {
                             removeBadgeColorFromQueryQueue(queueColorMap, queryIdValue);
 
-                            gridTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + '-' + queryIdValue + '-tab'];
+                            gridTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + "-" + queryIdValue + "-tab"];
                             if (contrail.checkIfExist(gridTabIndex)) {
-                                queryQueueResultTabView.removeTab(gridTabIndex)
+                                queryQueueResultTabView.removeTab(gridTabIndex);
                             }
 
-                            chartTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + '-' + queryIdValue + '-tab'];
+                            chartTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + "-" + queryIdValue + "-tab"];
                             if (contrail.checkIfExist(chartTabIndex)) {
-                                queryQueueResultTabView.removeTab(chartTabIndex)
+                                queryQueueResultTabView.removeTab(chartTabIndex);
                             }
 
                         });
                     }
                 });
-                $("#" + modalId).modal('hide');
+                $("#" + modalId).modal("hide");
             }, onCancel: function () {
-                $("#" + modalId).modal('hide');
+                $("#" + modalId).modal("hide");
             }
         });
     }
@@ -518,26 +517,26 @@ define([
                 tabs: getQueryResultGridTabViewConfig(self, queryQueueItem, queryResultType, queueColorMap)
             }
         };
-    };
+    }
 
     function getQueryResultGridTabViewConfig(self, queryQueueItem, queryResultType, queueColorMap) {
         var childViewMap = self.childViewMap,
             queryFormAttributes = queryQueueItem.queryReqObj,
             queryId = queryFormAttributes.queryId,
-            queryIdSuffix = '-' + queryId,
+            queryIdSuffix = "-" + queryId,
             queryResultGridId = cowl.QE_QUERY_RESULT_GRID_ID + queryIdSuffix,
-            queryResultTextId = cowl.QE_QUERY_RESULT_TEXT_ID + '-grid' + queryIdSuffix,
+            queryResultTextId = cowl.QE_QUERY_RESULT_TEXT_ID + "-grid" + queryIdSuffix,
             queryQueueResultGridTabId = cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + queryIdSuffix;
 
         return [{
             elementId: queryQueueResultGridTabId,
-            title: 'Result',
-            iconClass: 'fa fa-table',
+            title: "Result",
+            iconClass: "fa fa-table",
             view: "SectionView",
             tabConfig: {
-                activate: function(event, ui) {
-                    if ($('#' + queryResultGridId).data('contrailGrid')) {
-                        $('#' + queryResultGridId).data('contrailGrid').refreshView();
+                activate: function() {
+                    if ($("#" + queryResultGridId).data("contrailGrid")) {
+                        $("#" + queryResultGridId).data("contrailGrid").refreshView();
                     }
                 },
                 removable: true,
@@ -545,10 +544,10 @@ define([
                     removeBadgeColorFromQueryQueue(queueColorMap, queryId);
 
                     var queryQueueResultTabView = childViewMap[cowl.QE_QUERY_QUEUE_TABS_ID],
-                        chartTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + queryIdSuffix + '-tab'];
+                        chartTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + queryIdSuffix + "-tab"];
 
                     if (contrail.checkIfExist(chartTabIndex)) {
-                        queryQueueResultTabView.removeTab(chartTabIndex)
+                        queryQueueResultTabView.removeTab(chartTabIndex);
                     }
                 }
             },
@@ -558,7 +557,7 @@ define([
                         columns: [
                             {
                                 elementId: queryResultTextId,
-                                view: 'QueryTextView',
+                                view: "QueryTextView",
                                 viewPathPrefix: "reports/qe/ui/js/views/",
                                 app: cowc.APP_CONTRAIL_CONTROLLER,
                                 viewConfig: {
@@ -571,7 +570,7 @@ define([
                         columns: [
                             {
                                 elementId: queryResultGridId,
-                                view: 'QueryResultGridView',
+                                view: "QueryResultGridView",
                                 viewConfig: {
                                     queryRequestPostData: {
                                         queryId: queryId, chunk: 1, autoSort: true,
@@ -608,8 +607,8 @@ define([
                     queryQueueTitle: cowl.TITLE_FLOW,
                     actionCell: [
                         {
-                            title: 'Analyze Session',
-                            iconClass: 'fa fa-external-link-square',
+                            title: "Analyze Session",
+                            iconClass: "fa fa-external-link-square",
                             onClick: qeGridConfig.getOnClickSessionAnalyzer(self, queryFormAttributes.queryId, queryFormAttributes.formModelAttrs)
                         }
                     ]
@@ -642,29 +641,29 @@ define([
                 break;
         }
 
-        return gridOptions
+        return gridOptions;
     }
 
     function getQueryResultChartTabViewConfig(queryQueueItem, clickOutElementId) {
         var queryId = queryQueueItem.queryReqObj.queryId,
             queryFormAttributes = queryQueueItem.queryReqObj,
-            queryIdSuffix = '-' + queryId,
+            queryIdSuffix = "-" + queryId,
             queryResultChartId = cowl.QE_QUERY_RESULT_CHART_ID + queryIdSuffix,
             queryResultChartGridId = cowl.QE_QUERY_RESULT_CHART_GRID_ID + queryIdSuffix,
             queryResultChartTabViewConfig = [],
-            queryResultTextId = cowl.QE_QUERY_RESULT_TEXT_ID + '-chart' + queryIdSuffix,
+            queryResultTextId = cowl.QE_QUERY_RESULT_TEXT_ID + "-chart" + queryIdSuffix,
             queryQueueResultChartTabId = cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + queryIdSuffix;
 
         queryResultChartTabViewConfig.push({
             elementId: queryQueueResultChartTabId,
-            title: 'Chart',
-            iconClass: 'fa fa-bar-chart-o',
+            title: "Chart",
+            iconClass: "fa fa-bar-chart-o",
             view: "SectionView",
             tabConfig: {
-                activate: function (event, ui) {
-                    $('#' + queryResultChartId).find('svg').trigger('refresh');
-                    if ($('#' + queryResultChartGridId).data('contrailGrid')) {
-                        $('#' + queryResultChartGridId).data('contrailGrid').refreshView();
+                activate: function () {
+                    $("#" + queryResultChartId).find("svg").trigger("refresh");
+                    if ($("#" + queryResultChartGridId).data("contrailGrid")) {
+                        $("#" + queryResultChartGridId).data("contrailGrid").refreshView();
                     }
                 },
                 removable: true
@@ -675,7 +674,7 @@ define([
                         columns: [
                             {
                                 elementId: queryResultTextId,
-                                view: 'QueryTextView',
+                                view: "QueryTextView",
                                 viewPathPrefix: "reports/qe/ui/js/views/",
                                 app: cowc.APP_CONTRAIL_CONTROLLER,
                                 viewConfig: {
@@ -689,7 +688,7 @@ define([
                             {
                                 elementId: queryResultChartId,
                                 title: cowl.TITLE_CHART,
-                                iconClass: 'fa fa-bar-chart-o',
+                                iconClass: "fa fa-bar-chart-o",
                                 view: "QueryResultLineChartView",
                                 viewConfig: {
                                     queryId: queryId,
@@ -712,7 +711,7 @@ define([
         var badgeColorKey = getBadgeColorkey4Value(queueColorMap, queryId);
 
         if (badgeColorKey !== null) {
-            $('#label-icon-badge-' + queryId).removeClass('icon-queue-badge-color-' + badgeColorKey);
+            $("#label-icon-badge-" + queryId).removeClass("icon-queue-badge-color-" + badgeColorKey);
             queueColorMap[badgeColorKey] = null;
 
         }
@@ -721,14 +720,14 @@ define([
     function getBadgeColorkey4Value(queueColorMap, value) {
         var badgeColorKey = null;
 
-        $.each(queueColorMap, function(colorKey, colorValue) {
+        $.each(queueColorMap, function(colorKey, colorValue) { // eslint-disable-line
             if (colorValue === value) {
                 badgeColorKey = colorKey;
                 return false;
             }
         });
 
-        return badgeColorKey
+        return badgeColorKey;
     }
 
     return QueryQueueView;

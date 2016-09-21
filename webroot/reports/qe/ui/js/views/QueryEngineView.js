@@ -3,11 +3,11 @@
  */
 
 define([
-    'underscore',
-    'contrail-view'
+    "underscore",
+    "contrail-view"
 ], function (_, ContrailView) {
     var QueryEngineView = ContrailView.extend({
-        el: $(contentContainer),
+        el: $(window.contentContainer),
 
         renderFlowSeries: function (viewConfig) {
             this.renderView4Config(this.$el, null, getFlowSeriesViewConfig(viewConfig));
@@ -42,9 +42,7 @@ define([
         }
     });
 
-    function getFlowSeriesViewConfig(config) {
-        var hashParams = config['hashParams'];
-
+    function getFlowSeriesViewConfig() {
         return {
             view: "SectionView",
             viewConfig: {
@@ -58,7 +56,7 @@ define([
                                 app: cowc.APP_CONTRAIL_CONTROLLER,
                                 viewConfig: {
                                     widgetConfig: {
-                                        elementId: cowl.QE_FLOW_SERIES_ID + '-widget',
+                                        elementId: cowl.QE_FLOW_SERIES_ID + "-widget",
                                         view: "WidgetView",
                                         viewConfig: {
                                             header: {
@@ -80,12 +78,10 @@ define([
                     }
                 ]
             }
-        }
-    };
+        };
+    }
 
-    function getFlowRecordViewConfig(config) {
-        var hashParams = config['hashParams'];
-
+    function getFlowRecordViewConfig() {
         return {
             view: "SectionView",
             viewConfig: {
@@ -99,7 +95,7 @@ define([
                                 app: cowc.APP_CONTRAIL_CONTROLLER,
                                 viewConfig: {
                                     widgetConfig: {
-                                        elementId: cowl.QE_FLOW_RECORD_ID + '-widget',
+                                        elementId: cowl.QE_FLOW_RECORD_ID + "-widget",
                                         view: "WidgetView",
                                         viewConfig: {
                                             header: {
@@ -121,12 +117,10 @@ define([
                     }
                 ]
             }
-        }
-    };
+        };
+    }
 
-    function getStatQueryViewConfig(config) {
-        var hashParams = config['hashParams'];
-
+    function getStatQueryViewConfig() {
         return {
             view: "SectionView",
             viewConfig: {
@@ -140,7 +134,7 @@ define([
                                 app: cowc.APP_CONTRAIL_CONTROLLER,
                                 viewConfig: {
                                     widgetConfig: {
-                                        elementId: cowl.QE_STAT_QUERY_ID + '-widget',
+                                        elementId: cowl.QE_STAT_QUERY_ID + "-widget",
                                         view: "WidgetView",
                                         viewConfig: {
                                             header: {
@@ -162,12 +156,10 @@ define([
                     }
                 ]
             }
-        }
-    };
+        };
+    }
 
-    function getSystemLogsViewConfig(config) {
-        var hashParams = config['hashParams'];
-
+    function getSystemLogsViewConfig() {
         return {
             view: "SectionView",
             viewConfig: {
@@ -181,7 +173,7 @@ define([
                                 app: cowc.APP_CONTRAIL_CONTROLLER,
                                 viewConfig: {
                                     widgetConfig: {
-                                        elementId: cowl.QE_SYSTEM_LOGS_ID + '-widget',
+                                        elementId: cowl.QE_SYSTEM_LOGS_ID + "-widget",
                                         view: "WidgetView",
                                         viewConfig: {
                                             header: {
@@ -203,12 +195,10 @@ define([
                     }
                 ]
             }
-        }
-    };
+        };
+    }
 
-    function getObjectLogsViewConfig(config) {
-        var hashParams = config['hashParams'];
-
+    function getObjectLogsViewConfig() {
         return {
             view: "SectionView",
             viewConfig: {
@@ -222,7 +212,7 @@ define([
                                 app: cowc.APP_CONTRAIL_CONTROLLER,
                                 viewConfig: {
                                     widgetConfig: {
-                                        elementId: cowl.QE_OBJECT_LOGS_ID + '-widget',
+                                        elementId: cowl.QE_OBJECT_LOGS_ID + "-widget",
                                         view: "WidgetView",
                                         viewConfig: {
                                             header: {
@@ -244,12 +234,10 @@ define([
                     }
                 ]
             }
-        }
-    };
+        };
+    }
 
     function getQueueViewConfig(config, queueType) {
-        var hashParams = config['hashParams'];
-
         return {
             view: "SectionView",
             viewConfig: {
@@ -269,8 +257,8 @@ define([
                     }
                 ]
             }
-        }
-    };
+        };
+    }
 
     return QueryEngineView;
 });
