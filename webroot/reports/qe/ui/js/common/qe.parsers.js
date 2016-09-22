@@ -3,7 +3,7 @@
  */
 
 define([
-    'underscore'
+    "lodash"
 ], function (_) {
     var QEParsers = function () {
         var self = this;
@@ -11,9 +11,8 @@ define([
         self.fsQueryDataParser = function(response) {
             var chartData = [];
 
-            $.each(response, function(fcKey, fcValue) {
+            _.forEach(response, function(fcValue, fcKey) {
                 chartData.push({chart_group_id: fcKey, values: fcValue});
-
             });
 
             return chartData;

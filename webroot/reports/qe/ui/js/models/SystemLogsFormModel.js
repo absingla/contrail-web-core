@@ -3,18 +3,16 @@
  */
 
 define([
-    'underscore',
-    'knockout',
-    'query-form-model',
-    'core-basedir/reports/qe/ui/js/common/qe.model.config'
-], function (_, Knockout, QueryFormModel, qeModelConfig) {
+    "query-form-model",
+    "core-basedir/reports/qe/ui/js/common/qe.model.config"
+], function (QueryFormModel, qeModelConfig) {
     var SystemLogsFormModel = QueryFormModel.extend({
 
         defaultSelectFields: ["Type"],
 
-        disableSelectFields: ['SequenceNum', 'Context', 'Keyword'],
+        disableSelectFields: ["SequenceNum", "Context", "Keyword"],
 
-        disableWhereFields: ['Level', 'Keyword'],
+        disableWhereFields: ["Level", "Keyword"],
 
         constructor: function (modelData, queryReqConfig) {
             var defaultConfig = qeModelConfig.getQueryModelConfig({

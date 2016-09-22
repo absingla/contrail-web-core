@@ -3,11 +3,9 @@
  */
 
 define([
-    'underscore',
-    'knockout',
-    'query-form-model',
-    'core-basedir/reports/qe/ui/js/common/qe.model.config'
-], function (_, Knockout, QueryFormModel, qeModelConfig) {
+    "query-form-model",
+    "core-basedir/reports/qe/ui/js/common/qe.model.config"
+], function (QueryFormModel, qeModelConfig) {
     var ObjectLogsFormModel = QueryFormModel.extend({
 
         defaultSelectFields: [],
@@ -28,7 +26,7 @@ define([
         isTableNameAvailable: function() {
             var tableName = this.table_name();
 
-            return !(tableName === null || tableName === '');
+            return !(tableName === null || tableName === "");
         }
     });
 

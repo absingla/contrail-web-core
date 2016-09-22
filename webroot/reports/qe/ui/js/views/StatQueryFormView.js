@@ -3,16 +3,18 @@
  */
 
 define([
-    'underscore',
-    'query-form-view',
-    'knockback',
-    'core-basedir/reports/qe/ui/js/models/StatQueryFormModel',
-    'core-basedir/reports/qe/ui/js/common/qe.utils'
-], function (_, QueryFormView, Knockback, StatQueryFormModel, qeUtils) {
+    "knockback",
+    "validation",
+    "layout-handler",
+    "query-form-view",
+    "core-basedir/reports/qe/ui/js/models/StatQueryFormModel",
+    "core-basedir/reports/qe/ui/js/common/qe.utils"
+], function (Knockback, kbValidation, LayoutHandler, QueryFormView, StatQueryFormModel, qeUtils) {
+    var layoutHandler = new LayoutHandler();
 
     var StatQueryFormView = QueryFormView.extend({
         render: function () {
-            var self = this, viewConfig = self.attributes.viewConfig,
+            var self = this,
                 viewConfig = self.attributes.viewConfig,
                 modelMap = contrail.handleIfNull(self.modelMap, {}),
                 hashParams = layoutHandler.getURLHashParams(),
@@ -33,22 +35,23 @@ define([
             self.$el.append(queryPageTmpl({queryPrefix: cowc.STAT_QUERY_PREFIX }));
 
 
-            self.renderView4Config($(queryFormId), self.model, self.getViewConfig(), cowc.KEY_RUN_QUERY_VALIDATION, null, modelMap, function () {
-                self.model.showErrorAttr(statQueryId, false);
-                Knockback.applyBindings(self.model, document.getElementById(statQueryId));
-                kbValidation.bind(self);
-                $("#run_query").on('click', function() {
-                    if (self.model.model().isValid(true, cowc.KEY_RUN_QUERY_VALIDATION)) {
+            self.renderView4Config($(queryFormId), self.model, self.getViewConfig(),
+                cowc.KEY_RUN_QUERY_VALIDATION, null, modelMap, function () {
+                    self.model.showErrorAttr(statQueryId, false);
+                    Knockback.applyBindings(self.model, document.getElementById(statQueryId));
+                    kbValidation.bind(self);
+                    $("#run_query").on("click", function() {
+                        if (self.model.model().isValid(true, cowc.KEY_RUN_QUERY_VALIDATION)) {
+                            self.renderQueryResult();
+                        }
+                    });
+
+                    qeUtils.adjustHeight4FormTextarea(queryPrefix);
+
+                    if (queryType === cowc.QUERY_TYPE_RERUN) {
                         self.renderQueryResult();
                     }
                 });
-
-                qeUtils.adjustHeight4FormTextarea(queryPrefix);
-
-                if (queryType === cowc.QUERY_TYPE_RERUN) {
-                    self.renderQueryResult();
-                }
-            });
 
             if (widgetConfig !== null) {
                 self.renderView4Config($(queryFormId), self.model, widgetConfig, null, null, null);
@@ -66,7 +69,7 @@ define([
                 queryResultTabId = cowl.QE_STAT_QUERY_TAB_ID;
 
             if (widgetConfig !== null) {
-                $(queryFormId).parents('.widget-box').data('widget-action').collapse();
+                $(queryFormId).parents(".widget-box").data("widget-action").collapse();
             }
 
             queryFormModel.is_request_in_progress(true);
@@ -74,18 +77,18 @@ define([
                 var queryRequestPostData = queryFormModel.getQueryRequestPostData(serverCurrentTime);
 
                 self.renderView4Config($(queryResultId), self.model,
-                    getQueryResultTabViewConfig(queryRequestPostData, queryResultTabId), null, null, modelMap,
-                    function() {
+                    getQueryResultTabViewConfig(queryRequestPostData, queryResultTabId),
+                    null, null, modelMap, function() {
                         var queryResultTabView = self.childViewMap[queryResultTabId],
                             queryResultListModel = modelMap[cowc.UMID_QUERY_RESULT_LIST_MODEL];
 
                         if (!(queryResultListModel.isRequestInProgress()) && queryResultListModel.getItems().length > 0) {
-                            self.renderQueryResultChartTab(queryResultTabView, queryResultTabId, queryFormModel, queryRequestPostData)
+                            self.renderQueryResultChartTab(queryResultTabView, queryResultTabId, queryFormModel, queryRequestPostData);
                             queryFormModel.is_request_in_progress(false);
                         } else {
                             queryResultListModel.onAllRequestsComplete.subscribe(function () {
                                 if (queryResultListModel.getItems().length > 0) {
-                                    self.renderQueryResultChartTab(queryResultTabView, queryResultTabId, queryFormModel, queryRequestPostData)
+                                    self.renderQueryResultChartTab(queryResultTabView, queryResultTabId, queryFormModel, queryRequestPostData);
                                 }
                                 queryFormModel.is_request_in_progress(false);
                             });
@@ -95,14 +98,13 @@ define([
         },
 
         renderQueryResultChartTab: function(queryResultTabView, queryResultTabId, queryFormModel, queryRequestPostData) {
-            var self = this,
-                viewConfig = self.attributes.viewConfig,
+            var viewConfig = this.attributes.viewConfig,
                 queryFormAttributes = contrail.checkIfExist(viewConfig.queryFormAttributes) ? viewConfig.queryFormAttributes : {},
-                formQueryIdSuffix = (!$.isEmptyObject(queryFormAttributes)) ? '-' + queryFormAttributes.queryId : '',
+                formQueryIdSuffix = (!$.isEmptyObject(queryFormAttributes)) ? "-" + queryFormAttributes.queryId : "",
                 statChartId = cowl.QE_STAT_QUERY_CHART_ID + formQueryIdSuffix,
                 selectArray = queryFormModel.select().replace(/ /g, "").split(",");
 
-            if (selectArray.indexOf("T=") !== -1 && $('#' + statChartId).length === 0) {
+            if (selectArray.indexOf("T=") !== -1 && $("#" + statChartId).length === 0) {
                 queryResultTabView
                     .renderNewTab(queryResultTabId, getQueryResultChartViewConfig(queryRequestPostData));
             }
@@ -118,26 +120,26 @@ define([
                         {
                             columns: [
                                 {
-                                    elementId: 'time_range', view: "FormDropdownView",
+                                    elementId: "time_range", view: "FormDropdownView",
                                     viewConfig: {
-                                        path: 'time_range', dataBindValue: 'time_range', class: "col-xs-3",
+                                        path: "time_range", dataBindValue: "time_range", class: "col-xs-3",
                                         elementConfig: {dataTextField: "text", dataValueField: "id", data: cowc.TIMERANGE_DROPDOWN_VALUES}}
                                 },
                                 {
-                                    elementId: 'from_time', view: "FormDateTimePickerView",
+                                    elementId: "from_time", view: "FormDateTimePickerView",
                                     viewConfig: {
-                                        style: 'display: none;',
-                                        path: 'from_time', dataBindValue: 'from_time', class: "col-xs-3",
-                                        elementConfig: qeUtils.getFromTimeElementConfig('from_time', 'to_time'),
+                                        style: "display: none;",
+                                        path: "from_time", dataBindValue: "from_time", class: "col-xs-3",
+                                        elementConfig: qeUtils.getFromTimeElementConfig("from_time", "to_time"),
                                         visible: "time_range() == -1"
                                     }
                                 },
                                 {
-                                    elementId: 'to_time', view: "FormDateTimePickerView",
+                                    elementId: "to_time", view: "FormDateTimePickerView",
                                     viewConfig: {
-                                        style: 'display: none;',
-                                        path: 'to_time', dataBindValue: 'to_time', class: "col-xs-3",
-                                        elementConfig: qeUtils.getToTimeElementConfig('from_time', 'to_time'),
+                                        style: "display: none;",
+                                        path: "to_time", dataBindValue: "to_time", class: "col-xs-3",
+                                        elementConfig: qeUtils.getToTimeElementConfig("from_time", "to_time"),
                                         visible: "time_range() == -1"
                                     }
                                 }
@@ -146,22 +148,22 @@ define([
                         {
                             columns: [
                                 {
-                                    elementId: 'table_name', view: "FormComboboxView",
+                                    elementId: "table_name", view: "FormComboboxView",
                                     viewConfig: {
-                                        label: 'Active Table',
-                                        path: 'table_name',
-                                        dataBindValue: 'table_name',
-                                        dataBindOptionList: 'table_name_data_object().data',
+                                        label: "Active Table",
+                                        path: "table_name",
+                                        dataBindValue: "table_name",
+                                        dataBindOptionList: "table_name_data_object().data",
                                         class: "col-xs-6",
-                                        disabled: 'table_name_data_object().data.length === 0',
+                                        disabled: "table_name_data_object().data.length === 0",
                                         dataState: {
                                             fetching: {
                                                 visible: 'table_name_data_object().status === "' + cowc.DATA_REQUEST_STATE_FETCHING + '"',
-                                                text: 'Fetching Data'
+                                                text: "Fetching Data"
                                             },
                                             error: {
                                                 visible: 'table_name_data_object().status === "' + cowc.DATA_REQUEST_STATE_ERROR + '"',
-                                                text: 'Error in Fetching Data'
+                                                text: "Error in Fetching Data"
                                             }
                                         },
                                         elementConfig: {
@@ -174,15 +176,15 @@ define([
                         },
                         {
                             viewConfig: {
-                                visible: 'isTableNameAvailable()'
+                                visible: "isTableNameAvailable()"
                             },
                             columns: [
                                 {
-                                    elementId: 'select', view: "FormTextAreaView",
+                                    elementId: "select", view: "FormTextAreaView",
                                     viewConfig: {
-                                        path: 'select', dataBindValue: 'select', class: "col-xs-9",
+                                        path: "select", dataBindValue: "select", class: "col-xs-9",
                                         editPopupConfig: {
-                                            renderEditFn: function(event) {
+                                            renderEditFn: function() {
                                                 var tableName = self.model.table_name();
                                                 self.renderSelect({className: qeUtils.getModalClass4Table(tableName)});
                                             }
@@ -190,32 +192,32 @@ define([
                                     }
                                 },
                                 {
-                                    elementId: 'time-granularity-section',
+                                    elementId: "time-granularity-section",
                                     view: "FormCompositeView",
                                     viewConfig: {
                                         class: "col-xs-3",
-                                        style: 'display: none;',
-                                        path: 'time_granularity',
-                                        label: 'Time Granularity',
-                                        visible: 'isSelectTimeChecked()',
+                                        style: "display: none;",
+                                        path: "time_granularity",
+                                        label: "Time Granularity",
+                                        visible: "isSelectTimeChecked()",
                                         childView: [
                                             {
-                                                elementId: 'time_granularity', view: "FormNumericTextboxView",
+                                                elementId: "time_granularity", view: "FormNumericTextboxView",
                                                 viewConfig: {
                                                     label: false,
-                                                    path: 'time_granularity',
-                                                    dataBindValue: 'time_granularity',
+                                                    path: "time_granularity",
+                                                    dataBindValue: "time_granularity",
                                                     class: "col-xs-4",
                                                     elementConfig: {min: 1}
                                                 }
                                             },
                                             {
-                                                elementId: 'time_granularity_unit', view: "FormDropdownView",
+                                                elementId: "time_granularity_unit", view: "FormDropdownView",
                                                 viewConfig: {
                                                     label: false,
-                                                    path: 'time_granularity_unit',
-                                                    dataBindValue: 'time_granularity_unit',
-                                                    dataBindOptionList: 'getTimeGranularityUnits()',
+                                                    path: "time_granularity_unit",
+                                                    dataBindValue: "time_granularity_unit",
+                                                    dataBindOptionList: "getTimeGranularityUnits()",
                                                     class: "col-xs-4",
                                                     elementConfig: {}
                                                 }
@@ -228,13 +230,13 @@ define([
                         },
                         {
                             viewConfig: {
-                                visible: 'show_advanced_options() && isTableNameAvailable()'
+                                visible: "show_advanced_options() && isTableNameAvailable()"
                             },
                             columns: [
                                 {
-                                    elementId: 'where', view: "FormTextAreaView",
+                                    elementId: "where", view: "FormTextAreaView",
                                     viewConfig: {
-                                        path: 'where', dataBindValue: 'where', class: "col-xs-9", placeHolder: "*",
+                                        path: "where", dataBindValue: "where", class: "col-xs-9", placeHolder: "*",
                                         editPopupConfig: {
                                             renderEditFn: function() {
                                                 self.renderWhere({className: cowc.QE_MODAL_CLASS_700});
@@ -246,13 +248,13 @@ define([
                         },
                         {
                             viewConfig: {
-                                visible: 'show_advanced_options() && isTableNameAvailable()'
+                                visible: "show_advanced_options() && isTableNameAvailable()"
                             },
                             columns: [
                                 {
-                                    elementId: 'filters', view: "FormTextAreaView",
+                                    elementId: "filters", view: "FormTextAreaView",
                                     viewConfig: {
-                                        path: 'filters', dataBindValue: 'filters', class: "col-xs-9",
+                                        path: "filters", dataBindValue: "filters", class: "col-xs-9",
                                         label: cowl.TITLE_QE_FILTER,
                                         editPopupConfig: {
                                             renderEditFn: function() {
@@ -265,18 +267,18 @@ define([
                         },
                         {
                             viewConfig: {
-                                visible: 'isTableNameAvailable()'
+                                visible: "isTableNameAvailable()"
                             },
                             columns: [
                                 {
-                                    elementId: 'advanced_options', view: "FormTextView",
+                                    elementId: "advanced_options", view: "FormTextView",
                                     viewConfig: {
-                                        text: 'getAdvancedOptionsText()',
+                                        text: "getAdvancedOptionsText()",
                                         class: "col-xs-6 margin-0-0-10",
                                         elementConfig : {
                                             class: "advanced-options-link"
                                         },
-                                        click: 'toggleAdvancedFields'
+                                        click: "toggleAdvancedFields"
                                     }
                                 }
                             ]
@@ -284,20 +286,20 @@ define([
                         {
                             columns: [
                                 {
-                                    elementId: 'run_query', view: "FormButtonView", label: "Run Query",
+                                    elementId: "run_query", view: "FormButtonView", label: "Run Query",
                                     viewConfig: {
-                                        class: 'display-inline-block margin-0-0-0-15',
-                                        disabled: 'is_request_in_progress()',
+                                        class: "display-inline-block margin-0-0-0-15",
+                                        disabled: "is_request_in_progress()",
                                         elementConfig: {
-                                            btnClass: 'btn-primary'
+                                            btnClass: "btn-primary"
                                         }
                                     }
                                 },
                                 {
-                                    elementId: 'reset_query', view: "FormButtonView", label: "Reset",
+                                    elementId: "reset_query", view: "FormButtonView", label: "Reset",
                                     viewConfig: {
                                         label: "Reset",
-                                        class: 'display-inline-block margin-0-0-0-15',
+                                        class: "display-inline-block margin-0-0-0-15",
                                         elementConfig: {
                                             onClick: "function(data, event) { reset(data, event, true, true); }"
                                         }
@@ -328,12 +330,12 @@ define([
         return {
             elementId: queryResultGridId,
             title: cowl.TITLE_RESULTS,
-            iconClass: 'fa fa-table',
-            view: 'QueryResultGridView',
+            iconClass: "fa fa-table",
+            view: "QueryResultGridView",
             tabConfig: {
-                activate: function (event, ui) {
-                    if ($('#' + queryResultGridId).data('contrailGrid')) {
-                        $('#' + queryResultGridId).data('contrailGrid').refreshView();
+                activate: function () {
+                    if ($("#" + queryResultGridId).data("contrailGrid")) {
+                        $("#" + queryResultGridId).data("contrailGrid").refreshView();
                     }
                 }
             },
@@ -346,7 +348,7 @@ define([
 
                 }
             }
-        }
+        };
     }
 
     function getQueryResultChartViewConfig(queryRequestPostData) {
@@ -357,13 +359,13 @@ define([
         statChartTabViewConfig.push({
             elementId: queryResultChartId,
             title: cowl.TITLE_CHART,
-            iconClass: 'fa fa-bar-chart-o',
+            iconClass: "fa fa-bar-chart-o",
             view: "QueryResultLineChartView",
             tabConfig: {
-                activate: function (event, ui) {
-                    $('#' + queryResultChartId).find('svg').trigger('refresh');
-                    if ($('#' + queryResultChartGridId).data('contrailGrid')) {
-                        $('#' + queryResultChartGridId).data('contrailGrid').refreshView();
+                activate: function () {
+                    $("#" + queryResultChartId).find("svg").trigger("refresh");
+                    if ($("#" + queryResultChartGridId).data("contrailGrid")) {
+                        $("#" + queryResultChartGridId).data("contrailGrid").refreshView();
                     }
                 },
                 renderOnActivate: true
