@@ -750,7 +750,8 @@ function saveData4Chart2Redis(queryId, workerData) {
                             result[selectFields[k]] = dataJSON[i][selectFields[k]];
                         }
 
-                        if (_.isNil(resultData[chartGroupId])) {
+                        // TODO: find out why can't use _.isNil here
+                        if (resultData[chartGroupId] == null) { // eslint-disable-line
                             resultData[chartGroupId] = {};
                             resultData[chartGroupId][secTime] = result;
                         } else {
