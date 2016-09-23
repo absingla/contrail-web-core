@@ -3,30 +3,32 @@
  */
 
 define([
+    "lodash",
+    "core-constants",
     "query-form-model",
     "core-basedir/reports/qe/ui/js/common/qe.model.config"
-], function (QueryFormModel, qeModelConfig) {
+], function (_, coreConstants, QueryFormModel, qeModelConfig) {
     var StatQueryFormModel = QueryFormModel.extend({
 
         defaultSelectFields: [],
 
-        constructor: function (modelData, queryReqConfig) {
+        constructor: function (modelConfig, queryReqConfig) {
             var defaultConfig = qeModelConfig.getQueryModelConfig({
-                table_type: cowc.QE_STAT_TABLE_TYPE,
-                query_prefix: cowc.STAT_QUERY_PREFIX
+                table_type: coreConstants.QE_STAT_TABLE_TYPE,
+                query_prefix: coreConstants.STAT_QUERY_PREFIX,
             });
 
-            modelData = $.extend(true, {}, defaultConfig, modelData);
+            var modelData = _.merge(defaultConfig, modelConfig);
             QueryFormModel.prototype.constructor.call(this, modelData, queryReqConfig);
 
             return this;
         },
 
-        isTableNameAvailable: function() {
+        isTableNameAvailable: function () {
             var tableName = this.table_name();
 
             return !(tableName === null || tableName === "");
-        }
+        },
     });
 
     return StatQueryFormModel;

@@ -3,9 +3,8 @@
  */
 
 define([
-    "underscore",
     "contrail-view"
-], function (_, ContrailView) {
+], function(ContrailView) {
     var QueryEngineView = ContrailView.extend({
         el: $(window.contentContainer),
 
@@ -21,23 +20,23 @@ define([
             this.renderView4Config(this.$el, null, getQueueViewConfig(viewConfig, cowc.QE_FLOW_QUERY_QUEUE));
         },
 
-        renderSystemLogs: function (viewConfig) {
+        renderSystemLogs: function(viewConfig) {
             this.renderView4Config(this.$el, null, getSystemLogsViewConfig(viewConfig));
         },
 
-        renderObjectLogs: function (viewConfig) {
+        renderObjectLogs: function(viewConfig) {
             this.renderView4Config(this.$el, null, getObjectLogsViewConfig(viewConfig));
         },
 
-        renderLogQueue: function (viewConfig) {
+        renderLogQueue: function(viewConfig) {
             this.renderView4Config(this.$el, null, getQueueViewConfig(viewConfig, cowc.QE_LOG_QUERY_QUEUE));
         },
 
-        renderStatQuery: function (viewConfig) {
+        renderStatQuery: function(viewConfig) {
             this.renderView4Config(this.$el, null, getStatQueryViewConfig(viewConfig));
         },
 
-        renderStatQueue: function (viewConfig) {
+        renderStatQueue: function(viewConfig) {
             this.renderView4Config(this.$el, null, getQueueViewConfig(viewConfig, cowc.QE_STAT_QUERY_QUEUE));
         }
     });
@@ -124,37 +123,33 @@ define([
         return {
             view: "SectionView",
             viewConfig: {
-                rows: [
-                    {
-                        columns: [
-                            {
-                                elementId: cowl.QE_STAT_QUERY_ID,
-                                view: "StatQueryFormView",
-                                viewPathPrefix: "reports/qe/ui/js/views/",
-                                app: cowc.APP_CONTRAIL_CONTROLLER,
+                rows: [{
+                    columns: [{
+                        elementId: cowl.QE_STAT_QUERY_ID,
+                        view: "StatQueryFormView",
+                        viewPathPrefix: "reports/qe/ui/js/views/",
+                        app: cowc.APP_CONTRAIL_CONTROLLER,
+                        viewConfig: {
+                            widgetConfig: {
+                                elementId: cowl.QE_STAT_QUERY_ID + "-widget",
+                                view: "WidgetView",
                                 viewConfig: {
-                                    widgetConfig: {
-                                        elementId: cowl.QE_STAT_QUERY_ID + "-widget",
-                                        view: "WidgetView",
-                                        viewConfig: {
-                                            header: {
-                                                title: cowl.TITLE_QUERY,
-                                                iconClass: "fa fa-search"
-                                            },
-                                            controls: {
-                                                top: {
-                                                    default: {
-                                                        collapseable: true
-                                                    }
-                                                }
+                                    header: {
+                                        title: cowl.TITLE_QUERY,
+                                        iconClass: "fa fa-search"
+                                    },
+                                    controls: {
+                                        top: {
+                                            default: {
+                                                collapseable: true
                                             }
                                         }
                                     }
                                 }
                             }
-                        ]
-                    }
-                ]
+                        }
+                    }]
+                }]
             }
         };
     }
@@ -163,37 +158,33 @@ define([
         return {
             view: "SectionView",
             viewConfig: {
-                rows: [
-                    {
-                        columns: [
-                            {
-                                elementId: cowl.QE_SYSTEM_LOGS_ID,
-                                view: "SystemLogsFormView",
-                                viewPathPrefix: "reports/qe/ui/js/views/",
-                                app: cowc.APP_CONTRAIL_CONTROLLER,
+                rows: [{
+                    columns: [{
+                        elementId: cowl.QE_SYSTEM_LOGS_ID,
+                        view: "SystemLogsFormView",
+                        viewPathPrefix: "reports/qe/ui/js/views/",
+                        app: cowc.APP_CONTRAIL_CONTROLLER,
+                        viewConfig: {
+                            widgetConfig: {
+                                elementId: cowl.QE_SYSTEM_LOGS_ID + "-widget",
+                                view: "WidgetView",
                                 viewConfig: {
-                                    widgetConfig: {
-                                        elementId: cowl.QE_SYSTEM_LOGS_ID + "-widget",
-                                        view: "WidgetView",
-                                        viewConfig: {
-                                            header: {
-                                                title: cowl.TITLE_QUERY,
-                                                iconClass: "fa fa-search"
-                                            },
-                                            controls: {
-                                                top: {
-                                                    default: {
-                                                        collapseable: true
-                                                    }
-                                                }
+                                    header: {
+                                        title: cowl.TITLE_QUERY,
+                                        iconClass: "fa fa-search"
+                                    },
+                                    controls: {
+                                        top: {
+                                            default: {
+                                                collapseable: true
                                             }
                                         }
                                     }
                                 }
                             }
-                        ]
-                    }
-                ]
+                        }
+                    }]
+                }]
             }
         };
     }
@@ -202,37 +193,33 @@ define([
         return {
             view: "SectionView",
             viewConfig: {
-                rows: [
-                    {
-                        columns: [
-                            {
-                                elementId: cowl.QE_OBJECT_LOGS_ID,
-                                view: "ObjectLogsFormView",
-                                viewPathPrefix: "reports/qe/ui/js/views/",
-                                app: cowc.APP_CONTRAIL_CONTROLLER,
+                rows: [{
+                    columns: [{
+                        elementId: cowl.QE_OBJECT_LOGS_ID,
+                        view: "ObjectLogsFormView",
+                        viewPathPrefix: "reports/qe/ui/js/views/",
+                        app: cowc.APP_CONTRAIL_CONTROLLER,
+                        viewConfig: {
+                            widgetConfig: {
+                                elementId: cowl.QE_OBJECT_LOGS_ID + "-widget",
+                                view: "WidgetView",
                                 viewConfig: {
-                                    widgetConfig: {
-                                        elementId: cowl.QE_OBJECT_LOGS_ID + "-widget",
-                                        view: "WidgetView",
-                                        viewConfig: {
-                                            header: {
-                                                title: cowl.TITLE_QUERY,
-                                                iconClass: "fa fa-search"
-                                            },
-                                            controls: {
-                                                top: {
-                                                    default: {
-                                                        collapseable: true
-                                                    }
-                                                }
+                                    header: {
+                                        title: cowl.TITLE_QUERY,
+                                        iconClass: "fa fa-search"
+                                    },
+                                    controls: {
+                                        top: {
+                                            default: {
+                                                collapseable: true
                                             }
                                         }
                                     }
                                 }
                             }
-                        ]
-                    }
-                ]
+                        }
+                    }]
+                }]
             }
         };
     }
@@ -241,21 +228,17 @@ define([
         return {
             view: "SectionView",
             viewConfig: {
-                rows: [
-                    {
-                        columns: [
-                            {
-                                elementId: cowl.QE_FLOW_QUEUE_ID,
-                                view: "QueryQueueView",
-                                viewPathPrefix: "reports/qe/ui/js/views/",
-                                app: cowc.APP_CONTRAIL_CONTROLLER,
-                                viewConfig: {
-                                    queueType: queueType
-                                }
-                            }
-                        ]
-                    }
-                ]
+                rows: [{
+                    columns: [{
+                        elementId: cowl.QE_FLOW_QUEUE_ID,
+                        view: "QueryQueueView",
+                        viewPathPrefix: "reports/qe/ui/js/views/",
+                        app: cowc.APP_CONTRAIL_CONTROLLER,
+                        viewConfig: {
+                            queueType: queueType
+                        }
+                    }]
+                }]
             }
         };
     }
