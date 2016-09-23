@@ -135,8 +135,6 @@ define(['underscore'], function (_) {
             location.href = url;
         };
         
-        
-
         initHashParams();
 
         lastHash = self.getState();

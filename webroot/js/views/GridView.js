@@ -749,13 +749,13 @@ define([
                                 jsonObj = JSON.parse(selfParent.children('ul.node').text());
                                 selfParent.empty().append(cowu.constructJsonHtmlViewer(jsonObj, 2, parseInt(selfParent.children('.node').data('depth')) + 1));
                             }
-                            selfParent.children('.node').show();
-                            selfParent.children('.collapsed').hide();
+                            selfParent.children('.node').showElement();
+                            selfParent.children('.collapsed').hideElement();
                             selfParent.children('i').removeClass('fa-plus').removeClass('expander').addClass('fa fa-minus').addClass('collapser');
                         } else if ($(e.target).hasClass("collapser")) {
                             var selfParent = $(e.target).parent();
-                            selfParent.children('.collapsed').show();
-                            selfParent.children('.node').hide();
+                            selfParent.children('.collapsed').showElement();
+                            selfParent.children('.node').hideElement();
                             selfParent.children('i').removeClass('fa-minus').removeClass('collapser').addClass('fa fa-plus').addClass('expander');
                         }
 
