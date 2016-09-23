@@ -415,7 +415,7 @@ define([
         },
 
         setUTCTimeObj: function (queryPrefix, formModelAttrs, serverCurrentTime, timeRange) {
-            timeRange = (_.isNil(timeRange)) ? getTimeRangeObj(formModelAttrs, serverCurrentTime) : timeRange;
+            timeRange = contrail.checkIfExist(timeRange) ? timeRange : getTimeRangeObj(formModelAttrs, serverCurrentTime);
 
             formModelAttrs.from_time_utc = timeRange.fromTime;
             formModelAttrs.to_time_utc = timeRange.toTime;
