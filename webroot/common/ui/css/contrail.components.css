@@ -825,6 +825,10 @@
     background-color: #f9f9f9;
     border: 1px solid #efefef;
 }
+.control-panel-items button.control-panel-item {
+    width: 100%;
+    outline: none;
+}
 .control-panel-items .dropdown-menu {
     right: 2px;
 }

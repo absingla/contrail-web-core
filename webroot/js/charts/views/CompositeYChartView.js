@@ -149,6 +149,9 @@ define([
             if( !self.params.chartWidth ) {
                 self.params.chartWidth = self.$el.width();
             }
+            if( self.params.chartWidthDelta ) {
+                self.params.chartWidth += self.params.chartWidthDelta;
+            }
             if( !self.params.chartHeight ) {
                 self.params.chartHeight = Math.round(3 * self.params.chartWidth / 4);
             }
@@ -288,7 +291,7 @@ define([
                         baseScale = d3.scaleLinear();
                     }
                     self.params[scaleName] = baseScale.domain( self.params[domainName] ).range( self.params[rangeName] );
-                    if( !self.hasAxisConfig( axisName, 'domain' ) ) {
+                    if( self.hasAxisConfig( axisName, 'nice' ) && self.params.axis[axisName].nice ) {
                         self.params[scaleName] = self.params[scaleName].nice( self.params.xTicks );
                     }
                 }
@@ -378,7 +381,7 @@ define([
         renderAxis: function () {
             var self = this;
             var xAxis = d3.axisBottom( self.params.xScale )
-                .tickSizeInner( self.params.yRange[0] - self.params.yRange[1] + 2 * self.params.marginInner )
+                .tickSize( self.params.yRange[0] - self.params.yRange[1] + 2 * self.params.marginInner )
                 .tickPadding( 5 )
                 .ticks( self.params.xTicks );
             if( self.hasAxisConfig( 'x', 'formatter' ) ) {
@@ -388,6 +391,10 @@ define([
             svg.select( ".axis.x-axis" ).call( xAxis );
             // X axis label
             var xLabelData = [];
+            var xLabelMargin = 5;
+            if( self.hasAxisConfig( 'x', 'labelMargin' ) ) {
+                xLabelMargin = self.params.axis.x.labelMargin;
+            }
             if( self.params.xLabel ) {
                 xLabelData.push( self.params.xLabel );
             }
@@ -395,9 +402,9 @@ define([
             xAxisLabelSvg.enter()
                 .append( "text" )
                 .attr( "class", "axis-label" )
-                .merge( xAxisLabelSvg ).transition().ease( d3.easeLinear ).duration( self.params.duration )
+                .merge( xAxisLabelSvg )//.transition().ease( d3.easeLinear ).duration( self.params.duration )
                 .attr( "x", self.params.xRange[0] + (self.params.xRange[1] - self.params.xRange[0]) / 2 )
-                .attr( "y", self.params.yRange[0] + self.params.marginInner + 10 )
+                .attr( "y", self.params.chartHeight - self.params.marginTop - xLabelMargin )
                 .text( function( d ) { return d; } );
             xAxisLabelSvg.exit().remove();
             // We render the yAxis here because there may be multiple components for one axis.
@@ -406,20 +413,24 @@ define([
             var yLabelX = 0;
             var yLabelTransform = "rotate(-90)";
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
+                var yLabelMargin = 12;
+                if( self.hasAxisConfig( axisInfo.name, 'labelMargin' ) ) {
+                    yLabelMargin = self.params.axis[axisInfo.name].labelMargin
+                }
                 var scaleName = axisInfo.name + "Scale";
-                yLabelX = 0 - self.params.marginLeft + 12;
+                yLabelX = 0 - self.params.marginLeft + yLabelMargin;
                 yLabelTransform = "rotate(-90)";
                 if( axisInfo.position == "right" ) {
-                    yLabelX = self.params.chartWidth - self.params.marginLeft - 12;
+                    yLabelX = self.params.chartWidth - self.params.marginLeft - yLabelMargin;
                     yLabelTransform = "rotate(90)";
                     axisInfo.yAxis = d3.axisRight( self.params[scaleName] )
                         .tickSize( (self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) )
-                        .tickPadding(5).ticks( self.params.yTicks );
+                        .tickPadding( 5 ).ticks( self.params.yTicks );
                 }
                 else {
                     axisInfo.yAxis = d3.axisLeft( self.params[scaleName] )
                         .tickSize( -(self.params.xRange[1] - self.params.xRange[0] + 2 * self.params.marginInner) )
-                        .tickPadding(5).ticks( self.params.yTicks );
+                        .tickPadding( 5 ).ticks( self.params.yTicks );
                 }
                 if( !referenceYScale ) {
                     referenceYScale = self.params[scaleName];
@@ -446,7 +457,7 @@ define([
                 yAxisLabelSvg.enter()
                     .append( "text" )
                     .attr( "class", "axis-label" )
-                    .merge( yAxisLabelSvg ).transition().ease( d3.easeLinear ).duration( self.params.duration )
+                    .merge( yAxisLabelSvg )//.transition().ease( d3.easeLinear ).duration( self.params.duration )
                     //.attr( "x", yLabelX )
                     //.attr( "y", self.params.yRange[1] + (self.params.yRange[0] - self.params.yRange[1]) / 2 )
                     .attr( "transform", "translate(" + yLabelX + "," + (self.params.yRange[1] + (self.params.yRange[0] - self.params.yRange[1]) / 2) + ") " + yLabelTransform )

@@ -1862,11 +1862,27 @@
     </div>
 </script>
 
-<script type="text/x-handlebars-template" id="core-control-panel-component-template">
+<script type="text/x-handlebars-template" id="coCharts-control-panel-template">
     <div id="control-panel-items" class="control-panel-items pull-right">
         {{#each buttons}}
-            <div class="control-panel-item {{name}}" title="{{title}}"><i class="{{iconClass}}"></i></div>
+            <button class="control-panel-item control-panel-item-{{name}}" data-name="{{name}}" title="{{title}}"><i class="{{iconClass}}"></i></button>
         {{/each}}
+    </div>
+    <div class="coCharts-control-panel-expanded-container control-panel-expanded-container hide"></div>
+</script>
+
+<script type="text/x-handlebars-template" id="coCharts-control-panel-expanded-accessor-data-template">
+    <div class="control-panel-filter-body">
+        <div class="control-panel-filter-group margin-10">
+            <div class="control-panel-filter-group-items padding-5-0">
+                {{#each accessorData}}
+                    <div class="control-panel-filter-group-item padding-5-0 col-xs-12">
+                        <input type="checkbox" name="control-panel-filter" class="ace-input checkbox-circle accessor-data-checkbox" value="{{@key}}" {{#if enable}}checked{{/if}}/>
+                        <span class="ace-lbl checkbox-circle"> {{label}}</span>
+                    </div>
+                {{/each}}
+            </div>
+        </div>
     </div>
 </script>
 
@@ -2351,12 +2367,11 @@
     <div id="coCharts-{{chartId}}" class="coCharts-container" style="height:{{height}}px;">
         <div class="colleft">
             <div class="col1wrap">
-                <div class="col1 coCharts-main-container" style="height: 275px; width:100%"></div>
+                <div class="col1 coCharts-main-container"></div>
+                {{#if controlPanel.enable}}
+                    <div class="col2 coCharts-control-panel-container"></div>
+                {{/if}}
             </div>
-            {{#if controlPanel.enable}}
-                <div id="controlPanel" class="col2 coCharts-control-panel-container"></div>
-                <div class="coCharts-control-panel-expanded-container hide"></div>
-            {{/if}}
         </div>
         {{#if navigation.enable}}
             <div class="coCharts-navigation-container"></div>

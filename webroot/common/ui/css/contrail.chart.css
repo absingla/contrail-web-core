@@ -355,22 +355,47 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     fill: #777;
     font-weight: normal;
 }
+
+/*
 .coCharts-container .tick line {
     stroke: #e5e5e5 !important;
     stroke-width: 1 !important;
     shape-rendering: crispEdges;
 }
-
+*/
 /*
 .coCharts-container .tick:first-child line, .coCharts-container .tick:last-child line {
     visibility: hidden;
 }
 */
+.coCharts-container {
+    position: relative;
+}
+
+.coCharts-container .coCharts-main-container {
+    height: 275px;
+}
+
+.coCharts-container .coCharts-control-panel-container {
+    position: absolute;
+    right: 0px;
+    top: 0px;
+}
+
+.coCharts-container .coCharts-control-panel-container .coCharts-control-panel-expanded-container {
+    right: 40px;
+}
 
 .coCharts-container .axis path, .contrail .axis line {
     fill: none;
     stroke: black;
     stroke-width: 1px;
+}
+
+.coCharts-container .axis .tick line {
+    stroke: #e5e5e5;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
 }
 
 /*
@@ -439,11 +464,6 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     display: none
 }
 
-.coCharts-container .axis.x-axis .tick line {
-    stroke: #ddd;
-    stroke-width: 1
-}
-
 .coCharts-container .axis.x-axis .tick text {
     font-size: 11px;
     fill: #666
@@ -458,12 +478,12 @@ input.ace-input[type=radio] + .ace-lbl.inactive::before {
     display: none
 }
 
-.coCharts-container .axis.y-axis .tick line {
-    stroke: #ddd;
-    stroke-width: 1
+.coCharts-container .axis.y-axis .tick text {
+    font-size: 11px;
+    fill: #666
 }
 
-.coCharts-container .axis.y-axis .tick text {
+.coCharts-container .axis.y-axis .axis-label {
     font-size: 11px;
     fill: #666
 }

@@ -128,7 +128,8 @@ define([
         // this.TMPL_DETAIL_PAGE_ACTION = "core-detail-page-action-template";
         this.TMPL_WIZARD_VIEW = "core-wizard-view-template";
         this.TMPL_NETWORKING_GRAPH_VIEW = "core-networking-graph-template";
-        this.TMPL_CONTROL_PANEL_COMPONENT = "core-control-panel-component-template";
+        this.TMPL_CHARTS_CONTROL_PANEL = "coCharts-control-panel-template";
+        this.TMPL_CHARTS_CONTROL_PANEL_EXPANDED_ACCESSOR_DATA = "coCharts-control-panel-expanded-accessor-data-template";
         this.TMPL_CONTROL_PANEL = "core-control-panel-template";
         this.TMPL_CONTROL_PANEL_FILTER = "core-control-panel-filter-template";
         this.TMPL_CONTROL_PANEL_FILTER_2_COL = "core-control-panel-filter-2-col-template";
