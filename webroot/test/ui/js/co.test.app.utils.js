@@ -5,7 +5,7 @@
 var contentContainer = "#content-container";
 var slickGridSearchtimer = null;
 // Need to add a check and declare globalObj only if it doesn't exist and if exists need to extend with this map
-if(typeof(globalObj) == "undefined") 
+if(typeof(globalObj) == "undefined")
     globalObj = {};
 globalObj['env'] = "";
 globalObj['loadedScripts'] = [];
@@ -35,19 +35,19 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'core-srcdir'                 : coreBaseDir,
         'core-basedir'                : coreWebDir,
         //Bundles
-        'thirdparty-libs'       : coreWebDir + '/js/common/thirdparty.libs',
-        'contrail-core-views'   : coreWebDir + '/js/common/contrail.core.views',
-        'chart-libs'            : coreWebDir + '/js/common/chart.libs',
-        'core-bundle'           : coreWebDir + '/js/common/core.bundle',
-        'global-libs'           : coreWebDir + '/js/common/global-libs',
-        'jquery-dep-libs'       : coreWebDir + '/js/common/jquery.dep.libs',
-        'nonamd-libs'           : coreWebDir + '/js/common/nonamd.libs',
+        'thirdparty-libs'             : coreWebDir + '/js/common/thirdparty.libs',
+        'contrail-core-views'         : coreWebDir + '/js/common/contrail.core.views',
+        'chart-libs'                  : coreWebDir + '/js/common/chart.libs',
+        'core-bundle'                 : coreWebDir + '/js/common/core.bundle',
+        'global-libs'                 : coreWebDir + '/js/common/global-libs',
+        'jquery-dep-libs'             : coreWebDir + '/js/common/jquery.dep.libs',
+        'nonamd-libs'                 : coreWebDir + '/js/common/nonamd.libs',
         //Files not in bundles
-        'underscore'            : coreWebDir + '/assets/underscore/underscore-min',
-        'slickgrid-utils'       : coreWebDir + "/js/slickgrid-utils",
-        'jquery'                : coreWebDir + '/assets/jquery/js/jquery.min',
-        'contrail-load'         : coreWebDir + '/js/contrail-load',
-        'vis'                   : coreWebDir + '/assets/vis-v4.9.0/js/vis.min',
+        'underscore'                  : coreWebDir + '/assets/underscore/underscore-min',
+        'slickgrid-utils'             : coreWebDir + "/js/slickgrid-utils",
+        'jquery'                      : coreWebDir + '/assets/jquery/js/jquery.min',
+        'contrail-load'               : coreWebDir + '/js/contrail-load',
+        'vis'                         : coreWebDir + '/assets/vis-v4.9.0/js/vis.min',
         'vis-node-model'              : coreWebDir + '/js/models/VisNodeModel',
         'vis-edge-model'              : coreWebDir + '/js/models/VisEdgeModel',
         'vis-tooltip-model'           : coreWebDir + '/js/models/VisTooltipModel',
@@ -60,8 +60,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'joint'                       : coreWebDir + '/assets/joint/js/joint.clean',
         'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
 
-        'core-alarm-utils'           :  coreWebDir + '/js/common/core.alarms.utils',
-        'core-alarm-parsers'         :  coreWebDir + '/js/common/core.alarms.parsers',
+        'core-alarm-utils'            :  coreWebDir + '/js/common/core.alarms.utils',
+        'core-alarm-parsers'          :  coreWebDir + '/js/common/core.alarms.parsers',
 
         'query-form-view'             : coreWebDir + '/js/views/QueryFormView',
         'contrail-vis-view'           : coreWebDir + '/js/views/ContrailVisView',
@@ -73,18 +73,19 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'contrail-vis-model'          : coreWebDir + '/js/models/ContrailVisModel',
 
         'loginwindow-model'           : coreWebDir + '/js/models/LoginWindowModel',
-        'xml2json'                  : coreWebDir + '/assets/jquery/js/xml2json',
+        'xml2json'                    : coreWebDir + '/assets/jquery/js/xml2json',
 
         'json-editor'                 : coreWebDir + '/assets/jsoneditor/js/jsoneditor.min',
         'ajv'                         : coreWebDir + '/assets/ajv/ajv.min',
-        'server-schema'               : coreWebDir + '/schemas/server.schema',
-        'cluster-schema'              : coreWebDir + '/schemas/cluster.schema',
         'json-model'                  : coreWebDir + "/js/models/JsonModel",
         'json-edit-view'              : coreWebDir + '/js/views/JsonEditView',
-        'schema-model'               : coreWebDir + '/js/models/SchemaModel',
-        'view-config-generator'      : coreWebDir + '/js/common/view.config.generator',
-        'jquery-ui'                 : coreWebDir + '/assets/jquery-ui/js/jquery-ui'
-    };
+        'jquery-ui'                   : coreWebDir + '/assets/jquery-ui/js/jquery-ui.min',
+        'schema-model'                : coreWebDir + '/js/models/SchemaModel',
+        'view-config-generator'       : coreWebDir + '/js/common/view.config.generator',
+        'iframe-view'                 : coreWebDir + '/js/views/IframeView',
+        'jdorn-jsoneditor'            : coreWebDir + '/assets/jdorn-jsoneditor/js/jdorn-jsoneditor',
+        'qe-module'                   : coreWebDir + '/reports/qe/ui/js/qe.module'
+    };;
 
     //Separate out aliases that need to be there for both prod & dev environments
     if(env == "dev") {
@@ -107,11 +108,11 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'contrail-list-model'         : coreWebDir + '/js/models/ContrailListModel',
             'contrail-element'            : coreWebDir + '/js/models/ContrailElement',
             'lodash'                      : coreWebDir + '/assets/lodash/lodash.min',
-            'crossfilter'               : coreWebDir + '/assets/crossfilter/js/crossfilter',
+            'crossfilter'                 : coreWebDir + '/assets/crossfilter/js/crossfilter',
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
             'text'                        : coreWebDir + '/assets/requirejs/text',
             'knockout'                    : coreWebDir + '/assets/knockout/knockout',
-            'moment'                    : coreWebDir + "/assets/moment/moment",
+            'moment'                      : coreWebDir + "/assets/moment/moment",
             'layout-handler'              : coreWebDir + '/js/handlers/LayoutHandler',
             'menu-handler'                : coreWebDir + '/js/handlers/MenuHandler',
             'help-handler'                : coreWebDir + '/js/handlers/HelpHandler',
@@ -146,7 +147,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             //End - jquery.dep.libs aliases
             //Start - thirdparty-libs aliases
             'handlebars'                : coreWebDir + "/assets/handlebars/handlebars",
-            'core-handlebars-utils'          : coreWebDir + "/js/common/core.handlebars.utils",
+            'core-handlebars-utils'     : coreWebDir + "/js/common/core.handlebars.utils",
 
             'slick.grid'                : coreWebDir + "/assets/slickgrid/js/slick.grid",
             'slick.checkboxselectcolumn': coreWebDir + '/assets/slickgrid/js/slick.checkboxselectcolumn',
@@ -177,11 +178,10 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'infoboxes'                   : coreWebDir + '/js/views/InfoboxesView',
             'barchart-cf'                 : coreWebDir + '/js/views/BarChartView',
 
-            // 'core.app.utils'              : coreWebDir + "/js/common/core.app.utils",
             'storage-init'                : 'empty:'
 
         };
-        //Merge common (for both prod & dev) alias 
+        //Merge common (for both prod & dev) alias
         for(var currAlias in devAliasMap)
             aliasMap[currAlias] = devAliasMap[currAlias]
 
@@ -193,7 +193,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'knockback'                   : coreWebDir + '/assets/backbone/knockback.min',
             'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd'
         }
-        //Merge common (for both prod & dev) alias 
+        //Merge common (for both prod & dev) alias
         for(var currAlias in prodAliasMap)
             aliasMap[currAlias] = prodAliasMap[currAlias]
     }
@@ -218,12 +218,6 @@ var coreAppShim =  {
     },
     'jquery.tristate' : {
         deps: ['jquery-ui']
-    },
-    'jquery.ui.position' : {
-        deps: ['jquery']
-    },
-    'jquery-contextmenu' : {
-        deps: ['jquery']
     },
     'jquery.multiselect.filter' : {
         deps: ['jquery-ui']
@@ -286,12 +280,9 @@ var coreAppShim =  {
     'contrail-common': {
         deps: ['jquery']
     },
-    'slick.enhancementpager': {
-        deps: ['jquery']
-    },
     'slick.rowselectionmodel': {
         deps: ['jquery']
-    },        
+    },
     'slick.checkboxselectcolumn': {
         deps: ['jquery']
     },
@@ -317,16 +308,13 @@ var coreAppShim =  {
         deps: ['jquery','knockout']
     },
     'core-handlebars-utils': {
-        deps: ['jquery', 'handlebars']
+        deps: ['jquery','handlebars']
     },
     'nvd3-plugin': {
         deps: ['nv.d3']
     },
     'd3-utils': {
         deps: ['d3']
-    },
-    'qe-utils': {
-        deps: ['jquery']
     },
     'select2-utils': {
         deps: ['jquery']
@@ -379,144 +367,160 @@ var coreAppShim =  {
 };
 
 var coreBundles = {
-        //chart-libs,thirdparty-libs,contrail-core-views are loaded lazily
-        'chart-libs'        : [
-            'd3',
-            'nv.d3'
-        ],
-        'thirdparty-libs'   : [
-            'slick.grid',
-            'slick.checkboxselectcolumn',
-            'slick.groupmetadata',
-            'slick.rowselectionmodel',
-            'slick.enhancementpager',
-            'jsbn-combined',
-            'sprintf',
-            'ipv6',
-            'xdate',
-        ],
-        'jquery-dep-libs': [
-            'jquery.xml2json',
-            'jquery.json',
-            'bootstrap',
-            'select2',
-            'slick.core',
-            'slick.dataview',
-            'jquery.timer',
-            'jquery.ui.touch-punch',
-            'jquery.validate',
-            'jquery.tristate',
-            'jquery.multiselect',
-            'jquery.multiselect.filter',
-            'jquery.steps.min',
-            'jquery.panzoom',
-            'jquery.event.drag',
-            'jquery.datetimepicker'
-        ],
-        'core-bundle'       : [
-            'underscore',
-            'handlebars',
-            'core-handlebars-utils',
-            'core-utils',
-            'core-hash-utils',
-            'core-constants',
-            'core-formatters',
-            'core-cache',
-            'core-labels',
-            'core-messages',
-            'core-views-default-config',
-            'contrail-common',
-            'core-contrail-form-elements',
-            'chart-utils',
-            'text!core-basedir/common/ui/templates/core.common.tmpl',
-            'core-basedir/js/common/graph.utils',
-            'contrail-remote-data-handler',
-            'cf-datasource',
-            'contrail-view',
-            'contrail-model',
-            'contrail-view-model',
-            'contrail-list-model',
-            'contrail-elements',
-            'lodash',
-            'crossfilter',
-            'text',
-            'moment',
-            'layout-handler',
-            'menu-handler',
-            'help-handler',
-            'content-handler',
-            'validation',
-            'core-basedir/js/views/BarChartInfoView',
-            'core-basedir/js/views/BreadcrumbDropdownView',
-            'core-basedir/js/views/BreadcrumbTextView',
-            'core-basedir/js/views/ChartView',
-            'core-basedir/js/views/ControlPanelView',
-            'core-basedir/js/views/InfoboxesView',
-            'core-basedir/js/views/SectionView',
-            'core-basedir/js/views/WidgetView',
-            'core-basedir/js/views/ZoomScatterChartView',
-            //Dashboard
-            'mon-infra-node-list-model',
-            'mon-infra-log-list-model',
-            'mon-infra-alert-list-view',
-            'mon-infra-alert-grid-view',
-            'mon-infra-log-list-view',
-            'mon-infra-sysinfo-view',
-            'mon-infra-dashboard-view'
-        ],
-        'contrail-core-views': [
-            'core-basedir/js/views/GridView',
-            'core-basedir/js/views/AccordianView',
-            'core-basedir/js/views/DetailsView',
-            'core-basedir/js/views/DonutChartView',
-            'core-basedir/js/views/FormAutoCompleteTextBoxView',
-            'core-basedir/js/views/FormButtonView',
-            'core-basedir/js/views/FormCheckboxView',
-            'core-basedir/js/views/FormCollectionView',
-            'core-basedir/js/views/FormComboboxView',
-            'core-basedir/js/views/FormCompositeView',
-            'core-basedir/js/views/FormDateTimePickerView',
-            'core-basedir/js/views/FormDropdownView',
-            'core-basedir/js/views/FormEditableGridView',
-            'core-basedir/js/views/FormGridView',
-            'core-basedir/js/views/FormHierarchicalDropdownView',
-            'core-basedir/js/views/FormInputView',
-            'core-basedir/js/views/FormMultiselectView',
-            'core-basedir/js/views/FormNumericTextboxView',
-            'core-basedir/js/views/FormRadioButtonView',
-            'core-basedir/js/views/FormTextAreaView',
-            'core-basedir/js/views/FormTextView',
-            'core-basedir/js/views/GridFooterView',
-            'core-basedir/js/views/HeatChartView',
-            'core-basedir/js/views/HorizontalBarChartView',
-            'core-basedir/js/views/LineBarWithFocusChartView',
-            'core-basedir/js/views/LineWithFocusChartView',
-            'core-basedir/js/views/LoginWindowView',
-            'core-basedir/js/views/MultiBarChartView',
-            'core-basedir/js/views/BarChartView',
-            'core-basedir/js/views/MultiDonutChartView',
-            'core-basedir/js/views/NodeConsoleLogsView',
-            'core-basedir/js/views/QueryFilterView',
-            'core-basedir/js/views/QueryResultGridView',
-            'core-basedir/js/views/QueryResultLineChartView',
-            'core-basedir/js/views/QuerySelectView',
-            'core-basedir/js/views/QueryWhereView',
-            'core-basedir/js/views/SparklineView',
-            'core-basedir/js/views/TabsView',
-            'core-basedir/js/views/WizardView'
-        ],
-        'nonamd-libs': [
-            'web-utils',
-            'analyzer-utils',
-            'config_global',
-            'contrail-layout',
-            'uuid',
-            'protocol',
-            'xdate',
-            'ipv6',
-            'jsonpath'
-        ]
-    };
+    //chart-libs,thirdparty-libs,contrail-core-views are loaded lazily
+    'chart-libs'        : [
+        'd3',
+        'nv.d3'
+    ],
+    'thirdparty-libs'   : [
+        'slick.grid',
+        'slick.checkboxselectcolumn',
+        'slick.groupmetadata',
+        'slick.rowselectionmodel',
+        'slick.enhancementpager',
+        'jsbn-combined',
+        'sprintf',
+        'ipv6',
+        'xdate',
+    ],
+    'jquery-dep-libs': [
+        'jquery.xml2json',
+        'jquery.json',
+        'bootstrap',
+        'select2',
+        'slick.core',
+        'slick.dataview',
+        'jquery.timer',
+        'jquery.ui.touch-punch',
+        'jquery.validate',
+        'jquery.tristate',
+        'jquery.multiselect',
+        'jquery.multiselect.filter',
+        'jquery.steps.min',
+        'jquery.panzoom',
+        'jquery.event.drag',
+        'jquery.datetimepicker'
+    ],
+    'core-bundle'       : [
+        'underscore',
+        'moment',
+        'handlebars',
+        'core-handlebars-utils',
+        'core-utils',
+        'core-hash-utils',
+        'core-constants',
+        'core-formatters',
+        'core-cache',
+        'core-labels',
+        'core-messages',
+        'core-views-default-config',
+        'contrail-common',
+        'core-contrail-form-elements',
+        'chart-utils',
+        'text!core-basedir/common/ui/templates/core.common.tmpl',
+        'core-basedir/js/common/graph.utils',
+        'contrail-remote-data-handler',
+        'cf-datasource',
+        'contrail-view',
+        'contrail-model',
+        'contrail-view-model',
+        'contrail-list-model',
+        'contrail-element',
+        'lodash',
+        'crossfilter',
+        'text',
+        'layout-handler',
+        'menu-handler',
+        'help-handler',
+        'content-handler',
+        'validation',
+        'core-basedir/js/views/BarChartInfoView',
+        'core-basedir/js/views/BreadcrumbDropdownView',
+        'core-basedir/js/views/BreadcrumbTextView',
+        'core-basedir/js/views/ChartView',
+        'core-basedir/js/views/ControlPanelView',
+        'core-basedir/js/views/InfoboxesView',
+        'core-basedir/js/views/SectionView',
+        'core-basedir/js/views/WidgetView',
+        'core-basedir/js/views/ZoomScatterChartView',
+        //Dashboard
+        'mon-infra-node-list-model',
+        'mon-infra-log-list-model',
+        'mon-infra-alert-list-view',
+        'mon-infra-alert-grid-view',
+        'mon-infra-log-list-view',
+        'mon-infra-sysinfo-view',
+        'mon-infra-dashboard-view'
+    ],
+    'contrail-core-views': [
+        'core-basedir/js/views/GridView',
+        'core-basedir/js/views/AccordianView',
+        'core-basedir/js/views/DetailsView',
+        'core-basedir/js/views/DonutChartView',
+        'core-basedir/js/views/FormAutoCompleteTextBoxView',
+        'core-basedir/js/views/FormButtonView',
+        'core-basedir/js/views/FormCheckboxView',
+        'core-basedir/js/views/FormCollectionView',
+        'core-basedir/js/views/FormComboboxView',
+        'core-basedir/js/views/FormCompositeView',
+        'core-basedir/js/views/FormDateTimePickerView',
+        'core-basedir/js/views/FormDropdownView',
+        'core-basedir/js/views/FormEditableGridView',
+        'core-basedir/js/views/FormGridView',
+        'core-basedir/js/views/FormHierarchicalDropdownView',
+        'core-basedir/js/views/FormInputView',
+        'core-basedir/js/views/FormMultiselectView',
+        'core-basedir/js/views/FormNumericTextboxView',
+        'core-basedir/js/views/FormRadioButtonView',
+        'core-basedir/js/views/FormTextAreaView',
+        'core-basedir/js/views/FormTextView',
+        'core-basedir/js/views/GridFooterView',
+        'core-basedir/js/views/HeatChartView',
+        'core-basedir/js/views/HorizontalBarChartView',
+        'core-basedir/js/views/LineBarWithFocusChartView',
+        'core-basedir/js/views/LineWithFocusChartView',
+        'core-basedir/js/views/LoginWindowView',
+        'core-basedir/js/views/MultiBarChartView',
+        'core-basedir/js/views/BarChartView',
+        'core-basedir/js/views/MultiDonutChartView',
+        'core-basedir/js/views/NodeConsoleLogsView',
+        'core-basedir/js/views/QueryFilterView',
+        'core-basedir/js/views/QueryResultGridView',
+        'core-basedir/js/views/QueryResultLineChartView',
+        'core-basedir/js/views/QuerySelectView',
+        'core-basedir/js/views/QueryWhereView',
+        'core-basedir/js/views/SparklineView',
+        'core-basedir/js/views/TabsView',
+        'core-basedir/js/views/WizardView'
+    ],
+    'nonamd-libs': [
+        'web-utils',
+        'analyzer-utils',
+        'config_global',
+        'contrail-layout',
+        'uuid',
+        'protocol',
+        'xdate',
+        'ipv6',
+        'jsonpath'
+    ],
+    'qe-module': [
+        'core-basedir/reports/qe/ui/js/common/qe.utils',
+        'core-basedir/reports/qe/ui/js/common/qe.parsers',
+        'core-basedir/reports/qe/ui/js/common/qe.grid.config',
+        'core-basedir/reports/qe/ui/js/common/qe.model.config',
+        'core-basedir/reports/qe/ui/js/views/QueryEngineView',
+        'core-basedir/reports/qe/ui/js/views/QueryQueueView',
+        'core-basedir/reports/qe/ui/js/views/QueryTextView',
+        'core-basedir/reports/qe/ui/js/views/ObjectLogsFormView',
+        'core-basedir/reports/qe/ui/js/views/SystemLogsFormView',
+        'core-basedir/reports/qe/ui/js/views/StatQueryFormView',
+        'core-basedir/reports/qe/ui/js/models/ContrailListModelGroup',
+        'core-basedir/reports/qe/ui/js/models/ObjectLogsFormModel',
+        'core-basedir/reports/qe/ui/js/models/StatQueryFormModel',
+        'core-basedir/reports/qe/ui/js/models/SystemLogsFormModel'
+    ]
+};;
 
 
 function initBackboneValidation() {
@@ -524,22 +528,22 @@ function initBackboneValidation() {
         _.extend(kbValidation.callbacks, {
             valid: function (view, attr, selector) {
                 /*
-                var $el = $(view.modalElementId).find('[name=' + attr + ']'),
-                $group = $el.closest('.form-element');
+                 var $el = $(view.modalElementId).find('[name=' + attr + ']'),
+                 $group = $el.closest('.form-element');
 
-                $group.removeClass('has-error');
-                $group.find('.help-block').html('').addClass('hidden');
-                */
+                 $group.removeClass('has-error');
+                 $group.find('.help-block').html('').addClass('hidden');
+                 */
             },
             invalid: function (view, attr, error, selector, validation) {
                 var model = view.model;
                 model.validateAttr(attr, validation);
                 /*
-                var $el = $(view.modalElementId).find('[name=' + attr + ']'),
-                $group = $el.closest('.form-element');
-                $group.addClass('has-error');
-                $group.find('.help-block').html(error).removeClass('hidden');
-                */
+                 var $el = $(view.modalElementId).find('[name=' + attr + ']'),
+                 $group = $el.closest('.form-element');
+                 $group.addClass('has-error');
+                 $group.find('.help-block').html(error).removeClass('hidden');
+                 */
             }
         });
     });
@@ -641,14 +645,14 @@ function initCustomKOBindings(Knockout) {
                         optionListBindingAccessor = allBindingsAccessor.get('optionList'),
                         optionList = Knockout.utils.unwrapObservable(optionListBindingAccessor);
 
-                if (contrail.checkIfFunction(optionList)) {
-                    optionList = optionList(viewModel);
+                    if (contrail.checkIfFunction(optionList)) {
+                        optionList = optionList(viewModel);
                     }
 
-                var formattedOptionList = formatData(optionList, elementConfig),
-                    currentOptionList = multiselect.getAllData();
+                    var formattedOptionList = formatData(optionList, elementConfig),
+                        currentOptionList = multiselect.getAllData();
 
-                if (JSON.stringify(formattedOptionList) !== JSON.stringify(currentOptionList)) {
+                    if (JSON.stringify(formattedOptionList) !== JSON.stringify(currentOptionList)) {
                         value = contrail.checkIfFunction(value) ? value() : value;
                         if (value !== '') {
                             value = $.isArray(value) ? value : [value];
@@ -656,7 +660,7 @@ function initCustomKOBindings(Knockout) {
                             value = [];
                         }
 
-                    multiselect.setData(optionList, value, true);
+                        multiselect.setData(optionList, value, true);
                     }
                 }
 
@@ -801,77 +805,77 @@ function initCustomKOBindings(Knockout) {
             }
         };
 
-    Knockout.bindingHandlers.contrailNumericTextbox = {
-        init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-            var elementConfig = {}, numericTextbox;
+        Knockout.bindingHandlers.contrailNumericTextbox = {
+            init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                var elementConfig = {}, numericTextbox;
 
-            if(contrail.checkIfExist(bindingContext) && contrail.checkIfExist(bindingContext.$root)){
-                var elementConfigMap = bindingContext.$root.elementConfigMap(),
-                    elementName = $(element).attr("name");
+                if(contrail.checkIfExist(bindingContext) && contrail.checkIfExist(bindingContext.$root)){
+                    var elementConfigMap = bindingContext.$root.elementConfigMap(),
+                        elementName = $(element).attr("name");
 
-                elementConfig = elementConfigMap[elementName];
-            }
+                    elementConfig = elementConfigMap[elementName];
+                }
 
-            numericTextbox = $(element).contrailNumericTextbox(elementConfig).data('contrailNumericTextbox');
+                numericTextbox = $(element).contrailNumericTextbox(elementConfig).data('contrailNumericTextbox');
 
-            Knockout.utils.domNodeDisposal.addDisposeCallback(element, function () {
-                numericTextbox.destroy();
-            });
-        },
-        update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-            var numericTextbox = $(element).data('contrailNumericTextbox');
+                Knockout.utils.domNodeDisposal.addDisposeCallback(element, function () {
+                    numericTextbox.destroy();
+                });
+            },
+            update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                var numericTextbox = $(element).data('contrailNumericTextbox');
 
-            if (allBindingsAccessor.get('value')) {
-                var valueBindingAccessor = allBindingsAccessor.get('value'),
-                    value = Knockout.utils.unwrapObservable(valueBindingAccessor);
+                if (allBindingsAccessor.get('value')) {
+                    var valueBindingAccessor = allBindingsAccessor.get('value'),
+                        value = Knockout.utils.unwrapObservable(valueBindingAccessor);
 
-                if (contrail.checkIfFunction(value)) {
-                    numericTextbox.value(value());
-                } else {
-                    numericTextbox.value(value);
+                    if (contrail.checkIfFunction(value)) {
+                        numericTextbox.value(value());
+                    } else {
+                        numericTextbox.value(value);
+                    }
+                }
+                else {
+                    numericTextbox.value('');
                 }
             }
-            else {
-                numericTextbox.value('');
-            }
-        }
-    };
+        };
 
         Knockout.bindingHandlers.contrailAutoComplete = {
-                init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-                    var elementConfig = {}, autocompleteTextBox;
+            init: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                var elementConfig = {}, autocompleteTextBox;
 
-                    if(contrail.checkIfExist(bindingContext) && contrail.checkIfExist(bindingContext.$root)){
-                        var elementConfigMap = bindingContext.$root.elementConfigMap(),
-                            elementName = $(element).attr("name");
+                if(contrail.checkIfExist(bindingContext) && contrail.checkIfExist(bindingContext.$root)){
+                    var elementConfigMap = bindingContext.$root.elementConfigMap(),
+                        elementName = $(element).attr("name");
 
-                        elementConfig = elementConfigMap[elementName];
-                    }
+                    elementConfig = elementConfigMap[elementName];
+                }
 
-                    autocompleteTextBox = $(element).contrailAutoComplete(elementConfig).data('contrailAutoComplete');
+                autocompleteTextBox = $(element).contrailAutoComplete(elementConfig).data('contrailAutoComplete');
 
-                    Knockout.utils.domNodeDisposal.addDisposeCallback(element, function () {
-                        autocompleteTextBox.destroy();
-                    });
-                },
-                update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
-                    var autocompleteTextBox = $(element).data('contrailAutoComplete');
+                Knockout.utils.domNodeDisposal.addDisposeCallback(element, function () {
+                    autocompleteTextBox.destroy();
+                });
+            },
+            update: function (element, valueAccessor, allBindingsAccessor, viewModel, bindingContext) {
+                var autocompleteTextBox = $(element).data('contrailAutoComplete');
 
-                    if (allBindingsAccessor.get('value')) {
-                        var valueBindingAccessor = allBindingsAccessor.get('value'),
-                            value = Knockout.utils.unwrapObservable(valueBindingAccessor);
+                if (allBindingsAccessor.get('value')) {
+                    var valueBindingAccessor = allBindingsAccessor.get('value'),
+                        value = Knockout.utils.unwrapObservable(valueBindingAccessor);
 
-                        if (contrail.checkIfFunction(value)) {
-                            autocompleteTextBox.value(value());
-                        } else {
-                            autocompleteTextBox.value(value);
-                        }
-                    }
-                    else {
-                        autocompleteTextBox.value('');
+                    if (contrail.checkIfFunction(value)) {
+                        autocompleteTextBox.value(value());
+                    } else {
+                        autocompleteTextBox.value(value);
                     }
                 }
-            };
+                else {
+                    autocompleteTextBox.value('');
+                }
+            }
+        };
 
         var updateSelect2 = function (element) {
             var el = $(element);
@@ -953,6 +957,7 @@ function getCoreTestAppPaths(coreBaseDir) {
         'co-chart-view-line-test-suite'              : coreTestAppBaseDir + '/chart/LineWithFocusChartView.test.suite',
         'co-tabs-view-test-suite'                    : coreTestAppBaseDir + '/generic/TabsView.test.suite',
         'co-details-view-test-suite'                 : coreTestAppBaseDir + '/generic/DetailsView.test.suite',
+
         'co-form-model-validations-test-suite'       : coreTestAppBaseDir + '/form/ModelValidations.test.suite',
     };
 }

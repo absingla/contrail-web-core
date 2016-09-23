@@ -383,6 +383,7 @@ function testAppInit(testAppConfig) {
                                         console.log("Loaded test file: " + testFile.split('/').pop());
 
                                         if (pageTestConfig) {
+
                                             pageTestConfig.featureName = testAppConfig.featureName;
                                             
                                             testSetupDefObj.done(function() {
@@ -444,50 +445,59 @@ function testAppInit(testAppConfig) {
 }
 
 function testLibApiAppInit(testAppConfig) {
-
-    require(['jquery', 'knockout', 'bezier'], function ($, Knockout, Bezier) {
-        window.ko = Knockout;
-        window.Bezier = Bezier;
+    require([
+        'jquery',
+        'co-test-utils',
+        'text!/base/contrail-web-core/webroot/common/ui/templates/core.common.tmpl'
+    ], function ($, cotu, CoreCommonTmpl) {
 
         if (document.location.pathname.indexOf('/vcenter') == 0) {
             $('head').append('<base href="/vcenter/" />');
         }
 
-        require(depArray, function ($, _, validation, CoreConstants, CoreUtils, CoreFormatters, CoreMessages,
-                                    CoreViewsDefaultConfig, CoreLabels, Knockout, Cache, CoreCommonTmpl,
-                                    QEUtils, QEModelConfig, QEGridConfig, QEParsers, ChartUtils,
-                                    CoreTestUtils, CoreTestConstants, LayoutHandler) {
-            cowc = new CoreConstants();
-            cowu = new CoreUtils();
-            cowf = new CoreFormatters();
-            cowm = new CoreMessages();
-            covdc = new CoreViewsDefaultConfig();
-            cowl = new CoreLabels();
-            kbValidation = validation;
-            cowch = new Cache();
+        webServerInfoDefObj = $.Deferred();
+        webServerInfoDefObj.resolve();
 
-            chUtils = new ChartUtils();
+        require(['backbone', 'validation', 'knockout', 'knockback'], function () {
+            require(['core-bundle', 'jquery-dep-libs', 'nonamd-libs'], function () {
+                require(['validation', 'knockout', 'backbone'], function (validation) {
+                    window.kbValidation = validation;
+                });
+                require(['core-utils', 'core-hash-utils'], function (CoreUtils, CoreHashUtils) {
+                    cowu = new CoreUtils();
+                    cowhu = new CoreHashUtils();
+                    require(['underscore'], function (_) {
+                        _.noConflict();
+                    });
+                    require([
+                        'layout-handler', 'content-handler', 'help-handler',
+                        'contrail-load', 'lodash'
+                    ], function (LayoutHandler, ContentHandler, HelpHandler, ChartUtils, _) {
+                        $("body").addClass('navbar-fixed');
+                        $("body").append(cotu.getPageHeaderHTML());
+                        $("body").append(cotu.getSidebarHTML());
+                        $("body").append(CoreCommonTmpl);
 
-            cotu = CoreTestUtils;
-            cotc = CoreTestConstants;
+                        var cssList = cotu.getCSSList();
 
-            $("body").addClass('navbar-fixed');
-            $("body").append(cotu.getPageHeaderHTML());
-            $("body").append(cotu.getSidebarHTML());
-            $("body").append(CoreCommonTmpl);
+                        for (var i = 0; i < cssList.length; i++) {
+                            $("body").append(cssList[i]);
+                        }
 
-            var cssList = cotu.getCSSList();
+                        console.log(allTestFiles);
 
-            for (var i = 0; i < cssList.length; i++) {
-                $("body").append(cssList[i]);
-            }
-            require([allTestFiles[0]], function () {
-                requirejs.config({
-                    deps: [allTestFiles[0]],
-                    callback: window.__karma__.start($.Deferred(), true)
+                        require([allTestFiles[0]], function () {
+                            requirejs.config({
+                                deps: [allTestFiles[0]],
+                                callback: window.__karma__.start($.Deferred(), true)
+                            });
+                        });
+
+                    });
                 });
             });
         });
+
     });
 
 }

@@ -1,11 +1,10 @@
-var express = require('express');
-var app = express();
-var http = require("http");
+/*
+ * Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.
+ */
 
-var nock = require('nock');
-var utils = require('./test.utils.js')
+var utils = require('./utils.js');
 
-function init(app, responses, mockDataFile, callback, featureName) {
+function register(nock, responses, mockDataFile, callback, featureName) {
 
     var PATH = '';
 
@@ -28,7 +27,7 @@ function init(app, responses, mockDataFile, callback, featureName) {
     for (var i = 0; i < responses.length; i++) {
         var response = responses[i];
 
-        var urlRegExp = utils.regExpString2regExp(response.url);
+        var urlRegExp = response.urlRegex ? utils.regExpString2regExp(response.urlRegex) : response.url;
         if (response.method == undefined)
             response.method = 'GET';
 
@@ -44,11 +43,11 @@ function init(app, responses, mockDataFile, callback, featureName) {
     callback();
 }
 
-function remove(app) {
+function remove(nock) {
     nock.cleanAll();
 }
 
 module.exports = {
-    init: init,
+    register: register,
     remove: remove
 };

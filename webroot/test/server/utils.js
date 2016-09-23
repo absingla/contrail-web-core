@@ -1,6 +1,8 @@
+/*
+ * Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.
+ */
 
-
-var regExpString2regExp = function(str) {
+function regExpString2regExp(str) {
 
     var m = str.match(/^[/](.*)[/]([^/]*)$/);
     return new RegExp(m[1], m[2]);

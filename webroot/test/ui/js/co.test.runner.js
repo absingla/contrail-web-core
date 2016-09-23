@@ -270,6 +270,7 @@ define([
                     console.log("Specify test type in your page test config. eg: cotc.VIEW_TEST or cotc.MODEL_TEST");
             }
         });
+
         cotu.registerTestServerRoutes(pageTestConfig.featureName, pageTestConfig.testServerConfig, setupDone);
     };
     
@@ -439,7 +440,7 @@ define([
 
         module(ifNull(libTestConfig.moduleId, "Library API Test Module"));
 
-        asyncTest("Start Library Tests - " + ifNull(libTestConfig.libName, ""), function (assert) {
+        //asyncTest("Start Library Tests - " + ifNull(libTestConfig.libName, ""), function (assert) {
             expect(0);
             libTestConfig.testInitFn(testInitDefObj);
             var libTests = libTestConfig.getTestConfig();
@@ -449,7 +450,7 @@ define([
                 if (done) done();
             }, 1000);
 
-        });
+        //});
     };
 
     return {

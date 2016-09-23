@@ -1,8 +1,20 @@
+/*
+ * Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.
+ */
+
+/**
+ * This is mock test server.
+ * the URL and it's Responses needs to be registered
+ * when the server receives a request, it merely does a http.get/post
+ * which is responded by the nock instances.
+ */
+
 var express = require('express');
 var app = express();
 var http = require("http");
 var bodyParser = require('body-parser');
 var request = require('request');
+var routes = require('./routes.js');
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -10,7 +22,6 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 var nock = require('nock');
-
 
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -24,21 +35,19 @@ app.post('/api/dynamic', function (req, res) {
     var responses = req.body.responses;
     var featureName = req.body.featureName;
 
-    var dynamicController = require('./routes.js');
     var callback = function () {
+        console.log("routes added!");
         res.status(200).send();
     };
-    dynamicController.init(app, responses, mockDataFile, callback, featureName);
 
-
+    routes.register(nock, responses, mockDataFile, callback, featureName);
 });
 
 // hook to remove the dynamic route at runtime
 app.post('/api/remove', function (req, res) {
     console.log("Removing Handlers !");
-    var dynamicController = require('./routes.js');
-
-    dynamicController.remove(app);
+    var routes = require('./routes.js');
+    routes.remove(nock);
     res.status(200).send();
 });
 
@@ -53,6 +62,7 @@ app.get('*', function (req, res) {
             reply();
         });
     });
+
     var reply = function () {
         res.end(JSON.parse(JSON.stringify(str)));
     }
@@ -70,6 +80,6 @@ app.post('*', function (req, res) {
     });
 });
 
-console.log("****Launched TesServer : Listening on port : " + 9090);
 app.listen(9090);
+console.log("****Launched TesServer : Listening on port : " + 9090);
 
