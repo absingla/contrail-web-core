@@ -480,9 +480,9 @@ define([
                 engQueryStr = "";
 
             $.each(engQueryObj, function(key, val){
-                if(key === "select" && (_.isNil(val) || val === "")){
+                if(key === "select" && (!contrail.checkIfExist(val) || val === "")){
                     engQueryStr += '<div class="row-fluid"><span class="bolder">' + key.toUpperCase() + "</span> &nbsp;*</div>";
-                } else if((key === "where" || key === "filter") && (_.isNil(val) || val === "")){
+                } else if((key === "where" || key === "filter") && (!contrail.checkIfExist(val) || val === "")){
                     engQueryStr += "";
                 } else {
                     var formattedKey = key;
@@ -562,7 +562,7 @@ define([
                 sumBytes = [], sumPackets = [];
 
             for (var key in tsData) {
-                if (!_.isNil(tsData[key].flow_class_id)) {
+                if (contrail.checkIfExist(tsData[key].flow_class_id)) {
                     flowClassId = tsData[key].flow_class_id;
                     break;
                 }
@@ -571,7 +571,7 @@ define([
             for (var i = fromTime + interval; i <= toTime; i += interval) {
                 for (var k = 0; k < plotFields.length; k++) {
                     addPoint = {"x":i, "flow_class_id":flowClassId};
-                    if (!_.isNil(tsData[i.toString()])) {
+                    if (contrail.checkIfExist(tsData[i.toString()])) {
                         addPoint.y = tsData[i.toString()][plotFields[k]];
                     } else {
                         addPoint.y = 0;
@@ -614,7 +614,7 @@ define([
             });
 
             for (var i = fromTime; i < toTime; i += timeInterval) {
-                if (_.isNil(chartDataValues[i])) {
+                if (!contrail.checkIfExist(chartDataValues[i])) {
                     newChartDataValues[i] = emptyChartDataValue;
                 } else {
                     newChartDataValues[i] = chartDataValues[i];
@@ -661,21 +661,21 @@ define([
                 filterAndClausestr = filterAndClausestr.concat("filter: ");
                 filterAndClausestr = filterAndClausestr.concat(filterAndClausestrArr.join(" AND "));
             }
-            if (!_.isNil(limit)) {
+            if (contrail.checkIfExist(limit)) {
                 if(filterAndClausestr !== "") {
                     filterAndClausestr = filterAndClausestr.concat(" & limit: " + limit);
                 } else {
                     filterAndClausestr = filterAndClausestr.concat("limit: " + limit);
                 }
             }
-            if (!_.isNil(sort_by)) {
+            if (contrail.checkIfExist(sort_by)) {
                 if(filterAndClausestr !== "") {
                     filterAndClausestr = filterAndClausestr.concat(" & sort_fields: " + sort_by);
                 } else {
                     filterAndClausestr = filterAndClausestr.concat("sort_fields: " + sort_by);
                 }
             }
-            if (!_.isNil(sort_order)) {
+            if (contrail.checkIfExist(sort_order)) {
                 if(filterAndClausestr !== "") {
                     filterAndClausestr = filterAndClausestr.concat(" & sort: " + sort_order);
                 } else {
@@ -701,7 +701,7 @@ define([
         parseSelectString2Array: function(queryFormModel) {
             var selectString = queryFormModel.select(),
                 selectFields = queryFormModel.select_data_object().select_fields(),
-                checkedFields = (_.isNil(selectString) || selectString.trim() === "") ? [] : selectString.split(", ");
+                checkedFields = (!contrail.checkIfExist(selectString) || selectString.trim() === "") ? [] : selectString.split(", ");
 
             _.each(selectFields, function(selectFieldValue) {
                 queryFormModel.select_data_object().checked_map()[selectFieldValue.name](checkedFields.indexOf(selectFieldValue.name) !== -1);
