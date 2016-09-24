@@ -3,7 +3,6 @@
  */
 
 function regExpString2regExp(str) {
-
     var m = str.match(/^[/](.*)[/]([^/]*)$/);
     return new RegExp(m[1], m[2]);
 }

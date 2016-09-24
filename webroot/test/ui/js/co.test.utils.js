@@ -393,11 +393,11 @@ define([
     this.registerTestServerRoutes = function(featureName, testServerConfig, registerDone) {
         var deferred = registerDone ? registerDone : $.Deferred();
         $.ajax({
-            url: 'http://localhost:9090/api/dynamic',
+            url: 'http://localhost:9090/api/register',
             type: 'post',
             data: JSON.stringify({
-                responses: testServerConfig.getRoutesConfig(),
-                mockDataFile: testServerConfig.responseDataFile,
+                // mockDataConfigFile: testServerConfig.mockDataConfigFile,
+                routesConfig: testServerConfig.getRoutesConfig(),
                 featureName : featureName
             }),
             headers: {
@@ -407,7 +407,7 @@ define([
                 deferred.resolve();
             },
             error: function (error) {
-                console.log("Error occurred in injecting routes." + JSON.stringify(error));
+                console.error("Error occurred in registering routes." + JSON.stringify(error));
                 deferred.reject();
             }
         });
@@ -419,7 +419,7 @@ define([
         var deferred = $.Deferred();
 
         $.ajax({
-            url: 'http://localhost:9090/api/remove',
+            url: 'http://localhost:9090/api/clear-all-routes',
             type: 'post',
             data: '',
             headers: {
@@ -434,6 +434,7 @@ define([
                 deferred.reject();
             }
         });
+
         return deferred.promise();
     };
 

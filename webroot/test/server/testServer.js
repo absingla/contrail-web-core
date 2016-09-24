@@ -9,19 +9,27 @@
  * which is responded by the nock instances.
  */
 
-var express = require('express');
+var express = require("express");
 var app = express();
-var http = require("http");
-var bodyParser = require('body-parser');
-var request = require('request');
-var routes = require('./routes.js');
+//var http = require("http");
+var bodyParser = require("body-parser");
+var request = require("request");
+var nockRouter = require("./nockRouter.js");
 
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 app.use(bodyParser.json());
 
-var nock = require('nock');
+var nock = require("nock");
+var DEFAULT_NOCK_DOMAIN = "test-server";
+var DEFAULT_SERVER_PORT = 9090;
+
+// For now will use the default value.
+// Todo: support multi domain settings. will require updating the front-end requesting logic.
+var nockDomain = DEFAULT_NOCK_DOMAIN;
+// Todo: support setting the test server port. will require updating the proxy config in karma.
+var serverPort = DEFAULT_SERVER_PORT;
 
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -29,57 +37,76 @@ app.use(function (req, res, next) {
     next();
 });
 
-// hook to initialize the dynamic route at runtime
-app.post('/api/dynamic', function (req, res) {
-    var mockDataFile = req.body.mockDataFile;
-    var responses = req.body.responses;
+/**
+ * API target to register the URL's in test server.
+ * Currently we are using nock router.
+ */
+app.post("/api/register", function (req, res) {
+    // var mockDataConfigFile = req.body.mockDataConfigFile;
+    var routesConfig = req.body.routesConfig;
     var featureName = req.body.featureName;
 
-    var callback = function () {
-        console.log("routes added!");
-        res.status(200).send();
+    var callback = function (error) {
+        if (!error) {
+            res.status(200).send();
+        } else {
+            console.error("Error registering routes: ", JSON.stringify(error));
+            res.status(500).send(error);
+        }
+
     };
 
-    routes.register(nock, responses, mockDataFile, callback, featureName);
+    nockRouter.register(nock, nockDomain, featureName, routesConfig, callback);
 });
 
-// hook to remove the dynamic route at runtime
-app.post('/api/remove', function (req, res) {
+/**
+ * API to clear all the existing routes.
+ */
+app.post("/api/clear-all-routes", function (req, res) {
     console.log("Removing Handlers !");
-    var routes = require('./routes.js');
-    routes.remove(nock);
+    nockRouter.clearAllRoutes(nock);
     res.status(200).send();
 });
 
-app.get('*', function (req, res) {
-    var str = "";
-
-    http.get('http://localhost.com' + req.originalUrl, function (resp) {
-        resp.on("data", function (data) {
-            str += data;
-        });
-        resp.on("end", function () {
-            reply();
-        });
-    });
-
-    var reply = function () {
-        res.end(JSON.parse(JSON.stringify(str)));
-    }
-});
-
-app.post('*', function (req, res) {
+/**
+ * Default catch all API target for GET method.
+ * When a request hits this API, Server will fire a HTTP GET request to the current
+ * nockDomain and the response will be returned back to the request.
+ */
+app.get("*", function (req, res) {
 
     request({
-        url: 'http://localhost.com' + req.originalUrl,
-        method: 'post'
-    }, function (err, resp) {
-        if (err)
-            throw err;
-        res.end(JSON.parse(JSON.stringify(resp.body)));
+        url: "http://" + nockDomain + req.originalUrl,
+        method: "GET"
+    }, function (error, response) {
+        if (!error && response.statusCode === 200) {
+            res.send(response.body);
+        } else {
+            res.status(500).send(error);
+        }
+    });
+
+});
+
+/**
+ * Default catch all API target for POST method.
+ * When a request hits this API, Server will fire a HTTP POST request to the current
+ * nockDomain and the response will be returned back to the request.
+ */
+app.post("*", function (req, res) {
+
+    request({
+        url: "http://" + nockDomain + req.originalUrl,
+        method: "POST"
+    }, function (error, response) {
+        if (!error && response.statusCode === 200) {
+            res.send(response.body);
+        } else {
+            res.status(500).send(error);
+        }
     });
 });
 
-app.listen(9090);
-console.log("****Launched TesServer : Listening on port : " + 9090);
+app.listen(serverPort);
+console.log("====== Launched Test Server : Listening on port : " + serverPort + " =======");
 
