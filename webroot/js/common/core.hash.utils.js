@@ -134,7 +134,7 @@ define(['underscore'], function (_) {
             // location.hash = '#' so the entire URL is set.
             location.href = url;
         };
-        
+
         initHashParams();
 
         lastHash = self.getState();
