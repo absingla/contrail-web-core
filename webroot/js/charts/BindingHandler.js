@@ -19,6 +19,7 @@ define([
     	},
 
         performSync: function( sourceModel, sourcePath, targetModel ) {
+            var self = this;
             /*
             console.log( "performSync: ", sourcePath, this.get( 'sourcePath' ) );
             if( this.get( 'sourcePath' ) == sourcePath ) {
@@ -37,10 +38,19 @@ define([
             }
             */
             //targetModel.set( sourcePath, sourceModel.get( sourcePath ) );
-            console.log( "performSync" );
+            /*
             var mod = {};
             mod[sourcePath] = sourceModel.get( sourcePath );
-            targetModel.set( mod );
+            */
+            targetModel.set( sourcePath, sourceModel.get( sourcePath ) );
+            if( _.isObject( sourceModel.get( sourcePath ) ) ) {
+                // Perform manual event trigger.
+                targetModel.trigger( "change" );
+                targetModel.trigger( "change:" + sourcePath );
+            }
+            self.listenToOnce( sourceModel, "change:"+sourcePath, function() {
+                self.performSync( sourceModel, sourcePath, targetModel );
+            });
         },
 
     	/**
@@ -56,14 +66,9 @@ define([
                         var targetModel = components[binding.targetComponent][binding.targetModel];
                         if( sourceModel.has( binding.sourcePath ) ) {
                             if( binding.action == 'sync' ) {
-                                // Two way listen for changes and perform one way sync on startup.
-                                self.listenTo( sourceModel, "change:"+binding.sourcePath, function() {
-                                    self.performSync( sourceModel, binding.sourcePath, targetModel );
-                                });
-                                self.listenTo( targetModel, "change:"+binding.sourcePath, function() {
-                                    self.performSync( targetModel, binding.sourcePath, sourceModel );
-                                });
+                                // Two way listen for changes and perform sync on startup.
                                 self.performSync( sourceModel, binding.sourcePath, targetModel );
+                                self.performSync( targetModel, binding.sourcePath, sourceModel );
                             }
                         }
                     }

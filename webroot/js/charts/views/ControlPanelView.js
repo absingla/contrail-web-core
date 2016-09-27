@@ -42,7 +42,7 @@ define([
                 }
                 if( button.openPanel ) {
                     var $expandedPanel = self.$el.find( ".control-panel-expanded-container" );
-                    if( self.openPanel ) {
+                    if( !$expandedPanel.hasClass( "hide" ) ) {
                         // Panel already open.
                         if( self.openPanel == button.openPanel ) {
                             // Same panel open so close it.

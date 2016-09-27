@@ -24,7 +24,6 @@ define([
 
             /// The config model
             self.config = options.config;
-            self.components = [];
             console.log( "CompositeYChartView initialize" );
 
             /// View params hold values from the config and computed values.
@@ -61,9 +60,10 @@ define([
         */
         updateChildComponents: function() {
             var self = this;
+            self.components = [];
             _.each( self.config.get( "accessorData" ), function( accessor, key ) {
                 var axisName = "y" + accessor.y;
-                if( accessor.chartType ) {
+                if( accessor.chartType && accessor.enable ) {
                     var componentName = axisName + "-" + accessor.chartType;
                     var foundComponent = _.find( self.components, function( component ) { return component.getName() == componentName; } );
                     if( !foundComponent ) {
@@ -314,21 +314,22 @@ define([
             svg.append("g")
                 .attr("class", "axis x-axis")
                 .attr("transform", "translate(0," + ( self.params.yRange[1] - self.params.marginInner ) + ")");
-            _.each( self.params.yAxisInfoArray, function( axisInfo ) {
-            	svg.append("g")
-                .attr("class", "axis y-axis " + axisInfo.name + "-axis")
-                .attr("transform", "translate(" + translate + ",0)");
+            // Handle Y axis
+            _.each( self.params.yAxisInfoArray, function( ai ) {
+                console.log( "yAxisInfoArray name: " + ai.name );
             });
+            var svgYAxis = self.svgSelection().selectAll( ".axis.y-axis" ).data( self.params.yAxisInfoArray, function( yAxisInfo ) {
+                return yAxisInfo ? yAxisInfo.name : this.id;
+            });
+            svgYAxis.exit().remove();
+            svgYAxis.enter()
+                .append( "g" )
+                .attr( "class", function( d ) { return "axis y-axis " + d.name + "-axis"; } )
+                .merge( svgYAxis )
+                .attr("transform", "translate(" + translate + ",0)");
             // Handle component groups
             var svgComponentGroups = self.svgSelection().selectAll( ".component-group" ).data( self.components, function( c ) {
-                var id = 0;
-                if( _.isObject( c ) ) {
-                    id = c.getName();
-                }
-                else {
-                    id = c;
-                }
-                return id;
+                return _.isObject(c) ? c.getName(): this.id;
             });
             svgComponentGroups.enter().append( "g" )
                 .attr( "class", function( component ) {
@@ -503,6 +504,7 @@ define([
             var self = this;
             if( self.config ) {
                 _.defer(function () {
+                    console.log( "CompositeView render start." );
                     self.updateChildComponents();
                     self.resetParams();
                     self.calculateActiveAccessorData();
@@ -512,7 +514,7 @@ define([
                     self.renderAxis();
                     self.renderData();
                     self.startEventListeners();
-                    console.log( "CompositeView " + self.config.get( "tab" ) + " render end." );
+                    console.log( "CompositeView render end: ", self );
                     self.eventObject.trigger( "rendered" );
                 });
             }
