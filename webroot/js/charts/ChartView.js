@@ -3,6 +3,7 @@
  */
 
 define([
+    "underscore",
     "backbone",
     "contrail-list-model",
     "contrail-view",
@@ -21,7 +22,7 @@ define([
     "core-basedir/js/charts/views/ControlPanelView",
     "core-basedir/js/charts/BindingHandler"
 ], function( 
-    Backbone, ContrailListModel, ContrailView, d3,
+    _, Backbone, ContrailListModel, ContrailView, d3,
     DataModel, DataProvider,
     CompositeYChartConfigModel, CompositeYChartView,
     TooltipComponentConfigModel, TooltipView,
@@ -44,15 +45,25 @@ define([
             if (self.model === null && viewConfig.modelConfig !== null) {
                 self.model = new ContrailListModel(viewConfig.modelConfig);
             }
-            self.chartConfig = getChartConfig( selector, viewConfig.chartOptions );
+
             if (self.model !== null) {
-                self.chartDataModel = new DataModel( {dataParser: self.chartConfig.dataParser} );
-                self.updateChartDataStatus();
+                if (_.isUndefined(self.chartDataModel)) {
+                    self.chartConfig = getChartConfig(selector, viewConfig.chartOptions);
+                    self.chartDataModel = new DataModel({
+                        dataParser: self.chartConfig.dataParser
+                    });
+                }
+                //Model might be already present in cache Or requests might be already complete.
+                if (self.model.loadedFromCache || !(self.model.isRequestInProgress())) {
+                    console.log( "loaded from cache" );
+                    self.updateChartDataModel();
+                }
+                //Subscribe to Future/Current request completion.
                 self.model.onAllRequestsComplete.subscribe(function () {
                     console.log( "onAllRequestsComplete" );
                     self.updateChartDataModel();
-                    self.renderChart(selector);
                 });
+                //Todo loadChartInChunks option needs to be moved in to mainChart chartOptions.
                 if (viewConfig.loadChartInChunks) {
                     self.model.onDataUpdate.subscribe(function () {
                         self.updateChartDataModel();
