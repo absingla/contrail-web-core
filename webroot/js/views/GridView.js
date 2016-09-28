@@ -210,6 +210,56 @@ define([
                 gridContainer.data('contrailGrid').showGridMessage('loading');
             };
 
+            function getCheckedRowData(gridColumns, rowDataFields, gridCheckedRows) {
+                var columns = [], rows = [], columnIds = [];
+
+                _.each(gridColumns, function(columnValue, columnKey) {
+                    var currentColumn = columnValue['id'];
+                    if (rowDataFields.indexOf(currentColumn) !== -1) {
+                        columns.push(columnValue['name']);
+                        columnIds.push(currentColumn);
+
+                        _.each(gridCheckedRows, function(rowValue, rowKey) {
+                            if (!contrail.checkIfExist(rows[rowKey])) {
+                                rows[rowKey] = {};
+                            }
+
+                            if (contrail.checkIfFunction(columnValue.formatter)) {
+                                rows[rowKey][currentColumn] = columnValue.formatter(null, null, null, null, rowValue);
+                            } else {
+                                rows[rowKey][currentColumn] = rowValue[currentColumn];
+                            }
+                        });
+                    }
+                });
+
+                return {columns: columns, rows: rows, columnIds: columnIds}
+            }
+
+            function showDeleteModal(gridCheckedRows) {
+                var groupDeleteModalId = gridContainer.prop('id') + '-group-delete-modal',
+                    groupDeleteModalBodyTemplate = contrail.getTemplate4Id(cowc.TMPL_GRID_GROUP_DELETE_MODAL_BODY),
+                    rowDataFields = gridConfig.body.options.deleteActionConfig.modalConfig.rowDataFields,
+                    onSaveModal = gridConfig.body.options.deleteActionConfig.modalConfig.onSave;
+
+                cowu.createModal({
+                    modalId: groupDeleteModalId,
+                    className: 'modal-700',
+                    title: cowl.TITLE_DELETE_QUERY,
+                    btnName: 'Confirm',
+                    body: groupDeleteModalBodyTemplate(getCheckedRowData(gridColumns, rowDataFields, gridCheckedRows)),
+                    onSave: function () {
+
+                        if (contrail.checkIfFunction(onSaveModal)) {
+                            onSaveModal(gridCheckedRows);
+                        }
+                        $("#" + groupDeleteModalId).modal('hide');
+                    }, onCancel: function () {
+                        $("#" + groupDeleteModalId).modal('hide');
+                    }
+                });
+            }
+
             function initGridHeader() {
                 // Grid Header - Title + Other Actions like Expand/Collapse, Search and Custom actions
                 if (gridConfig.header) {
@@ -277,55 +327,8 @@ define([
 
                                 case 'group-delete':
                                     if (!contrailListModel.isRequestInProgress()) {
-
-                                        var groupDeleteModalId = gridContainer.prop('id') + '-group-delete-modal',
-                                            gridCheckedRows = $(gridContainer).data('contrailGrid').getCheckedRows(),
-                                            groupDeleteModalBodyTemplate = contrail.getTemplate4Id(cowc.TMPL_GRID_GROUP_DELETE_MODAL_BODY),
-                                            rowDataFields = gridConfig.header.defaultControls.groupDeleteable.modalConfig.rowDataFields,
-                                            onSaveModal = gridConfig.header.defaultControls.groupDeleteable.modalConfig.onSave;
-
-                                        function getCheckedRowData(gridColumns, rowDataFields, gridCheckedRows) {
-                                            var columns = [], rows = [], columnIds = [];
-
-                                            _.each(gridColumns, function(columnValue, columnKey) {
-                                                var currentColumn = columnValue['id'];
-                                                if (rowDataFields.indexOf(currentColumn) !== -1) {
-                                                    columns.push(columnValue['name']);
-                                                    columnIds.push(currentColumn);
-
-                                                    _.each(gridCheckedRows, function(rowValue, rowKey) {
-                                                        if (!contrail.checkIfExist(rows[rowKey])) {
-                                                            rows[rowKey] = {};
-                                                        }
-
-                                                        if (contrail.checkIfFunction(columnValue.formatter)) {
-                                                            rows[rowKey][currentColumn] = columnValue.formatter(null, null, null, null, rowValue);
-                                                        } else {
-                                                            rows[rowKey][currentColumn] = rowValue[currentColumn];
-                                                        }
-                                                    });
-                                                }
-                                            });
-
-                                            return {columns: columns, rows: rows, columnIds: columnIds}
-                                        }
-
-                                        cowu.createModal({
-                                            modalId: groupDeleteModalId,
-                                            className: 'modal-700',
-                                            title: cowl.TITLE_DELETE_QUERY,
-                                            btnName: 'Confirm',
-                                            body: groupDeleteModalBodyTemplate(getCheckedRowData(gridColumns, rowDataFields, gridCheckedRows)),
-                                            onSave: function () {
-
-                                                if (contrail.checkIfFunction(onSaveModal)) {
-                                                    onSaveModal(gridCheckedRows);
-                                                }
-                                                $("#" + groupDeleteModalId).modal('hide');
-                                            }, onCancel: function () {
-                                                $("#" + groupDeleteModalId).modal('hide');
-                                            }
-                                        });
+                                        var gridCheckedRows = $(gridContainer).data('contrailGrid').getCheckedRows();
+                                        showDeleteModal(gridCheckedRows);
                                     }
                                     break;
 
@@ -645,13 +648,13 @@ define([
                     var selectedRowLength = args.rows.length;
 
                     if (selectedRowLength == 0) {
-                        if (gridConfig.header.defaultControls.groupDeleteable !== false) {
+                        if (gridConfig.header.defaultControls.groupDeleteable) {
                             gridContainer.find('.widget-toolbar-icon-group-delete').addClass('disabled-link')
                         }
                         (contrail.checkIfExist(onNothingChecked) ? onNothingChecked(e) : '');
                     }
                     else {
-                        if (gridConfig.header.defaultControls.groupDeleteable !== false) {
+                        if (gridConfig.header.defaultControls.groupDeleteable) {
                             gridContainer.find('.widget-toolbar-icon-group-delete').removeClass('disabled-link')
                         }
                         (contrail.checkIfExist(onSomethingChecked) ? onSomethingChecked(e) : '');
@@ -769,6 +772,16 @@ define([
                                     actionCellArray = gridOptions.actionCell.optionList(rowData);
                                 } else {
                                     actionCellArray = gridOptions.actionCell.optionList;
+                                }
+
+                                if (gridOptions.rowDelete !== false) {
+                                    actionCellArray.push($.extend(true, {}, gridOptions.rowDelete, {
+                                        title: cowl.TITLE_DELETE_QUERY,
+                                        iconClass: "fa fa-trash",
+                                        onClick: function(rowIndex, targetElement, rowData) {
+                                            showDeleteModal([rowData]);
+                                        }
+                                    }));
                                 }
 
                                 //$('#' + gridContainer.prop('id') + '-action-menu').remove();
@@ -1297,7 +1310,7 @@ define([
                     </div>';
                 }
 
-                if (headerConfig.defaultControls.groupDeleteable !== false) {
+                if (headerConfig.defaultControls.groupDeleteable) {
                     template += '\
                     <div class="widget-toolbar pull-right"> \
                         <a class="widget-toolbar-icon disabled-link widget-toolbar-icon-group-delete" title="Delete" data-action="group-delete"> \
