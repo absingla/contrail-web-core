@@ -100,6 +100,16 @@ define([
                     onKeyupEsc: true
                 });
             }
+            if ((contrail.checkIfExist(options['onReset'])) && (contrail.checkIfFunction(options['onReset']))) {
+                footer.push({
+                    id        : 'resetBtn',
+                    title     : 'Reset',
+                    onclick   : function () {
+                        options['onReset']();
+                    },
+                    onKeyupEsc: true
+                });
+            }
             if ((contrail.checkIfExist(options['onCancel'])) && (contrail.checkIfFunction(options['onCancel']))) {
                 footer.push({
                     id        : 'cancelBtn',
@@ -507,7 +517,7 @@ define([
             }
 
             if(formatDepth == 0){
-                htmlValue += '<i class="node-' + currentDepth + ' fa fa-plus expander"></i> ' + objType.startTag + '<ul data-depth="' + currentDepth + '" class="node-' + currentDepth + ' node hide raw">' +
+                htmlValue += '<i class="node-' + currentDepth + ' fa fa-plus expander"></i> ' + objType.startTag + '<ul data-depth="' + currentDepth + '" class="node-' + currentDepth + ' node hidden raw">' +
                     JSON.stringify(jsonValue) + '</ul><span class="node-' + currentDepth + ' collapsed expander"> ... </span>' + objType.endTag;
             }
             else {
@@ -530,7 +540,7 @@ define([
                         htmlValue += '</li>';
                     }
                 });
-                htmlValue += '</ul><span class="node-' + currentDepth + ' collapsed hide expander"> ... </span>' + objType.endTag;
+                htmlValue += '</ul><span class="node-' + currentDepth + ' collapsed hidden expander"> ... </span>' + objType.endTag;
             }
             return htmlValue;
         };
@@ -815,12 +825,12 @@ define([
                                         '<div class="list-view">' +
                                             self.generateBlockListTemplate(config.templateGeneratorConfig, app, config) +
                                         '</div>' +
-                                        '<div class="advanced-view hide">' +
+                                        '<div class="advanced-view hidden">' +
                                             '{{{formatGridJSON2HTML this.data' +
                                                 ((contrail.checkIfExist(config.templateGeneratorData) && config.templateGeneratorData !== '') ? '.' + config.templateGeneratorData : '') +
                                             '}}}' +
                                         '</div>' +
-                                        '<div class="contrail-status-view hide">' +
+                                        '<div class="contrail-status-view hidden">' +
                                         '</div>' +
                                     '</div>' +
                                 '</div>' +
@@ -1329,10 +1339,11 @@ define([
         };
 
         this.getAttributes4Schema = function(attributes, schema) {
-            var json = $.extend(true, {}, attributes);
+            var json = $.extend(true, {}, attributes),
+                schema = contrail.checkIfExist(schema['items']) ? schema['items']['properties'] : schema['properties'];
 
-            for(var key in json){
-                if(!contrail.checkIfExist(schema['properties'][key])) {
+            for(var key in json) {
+                if(!contrail.checkIfExist(schema[key])) {
                     delete json[key];
                 }
             }
@@ -1362,20 +1373,205 @@ define([
                 return sign + intPart +" "+suffix;
         };
 
-        this.generateUUID = function () {
-            var s = [], itoh = '0123456789ABCDEF';
-            for (var i = 0; i < 36; i++) {
-                s[i] = Math.floor(Math.random() * 0x10);
+        /**
+         * This function bucketize the given data as per the
+         * bucket duration parameter
+         */
+        this.bucketizeStats = function (stats, options) {
+            var bucketSize = getValueByJsonPath(options, 'bucketSize', cowc.DEFAULT_BUCKET_DURATION),
+                insertEmptyBuckets = getValueByJsonPath(options, 'insertEmptyBuckets', true),
+                timeRange = getValueByJsonPath(options, 'timeRange'),
+                stats = ifNull(stats, []);
+            bucketSize = parseFloat(bucketSize) * 60 * 1000 * 1000 //Converting to micros seconds
+            var timestampField = 'T';
+            if (stats != null && getValueByJsonPath(stats, '0;T') == null) {
+                timestampField = 'T=';
             }
-            s[14] = 4;
-            s[19] = (s[19] & 0x3) | 0x8;
-            for (var i = 0; i < 36; i++) {
-                s[i] = itoh[s[i]];
+            var minMaxTS = d3.extent(stats,function(obj){
+                return obj[timestampField];
+            });
+            if (insertEmptyBuckets && timeRange != null
+                   && timeRange['start_time'] && timeRange['end_time']) {
+                   minMaxTS[0] = timeRange['start_time'];
+                   minMaxTS[1] = timeRange['end_time'];
             }
-            s[8] = s[13] = s[18] = s[23] = s[s.length] = '-';
-            s[s.length] = (new Date()).getTime();
-            return s.join('');
+            //If only 1 value extend the range by DEFAULT_BUCKET_DURATION (5 mins) on both sides
+            if(minMaxTS[0] == minMaxTS[1]) {
+                minMaxTS[0] -= bucketSize;
+                minMaxTS[1] += bucketSize;
+            }
+            var range = d3.range(minMaxTS[0], minMaxTS[1], bucketSize);
+            var xBucketScale = d3.scale.quantize().domain(minMaxTS).range(range);
+            var buckets = {};
+            if (insertEmptyBuckets) {
+                var rangeLen = range.length;
+                for (var i = 0; i < rangeLen; i++) {
+                    buckets[range[i]] = {
+                        timestampExtent: xBucketScale.invertExtent(range[i]),
+                        data: []
+                    }
+                }
+            }
+            //Group stats into buckets
+            $.each(stats,function(idx,obj) {
+                var xBucket = xBucketScale(obj[timestampField]);
+                if(buckets[xBucket] == null) {
+                    var timestampExtent = xBucketScale.invertExtent(xBucket);
+                    buckets[xBucket] = {timestampExtent:timestampExtent,
+                                        data:[]};
+                }
+
+                buckets[xBucket]['data'].push(obj);
+            });
+            return buckets;
         };
+
+        this.chartDataFormatter = function (response, options) {
+            var cf = crossfilter(response);
+            var timeStampField = 'T',
+                parsedData = [], failureCheckFn = getValueByJsonPath(options, 'failureCheckFn'),
+                colors = getValueByJsonPath(options, 'colors'),
+                groupBy = getValueByJsonPath(options, 'groupBy'),
+                yField = getValueByJsonPath(options, 'yField'),
+                yFieldOperation = getValueByJsonPath(options, 'yFieldOperation'),
+                failureLabel = getValueByJsonPath(options, 'failureLabel', cowc.FAILURE_LABEL),
+                yAxisLabel = getValueByJsonPath(options, 'yAxisLabel');
+            if (response != null && getValueByJsonPath(response, '0;T') == null) {
+                timeStampField = 'T=';
+            }
+            //bucket size is in mins need to convert in to milli secs
+            var buckets = cowu.bucketizeStats(response,{
+                bucketSize: getValueByJsonPath(options, 'bucketSize'),
+                timeRange: getValueByJsonPath(options, 'timeRange'),
+                insertEmptyBuckets: getValueByJsonPath(options, 'insertEmptyBuckets', true)
+            });
+            var tsDim = cf.dimension(function(d) { return d[timeStampField]});
+            if (failureCheckFn != null && typeof failureCheckFn == 'function') {
+                parsedData.push({
+                   key: failureLabel,
+                   color: cowc.FAILURE_COLOR,
+                   values: []
+                });
+            }
+            if (groupBy != null) {
+                var groupDim = cf.dimension(function(d) { return d[groupBy]});
+                var groupByMap = groupDim.group().all(),
+                    groupByMapLen = groupByMap.length,
+                    groupByKeys = _.pluck(groupByMap, 'key');
+                if (colors != null && typeof colors == 'function') {
+                    colors = colors(groupByKeys);
+                }
+                for (var i = 0; i < groupByMapLen; i++) {
+                    parsedData.push({
+                        key: groupByMap[i]['key'],
+                        color: colors[groupByMap[i]['key']],
+                        values: []
+                    });
+                }
+            } else {
+                parsedData.push({
+                    key: yAxisLabel,
+                    color: cowc.DEFAULT_COLOR,
+                    values: []
+                });
+            }
+
+            if (parsedData.length > 0) {
+                parsedData = _.indexBy(parsedData, 'key');
+            }
+            var lastTimeStamp = _.keys(buckets)[_.keys(buckets).length - 1];
+            for(var i  in buckets) {
+                var timestampExtent = buckets[i]['timestampExtent'],
+                    failedBarCnt = 0, total = 0;
+                //Filter the records based on time interval
+                if (i == lastTimeStamp) {
+                    timestampExtent[1] += 1;
+                }
+                tsDim.filter(timestampExtent);
+                if (groupBy != null) {
+                    groupByMap = groupDim.group().all();
+                    if (yField != null) {
+                        var groupByDimSum = groupDim.group().reduceSum(
+                            function (d) {
+                                return d[yField];
+                        });
+                        if (yFieldOperation == 'average') {
+                            groupCountsObj = _.indexBy(groupDim.group().reduceCount().all(), 'key');
+                            groupSumObj = _.indexBy(groupByDimSum.top(Infinity), 'key');
+                            groupByMap = [];
+                            for (var key in groupCountsObj) {
+                                groupByMap.push({key: key,
+                                    value: getValueByJsonPath(groupSumObj, key+';value', 0)/getValueByJsonPath(groupCountsObj, key+';value', 1)});
+                            }
+                        } else {
+                            //Default is sum
+                            groupByMap = groupByDimSum.top(Infinity);
+                        }
+                    }
+                    /*var missingKeys = _.difference(_.without(groupByKeys, failureLabel), _.pluck(groupByMap, 'key'));
+                    $.each(missingKeys, function(idx, obj){
+                        groupByMap.push({
+                            key: obj,
+                            value: 0,
+                        });
+                    });*/
+                    groupByMapLen = groupByMap.length;
+                    for (var j = 0; j < groupByMapLen; j++) {
+                        var groupByObj = groupByMap[j],
+                            groupByObjKey = groupByObj['key'],
+                            groupByObjVal = parseInt(groupByObj['value']);
+                        total += groupByObjVal;
+                        if (failureCheckFn) {
+                            var failureDim = groupDim.group().reduceSum(failureCheckFn),
+                                failureArr = failureDim.top(Infinity);
+                            failureMap = _.indexBy(failureArr, 'key');
+                            if(failureMap[groupByObjKey] != null) {
+                                var failedSliceCnt = getValueByJsonPath(failureMap,
+                                        groupByObjKey+';value', 0);
+                                //Adding the failures for all slice to get
+                                // total failure in this bar(or bucket)
+                                failedBarCnt += failedSliceCnt;
+                                //Subtracting the failures from total records
+                                groupByObjVal -= parseInt(failedSliceCnt);
+                            }
+                        }
+                        parsedData[groupByObjKey].values.push({
+                            date: new Date(ifNull(i, 0)/1000), //converting to milli secs
+                            name: groupByObjKey,
+                            timestampExtent: timestampExtent,
+                            x: ifNull(i, 0)/1000,
+                            y: groupByObjVal,
+                            total: total
+                        });
+                    }
+                    if (failureCheckFn) {
+                        //Failure at bar level
+                          parsedData[failureLabel].values.push({
+                              date: new Date(i/1000),
+                              y: failedBarCnt,
+                              name: failureLabel,
+                              total: total,
+                          });
+                      }
+                } else {
+                     var recordsArr = tsDim.top(Infinity);
+                     // Currently we are computing the max value
+                     // we can add sum, failures etc based on need
+                     var maxValueObj = _.max(recordsArr, function (d) {
+                         return ifNull(d[yField], 0);
+                     });
+                     var maxValue = getValueByJsonPath(maxValueObj, yField, 0);
+                     parsedData[yAxisLabel].values.push({
+                         date: new Date(ifNull(i, 0)/1000),
+                         timestampExtent: timestampExtent,
+                         name: yAxisLabel,
+                         y: maxValue,
+                         total: maxValue
+                     });
+                }
+            }
+            return _.values(parsedData);;
+        }
     };
 
     function filterXML(xmlString, is4SystemLogs) {

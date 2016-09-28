@@ -52,6 +52,9 @@ define([
             } else {
                 contrailListModel = self.model;
             }
+            contrailListModel.onDataUpdate.subscribe(function (){
+                coreAlarmUtils.fetchAndUpdateAlarmBell();
+            });
             self.renderView4Config(self.$el, contrailListModel, getAlarmGridViewConfig(viewConfig));
         }
     });
@@ -144,7 +147,7 @@ define([
                                   hide:true
                               },
                               {
-                                  field: 'timestamp',
+                                  field: 'T',
                                   name: 'Time',
                                   minWidth: 130,
                                   formatter : function (r,c,v,cd,dc) {
@@ -400,7 +403,7 @@ define([
                                                     }
                                                 },
                                                 {
-                                                    key: 'timestamp',
+                                                    key: 'T',
                                                     templateGenerator: 'TextGenerator',
                                                     templateGeneratorConfig: {
                                                         formatter: 'timestampFormatter'
