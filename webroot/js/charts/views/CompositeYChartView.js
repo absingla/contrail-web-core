@@ -28,7 +28,7 @@ define([
 
             /// View params hold values from the config and computed values.
             //self.resetParams();
-
+            self.debouncedRenderFunction = _.bind( _.debounce( self.actualRender, 10 ), self );
             self.listenTo( self.model, "change", self.dataModelChanged );
             self.listenTo( self.config, "change", self.configModelChanged );
             self.eventObject = _.extend( {}, Backbone.Events );
@@ -98,7 +98,7 @@ define([
             data = self.getData();
             self.params.activeAccessorData = {};
             self.params.yAxisInfoArray = [];
-            console.log( "data (" + self.config.get( "tab" ) + "): ", data );
+            console.log( "data: ", data );
             // Initialize the components activeAccessorData structure
             _.each( self.components, function( component ) {
                 component.params.activeAccessorData = {};
@@ -309,19 +309,19 @@ define([
         renderSVG: function () {
             var self = this;
             var translate = self.params.xRange[0] - self.params.marginInner;
-            var svgs = d3.select(self.$el.get(0)).selectAll("svg").data([self.id]);
-            var svg = svgs.enter().append("svg").attr("id", function ( d ) { return d; } );
-            svg.append("g")
-                .attr("class", "axis x-axis")
-                .attr("transform", "translate(0," + ( self.params.yRange[1] - self.params.marginInner ) + ")");
+            var svgs = d3.select( self.el ).select( "svg" );
+            if( svgs.empty() ) {
+                d3.select( self.el ).append( "svg" )
+                    .attr( "id", self.id )
+                    .append( "g" )
+                        .attr( "class", "axis x-axis" )
+                        .attr( "transform", "translate(0," + ( self.params.yRange[1] - self.params.marginInner ) + ")" );
+            }
             // Handle Y axis
-            _.each( self.params.yAxisInfoArray, function( ai ) {
-                console.log( "yAxisInfoArray name: " + ai.name );
+            var svgYAxis = self.svgSelection().selectAll( ".axis.y-axis" ).data( self.params.yAxisInfoArray, function( d ) {
+                return d.name;
             });
-            var svgYAxis = self.svgSelection().selectAll( ".axis.y-axis" ).data( self.params.yAxisInfoArray, function( yAxisInfo ) {
-                return yAxisInfo ? yAxisInfo.name : this.id;
-            });
-            svgYAxis.exit().remove();
+            svgYAxis.exit().remove()
             svgYAxis.enter()
                 .append( "g" )
                 .attr( "class", function( d ) { return "axis y-axis " + d.name + "-axis"; } )
@@ -329,7 +329,7 @@ define([
                 .attr("transform", "translate(" + translate + ",0)");
             // Handle component groups
             var svgComponentGroups = self.svgSelection().selectAll( ".component-group" ).data( self.components, function( c ) {
-                return _.isObject(c) ? c.getName(): this.id;
+                return c.getName();
             });
             svgComponentGroups.enter().append( "g" )
                 .attr( "class", function( component ) {
@@ -348,10 +348,12 @@ define([
                 .attr("height", self.params.chartHeight);
         },
 
+        /*
         svgSelection: function () {
             var self = this;
             return d3.select(self.$el.get(0)).select("svg#" + self.id);
         },
+        */
 
         getTooltipConfig: function(dataItem) {
             var self = this,
@@ -500,23 +502,26 @@ define([
             this.render();
         },
 
+        actualRender: function () {
+            var self = this;
+            console.log( "CompositeView render start." );
+            self.updateChildComponents();
+            self.resetParams();
+            self.calculateActiveAccessorData();
+            self.calculateDimmensions();
+            self.calculateScales();
+            self.renderSVG();
+            self.renderAxis();
+            self.renderData();
+            self.startEventListeners();
+            console.log( "CompositeView render end: ", self );
+            self.eventObject.trigger( "rendered" );
+        },
+
         render: function () {
             var self = this;
             if( self.config ) {
-                _.defer(function () {
-                    console.log( "CompositeView render start." );
-                    self.updateChildComponents();
-                    self.resetParams();
-                    self.calculateActiveAccessorData();
-                    self.calculateDimmensions();
-                    self.calculateScales();
-                    self.renderSVG();
-                    self.renderAxis();
-                    self.renderData();
-                    self.startEventListeners();
-                    console.log( "CompositeView render end: ", self );
-                    self.eventObject.trigger( "rendered" );
-                });
+                self.debouncedRenderFunction();
             }
             return self;
         }

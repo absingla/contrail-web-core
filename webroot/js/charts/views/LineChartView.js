@@ -7,8 +7,9 @@ define([
     "underscore",
     "backbone",
     "d3-v4",
-    "core-basedir/js/charts/views/DataView"
-], function ($, _, Backbone, d3, DataView) {
+    "core-basedir/js/charts/views/DataView",
+    "chart-utils"
+], function ($, _, Backbone, d3, DataView, chartUtils) {
 
     /**
     * This is the child view for CompositeYChartView.
@@ -125,7 +126,9 @@ define([
                     })
                     .y( function ( d ) {
                         return yScale( d[key] );
-                    });
+                    })
+                    //.curve( chartUtils.interpolateSankey );
+                    .curve( d3.curveCatmullRom.alpha(0.5) );
                 linePathData.push( key );
             });
             console.log("Rendering data in LineChartView: ", data, self.params, linePathData, self.getName() );

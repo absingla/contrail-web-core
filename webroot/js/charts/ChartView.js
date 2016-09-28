@@ -32,6 +32,7 @@ define([
 ) {
     var ChartView = ContrailView.extend({
         render: function () {
+            console.log( "ChartView render." );
             var self = this,
                 viewConfig = self.attributes.viewConfig,
                 selector = $(self.$el),
@@ -48,6 +49,7 @@ define([
                 self.chartDataModel = new DataModel( {dataParser: self.chartConfig.dataParser} );
                 self.updateChartDataStatus();
                 self.model.onAllRequestsComplete.subscribe(function () {
+                    console.log( "onAllRequestsComplete" );
                     self.updateChartDataModel();
                     self.renderChart(selector);
                 });
@@ -56,7 +58,7 @@ define([
                         self.updateChartDataModel();
                     });
                 }
-                //self.renderChart(selector);
+                self.renderChart(selector);
             }
         },
 

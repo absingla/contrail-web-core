@@ -42,7 +42,8 @@ define(["jquery", "underscore", "backbone", "d3-v4"],
             */
             svgSelection: function () {
                 var self = this;
-                return d3.select(self.$el.get(0)).select("svg#" + self.id);
+                //return d3.select(self.$el.get(0)).select("svg#" + self.id);
+                return d3.select( self.el ).select( "svg#" + self.id );
             }
         });
 

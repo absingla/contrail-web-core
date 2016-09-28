@@ -87,7 +87,9 @@ define([
             var found = false,
                 _showOnceMessageIds = [];
             //Add unique ID to message
-            messageObj.id = "message-" + cowu.generateUUID();
+            //messageObj.id = "message-" + cowu.generateUUID();
+            var now = new Date();
+            messageObj.id = "message-" + now.getTime();
 
             if (this.params.messages.length > 0) {
                 _.each(this.params.messages, function (msgObj) {

@@ -114,15 +114,28 @@ define([
         shapeEditFunctions: { circle: "shapeEditCircle" },
         
         shapeEnterCircle: function( d, selection ) {
+            var self = this;
             selection.append( "circle" )
                 .attr( "class", d.className )
                 .attr( "cx", d.x )
                 .attr( "cy", d.y )
-                .attr( "r", 0 );
+                .attr( "r", 0 )
+            .on( "mouseover", function( d ) {
+                var pos = $(this).offset();
+                self.eventObject.trigger( "mouseover", d.data, pos.left, pos.top );
+                d3.select(this).classed( "active", true );
+                //selection.classed( "active", true );
+            })
+            .on( "mouseout", function( d ) {
+                var pos = $(this).offset();
+                self.eventObject.trigger( "mouseout", d.data, pos.left, pos.top );
+                d3.select(this).classed( "active", false );
+                //selection.classed( "active", false );
+            });
         },
 
         shapeEditCircle: function( d, selection ) {
-            selection
+            selection.transition().ease( d3.easeLinear ).duration( 300 )
                 .attr( "cx", d.x )
                 .attr( "cy", d.y )
                 .attr( "r", d.r );
@@ -158,11 +171,12 @@ define([
             var svg = self.svgSelection();
             var svgBubbles = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bubble" ).data( flatData, function( d ) { return d.id; } );
             svgBubbles.enter()
-                .each( function( d ) {
-                    self[self.shapeEnterFunctions[d.shape]]( d, d3.select( this ) );
+                .each( function( d, i, selection ) {
+                    _.bind( self[self.shapeEnterFunctions[d.shape]], self )( d, d3.select( this ) );
                 });
+            //svgBubbles.enter().call( function( selection, d ) { console.log( "d: ", d ); self[self.shapeEnterFunctions[d.shape]]( d, d3.select( this ) ); }, function( d ) { return d; } );
             svgBubbles = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bubble" ).data( flatData, function( d ) { return d.id; } );
-            svgBubbles.transition().ease( d3.easeLinear ).duration( self.params.duration )
+            svgBubbles
             /*
                 .attr( "cx", function( d ) { return d.x; } )
                 .attr( "cy", function( d ) { return d.y; } )
