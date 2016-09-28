@@ -7,7 +7,29 @@ var utils = require("./utils.js");
 var DEFAULT_RESPONSE_CODE = 200,
     DEFAULT_HITS = 10,
     DEFAULT_RESPONSE_DATA = "";
-
+/**
+ * Register set of routes with the instance of nock.
+ * @param nock  {Nock instance}
+ * @param domain {domain name used in nock route}
+ * @param featureName {Feature repo name used in path calculation}
+ * @param routesConfig {config Object with mockDataFiles and routes}
+ * mockDataFiles = array of mockDataFile paths with key of the file used in route mock data definition.
+ * routes = array of route objects
+ * route = {
+ *      method: //HTTP method. GET/POST
+ *      hits: // Number of times the url will send a response.
+ *      url: // url string to match
+ *      urlMatch: // string to generate a RegExp match
+ *      urlRegexp: // a RegExp made toString()
+ *      response: {
+ *         data: // data payload to be used while responding.
+ *               // define of the form mockDataFileKey.mockDataAttr
+ *               // file key must be defined in the mockDataFiles.
+ *         code: // response code to be sent
+ *     }
+ * }
+ * @param callback {function to be executed after completion}
+ */
 function register(nock, domain, featureName, routesConfig, callback) {
     var PATH = "", error = undefined;
 
@@ -71,6 +93,7 @@ function register(nock, domain, featureName, routesConfig, callback) {
             }
         }
     } catch (ex) {
+        console.log("Nock registration Exception!!");
         clearAllRoutes(nock);
         error = ex;
     } finally {
@@ -78,6 +101,10 @@ function register(nock, domain, featureName, routesConfig, callback) {
     }
 }
 
+/**
+ * Removes all the route configurations from the nock instance.
+ * @param nock
+ */
 function clearAllRoutes(nock) {
     nock.cleanAll();
 }

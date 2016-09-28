@@ -41,7 +41,7 @@ app.use(function (req, res, next) {
  * API target to register the URL's in test server.
  * Currently we are using nock router.
  */
-app.post("/api/register", function (req, res) {
+app.post("/routes/register", function (req, res) {
     // var mockDataConfigFile = req.body.mockDataConfigFile;
     var routesConfig = req.body.routesConfig;
     var featureName = req.body.featureName;
@@ -62,7 +62,7 @@ app.post("/api/register", function (req, res) {
 /**
  * API to clear all the existing routes.
  */
-app.post("/api/clear-all-routes", function (req, res) {
+app.post("/routes/clear-all", function (req, res) {
     console.log("Removing Handlers !");
     nockRouter.clearAllRoutes(nock);
     res.status(200).send();

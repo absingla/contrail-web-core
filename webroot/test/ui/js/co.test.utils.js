@@ -393,10 +393,9 @@ define([
     this.registerTestServerRoutes = function(featureName, testServerConfig, registerDone) {
         var deferred = registerDone ? registerDone : $.Deferred();
         $.ajax({
-            url: 'http://localhost:9090/api/register',
-            type: 'post',
+            url: 'http://localhost:9090/routes/register',
+            type: 'POST',
             data: JSON.stringify({
-                // mockDataConfigFile: testServerConfig.mockDataConfigFile,
                 routesConfig: testServerConfig.getRoutesConfig(),
                 featureName : featureName
             }),
@@ -419,8 +418,8 @@ define([
         var deferred = $.Deferred();
 
         $.ajax({
-            url: 'http://localhost:9090/api/clear-all-routes',
-            type: 'post',
+            url: 'http://localhost:9090/routes/clear-all',
+            type: 'POST',
             data: '',
             headers: {
                 'Content-Type': 'application/json'
