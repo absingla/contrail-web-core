@@ -314,14 +314,6 @@ define([
          * Can be used by the child to perform any additional calculations.
          */
         calculateScales: function () {
-            var self = this;
-            var xValues = _.pluck( self.getData(), self.params.xAccessor );
-            var xValuesExtent = d3.extent( xValues );
-            var xRange = [self.params.xScale(xValuesExtent[0]), self.params.xScale(xValuesExtent[1])];
-            var bandWidth = (xRange[1] - xRange[0]) / xValues.length;
-            xRange[0] -= bandWidth / 2;
-            xRange[1] += bandWidth / 2;
-            self.params.bandScale = d3.scaleBand().domain( xValues ).range( xRange ).paddingInner( 0 ).paddingOuter( 0 );
         },
 
         /**
@@ -337,26 +329,32 @@ define([
 
             // Create a flat data structure
             var flatData = [];
-            var i;
             var numOfAccessors = _.keys( self.params.activeAccessorData ).length;
+            var xValues = _.pluck( self.getData(), self.params.xAccessor );
+            var xValuesExtent = d3.extent( xValues );
+            var xRange = [self.params.xScale(xValuesExtent[0]), self.params.xScale(xValuesExtent[1])];
+            var len = data.length - 1;
+            if( len == 0 ) {
+                len = 1;
+            }
+            var bandWidth = (0.95 * ((xRange[1] - xRange[0]) / len) - 1);
+            var bandWidthHalf = ( bandWidth / 2 );
             _.each( data, function( d ) {
-                i = 0;
                 var x = d[self.params.xAccessor];
                 var stackedY = yScale.domain()[0];
                 _.each( self.params.activeAccessorData, function( accessor, key ) {
                     var obj = {
                         id: x + "-" + key,
                         className: "bar bar-" + key,
-                        x: self.params.bandScale( x ),
+                        x: self.params.xScale( x ) - bandWidthHalf,
                         y: yScale( stackedY + d[key] ),
                         h: yScale.range()[0] - yScale( d[key] ),
-                        w: self.params.bandScale.bandwidth(),
+                        w: bandWidth,
                         color: self.getBarColor( accessor, key ),
                         data: d
                     };
                     stackedY += d[key];
                     flatData.push( obj );
-                    i++;
                 });
             });
             // Render the flat data structure

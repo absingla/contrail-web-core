@@ -204,6 +204,7 @@ define([
         },
 
         setDataAndRanges: function (range, manualRange) {
+            var self = this;
             var data = this.getParentData();
             var formatData = this.get("formatData");
             if (!manualRange) {
@@ -212,7 +213,21 @@ define([
             if (_.isFunction(formatData)) {
                 data = formatData(data, manualRange);
             }
-
+            // Filter data by manualRange.
+            data = _.filter( data, function( d ) {
+                var ok = true;
+                _.each( self.get( 'manualRange' ), function( range, key ) {
+                    if( !_.has( d, key ) ) {
+                        ok = false;
+                    }
+                    else {
+                        if( d[key] < range[0] || d[key] > range[1] ) {
+                            ok = false;
+                        }
+                    }
+                });
+                return ok;
+            });
             this.set({data: data, range: range, manualRange: manualRange});
         },
 

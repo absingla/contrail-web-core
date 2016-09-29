@@ -415,6 +415,7 @@ define([
             var referenceYScale = null;
             var yLabelX = 0;
             var yLabelTransform = "rotate(-90)";
+            console.log( "self.params.yAxisInfoArray: ", self.params.yAxisInfoArray );
             _.each( self.params.yAxisInfoArray, function( axisInfo ) {
                 var yLabelMargin = 12;
                 if( self.hasAxisConfig( axisInfo.name, 'labelMargin' ) ) {
@@ -451,20 +452,30 @@ define([
                 svg.select( ".axis.y-axis." + axisInfo.name + "-axis" ).call( axisInfo.yAxis );
                 // Y axis label
                 var yLabelData = [];
+                var i = 0;
+                // There will be one label per unique accessor label displayed on this axis.
                 _.each( axisInfo.accessors, function( key ) {
                     if( self.params.activeAccessorData[key].label ) {
-                        yLabelData.push( self.params.activeAccessorData[key].label );
+                        var foundYLabelData = _.findWhere( yLabelData, { label: self.params.activeAccessorData[key].label } );
+                        if( !foundYLabelData ) {
+                            var yLabelXDelta = 12 * i;
+                            if( axisInfo.position == "right" ) {
+                                yLabelXDelta = -yLabelXDelta;
+                            }
+                            yLabelData.push( { label: self.params.activeAccessorData[key].label, x: yLabelX + yLabelXDelta } );
+                            i++;
+                        }
                     }
                 });
-                var yAxisLabelSvg = self.svgSelection().select( ".axis.y-axis." + axisInfo.name + "-axis" ).selectAll( ".axis-label" ).data( yLabelData );
+                var yAxisLabelSvg = self.svgSelection().select( ".axis.y-axis." + axisInfo.name + "-axis" ).selectAll( ".axis-label" ).data( yLabelData, function( d ) { return d.label; } );
                 yAxisLabelSvg.enter()
                     .append( "text" )
                     .attr( "class", "axis-label" )
                     .merge( yAxisLabelSvg )//.transition().ease( d3.easeLinear ).duration( self.params.duration )
                     //.attr( "x", yLabelX )
                     //.attr( "y", self.params.yRange[1] + (self.params.yRange[0] - self.params.yRange[1]) / 2 )
-                    .attr( "transform", "translate(" + yLabelX + "," + (self.params.yRange[1] + (self.params.yRange[0] - self.params.yRange[1]) / 2) + ") " + yLabelTransform )
-                    .text( function( d ) { return d; } );
+                    .attr( "transform", function( d ) { return "translate(" + d.x + "," + (self.params.yRange[1] + (self.params.yRange[0] - self.params.yRange[1]) / 2) + ") " + yLabelTransform; } )
+                    .text( function( d ) { return d.label; } );
                 yAxisLabelSvg.exit().remove();
             });
         },

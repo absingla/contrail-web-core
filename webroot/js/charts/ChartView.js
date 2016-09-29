@@ -231,22 +231,11 @@ define([
                 chartHeight: 200,
                 //chartWidth: chartWidth,
                 xAccessor: "x",
+                curve: d3.curveCatmullRom.alpha( 0.5 ),
                 accessorData: {}
             },
             controlPanel: {
                 enable: false,
-                /*
-                top: false,
-                right: {
-                    custom: {
-                        filterY: {
-                            enable: true
-                        }
-                    },
-                    expandedContainerWidth: 350,
-                    expandedContainerHeight: 280
-                }
-                */
             },
             mainChart: {
                 chartHeight: 270,
@@ -254,15 +243,12 @@ define([
                 //marginTop: 20,
                 //marginRight: 70,
                 //marginBottom: 50,
-                //marginLeft: 50,
-                //y1Label: "Y1 Axis",
+                //marginLeft: 70,
                 xLabel: "X Axis",
-                //y1LabelFormat: d3.format(","),
-                //xLabelFormat: d3.format(","),
                 xAccessor: "x",
                 xScale: undefined,
-                //forceX: [undefined, undefined],
-                //forceY: [undefined, undefined],
+                curve: d3.curveCatmullRom.alpha( 0.5 ),
+                //curve: d3.curveLinear,
                 accessorData: {}
             },
             message: {

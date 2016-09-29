@@ -93,11 +93,14 @@ define([
         },
 
         getTooltipData: function( data, xPos ) {
-            var self = this,
-                xBisector = d3.bisector(function(d) {return d[self.params.xAccessor];}).left,
-                xVal = self.params.xScale.invert(xPos),
-                index = xBisector(data, xVal, 1);
-
+            var self = this;
+            var xBisector = d3.bisector(function(d) {return d[self.params.xAccessor];}).left;
+            var xVal = self.params.xScale.invert( xPos );
+            //if( _.isDate( xVal ) ) {
+            //    xVal = xVal.getTime();
+            //}
+            var index = xBisector( data, xVal, 1 );
+            console.log( "index: ", index, xPos, xVal, data[index - 1] );
             var dataItem = xVal - data[index - 1][self.params.xAccessor] > data[index][self.params.xAccessor] - xVal ? data[index] : data[index - 1];
             return dataItem;
         },
@@ -128,20 +131,21 @@ define([
                         return yScale( d[key] );
                     })
                     //.curve( chartUtils.interpolateSankey );
-                    .curve( d3.curveCatmullRom.alpha(0.5) );
-                linePathData.push( key );
+                    .curve( self.params.curve );
+                linePathData.push( { key: key, data: data } );
             });
             console.log("Rendering data in LineChartView: ", data, self.params, linePathData, self.getName() );
 
-            var svgLines = svg.selectAll( ".line" ).data( linePathData, function( d ) { return d; } );
+            var svgLines = svg.selectAll( ".line" ).data( linePathData, function( d ) { return d.key; } );
             svgLines.enter().append( "path" )
-                .attr( "class", function( d ) { return "line line-" + d; } )
+                .attr( "class", function( d ) { return "line line-" + d.key; } )
                 .attr( "d", function( d ) { return zeroLine( data ) } )
                 .on( "mouseover", function( d ) {
                     var pos = d3.mouse(this);//$(this).offset();
                     var offset = $(this).offset();
-                    var dataItem = self.getTooltipData( data, pos[0] );
-                    self.eventObject.trigger( "mouseover", dataItem, offset.left + pos[0], offset.top );
+                    console.log( pos );
+                    var dataItem = self.getTooltipData( d.data, pos[0] );
+                    self.eventObject.trigger( "mouseover", dataItem, offset.left + pos[0] - self.params.xScale.range()[0], offset.top );
                     d3.select( this ).classed( "active", true );
                 })
                 .on( "mouseout", function( d ) {
@@ -150,8 +154,8 @@ define([
                     d3.select( this ).classed( "active", false );
                 })
                 .merge( svgLines ).transition().ease( d3.easeLinear ).duration( self.params.duration )
-                .attr( "stroke", function( d ) { return self.getLineColor( d ); } )
-                .attr( "d", function( d ) { return lines[d]( data ) } );
+                .attr( "stroke", function( d ) { return self.getLineColor( d.key ); } )
+                .attr( "d", function( d ) { return lines[d.key]( data ) } );
             svgLines.exit().remove();
 
             /*

@@ -153,7 +153,7 @@ define([
                 self.isModelChanged = false;
             }
             self.renderBrush();
-            self.renderPageLinks();
+            //self.renderPageLinks();
         },
 
         /**
