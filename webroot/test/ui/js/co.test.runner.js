@@ -271,6 +271,7 @@ define([
             }
         });
 
+        //Register the routes in test server. pass the setupDone promise.
         cotu.registerTestServerRoutes(pageTestConfig.featureName, pageTestConfig.testServerConfig, setupDone);
     };
     

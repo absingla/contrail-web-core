@@ -324,7 +324,13 @@ function testAppInit(testAppConfig) {
                         require(['underscore'], function (_) {
                             _.noConflict();
                         });
-                        require(['layout-handler', 'content-handler', 'help-handler', 'contrail-load', 'lodash'], function (LayoutHandler, ContentHandler, HelpHandler, ChartUtils, _) {
+                        require([
+                            'layout-handler',
+                            'content-handler',
+                            'help-handler',
+                            'contrail-load',
+                            'lodash'
+                        ], function (LayoutHandler, ContentHandler, HelpHandler, ChartUtils, _) {
                             window._ = _;
                             contentHandler = new ContentHandler();
                             initBackboneValidation();
@@ -347,9 +353,9 @@ function testAppInit(testAppConfig) {
                             for (var i = 0; i < cssList.length; i++) {
                                 $("body").append(cssList[i]);
                             }
-                            requirejs(['co-test-runner', 'contrail-layout'], function (cotr) {
-                                //TODO: Timeout is currently required to ensure menu is loaed i.e feature app is initialized
 
+                            //Start Test runner.
+                            requirejs(['co-test-runner'], function (cotr) {
                                 var logAllTestFiles = "Test files: ";
                                 for (var i = 0; i < allTestFiles.length; i++) {
                                     logAllTestFiles += "\n";
@@ -360,10 +366,17 @@ function testAppInit(testAppConfig) {
                                 var testFilesIndex = 0,
                                     loadTestRunner = true,
                                     testFile = allTestFiles[testFilesIndex],
-                                    defObj = $.Deferred();
+                                    karmaTestPromise = $.Deferred();
 
-                                function loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner) {
-                                    var startKarmaCB = window.__karma__.start(defObj, loadTestRunner);
+                                /**
+                                 * Load a single test file and start Karma.
+                                 * @param {String} testFile require path of the test file
+                                 * @param {Object} testPromise promise to be resolved by Karma upon completion of test.
+                                 * @param {Boolean} loadTestRunner flag to Karma initialization
+                                 */
+                                function loadSingleFileAndStartKarma(testFile, testPromise, loadTestRunner) {
+
+                                    var startKarmaCB = window.__karma__.start(testPromise, loadTestRunner);
 
                                     //Clear Cookies if any exist
                                     if (document.cookie != '') {
@@ -385,7 +398,7 @@ function testAppInit(testAppConfig) {
                                         if (pageTestConfig) {
 
                                             pageTestConfig.featureName = testAppConfig.featureName;
-                                            
+
                                             testSetupDefObj.done(function() {
                                                 startKarmaCB();
                                             });
@@ -397,30 +410,44 @@ function testAppInit(testAppConfig) {
                                         } else { // For backward compatibility.
                                             startKarmaCB();
                                         }
-
                                     });
-
                                 }
 
+                                /**
+                                 * Load next test file Or start Karma coverage.
+                                 * cleanup current test run.
+                                 *      - Clear registered routes from the test server
+                                 *      - Pause QUnit
+                                 *      - remove the current test file from require
+                                 * Bump the testFilesIndex. Upon route clearing proceed with next test or coverage.
+                                 */
                                 function loadNextFileOrStartCoverage() {
-                                    requirejs.undef(allTestFiles[testFilesIndex]);
-                                    console.log("Execution complete. Unloaded test file: " + allTestFiles[testFilesIndex].split('/').pop());
-                                    console.log("----------------------------------------------------------------------------");
-                                    window.QUnit.config.current = {semaphore: 1};
-                                    window.QUnit.config.blocking = true;
-                                    //window.QUnit.stop();
-                                    testFilesIndex += 1;
-                                    loadTestRunner = false;
-
                                     //Un-register the routes from test server. when promise is resolved, proceed with test case.
                                     var clearRoutesDefObj = cotu.clearTestServerRoutes();
                                     clearRoutesDefObj.always(function(){
+                                        //Manually stop QUnit
+                                        window.QUnit.config.current = {semaphore: 1};
+                                        window.QUnit.config.blocking = true;
+                                        //window.QUnit.stop();
+
+                                        //Remove the test file from requirejs so Karma won't load the file again.
+                                        requirejs.undef(allTestFiles[testFilesIndex]);
+                                        console.log("Execution complete. Unloaded test file: " + allTestFiles[testFilesIndex].split('/').pop());
+                                        console.log("----------------------------------------------------------------------------");
+
+                                        testFilesIndex += 1;
+                                        loadTestRunner = false;
+
                                         if (testFilesIndex < allTestFiles.length) {
                                             //console.log("Initializing QUnit and proceeding to next test.");
                                             window.QUnit.init();
-                                            var defObj = $.Deferred();
-                                            defObj.done(loadNextFileOrStartCoverage);
-                                            loadSingleFileAndStartKarma(allTestFiles[testFilesIndex], defObj, loadTestRunner);
+
+                                            //A promise to be passed to karma when resolved; loop through this function
+                                            var karmaTestPromise = $.Deferred();
+                                            karmaTestPromise.done(loadNextFileOrStartCoverage);
+
+                                            //Start the test execution with the current test file.
+                                            loadSingleFileAndStartKarma(allTestFiles[testFilesIndex], karmaTestPromise, loadTestRunner);
                                         }
                                         else if (testFilesIndex == allTestFiles.length) {
                                             console.log("Completed; Starting Coverage.")
@@ -431,10 +458,11 @@ function testAppInit(testAppConfig) {
                                     });
                                 };
 
-                                defObj.done(loadNextFileOrStartCoverage);
+                                //When Karma resolves the promise; proceed with the next file or coverage.
+                                karmaTestPromise.done(loadNextFileOrStartCoverage);
 
-                                loadSingleFileAndStartKarma(testFile, defObj, loadTestRunner);
-
+                                //Initial loading of the test file.
+                                loadSingleFileAndStartKarma(testFile, karmaTestPromise, loadTestRunner);
                             });
                         });
                     });

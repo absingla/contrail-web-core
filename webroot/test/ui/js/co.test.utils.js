@@ -403,6 +403,7 @@ define([
                 'Content-Type': 'application/json'
             },
             success: function (data) {
+                console.log("Successful test page routes registration.");
                 deferred.resolve();
             },
             error: function (error) {
@@ -414,7 +415,6 @@ define([
     };
 
     this.clearTestServerRoutes = function () {
-        console.log("Removing handlers");
         var deferred = $.Deferred();
 
         $.ajax({
