@@ -13,7 +13,8 @@ define([
         initialize: function (options) {
             this.config = options.config;
             this.resetParams();
-            this.template = contrail.getTemplate4Id("coCharts-tooltip");
+            this.params.show = 0;
+            this.template = contrail.getTemplate4Id( "coCharts-tooltip" );
         },
 
         registerTriggerEvent: function (eventObject, showEventType, hideEventType) {
@@ -21,48 +22,36 @@ define([
             this.listenTo(eventObject, hideEventType, this.hide);
         },
 
-        generateTooltipHTML: function(tooltipConfig) {
-            var tooltipElementTemplate = contrail.getTemplate4Id(cowc.TMPL_ELEMENT_TOOLTIP),
-                tooltipElementTitleTemplate = contrail.getTemplate4Id(cowc.TMPL_ELEMENT_TOOLTIP_TITLE),
-                tooltipElementContentTemplate = contrail.getTemplate4Id(cowc.TMPL_ELEMENT_TOOLTIP_CONTENT),
+        generateTooltipHTML: function( tooltipConfig ) {
+            var tooltipElementTemplate = contrail.getTemplate4Id( cowc.TMPL_ELEMENT_TOOLTIP ),
+                tooltipElementTitleTemplate = contrail.getTemplate4Id( cowc.TMPL_ELEMENT_TOOLTIP_TITLE ),
+                tooltipElementContentTemplate = contrail.getTemplate4Id( cowc.TMPL_ELEMENT_TOOLTIP_CONTENT ),
                 tooltipElementObj, tooltipElementTitleObj, tooltipElementContentObj;
 
-            tooltipConfig = $.extend(true, {}, cowc.DEFAULT_CONFIG_ELEMENT_TOOLTIP, tooltipConfig);
+            tooltipConfig = $.extend( true, {}, cowc.DEFAULT_CONFIG_ELEMENT_TOOLTIP, tooltipConfig );
 
-            tooltipElementObj = $(tooltipElementTemplate(tooltipConfig));
-            tooltipElementTitleObj = $(tooltipElementTitleTemplate(tooltipConfig.title));
-            tooltipElementContentObj = $(tooltipElementContentTemplate(tooltipConfig.content));
+            tooltipElementObj = $( tooltipElementTemplate( tooltipConfig ) );
+            tooltipElementTitleObj = $( tooltipElementTitleTemplate( tooltipConfig.title ) );
+            tooltipElementContentObj = $( tooltipElementContentTemplate( tooltipConfig.content ) );
 
-            tooltipElementObj.find(".popover-title").append(tooltipElementTitleObj);
-            tooltipElementObj.find(".popover-content").append(tooltipElementContentObj);
+            tooltipElementObj.find( ".popover-content" ).append( tooltipElementContentObj );
+            if( _.has( tooltipConfig, 'title' ) && tooltipConfig.title.name ) {
+                tooltipElementObj.find( ".popover-title" ).append( tooltipElementTitleObj );
+            }
+            else {
+                tooltipElementObj.find( ".popover-title" ).addClass( "hide" );
+                tooltipElementObj.find( ".popover-remove" ).addClass( "hide" );
+            }
 
             return tooltipElementObj;
         },
 
-        show: function (tooltipData, tooltipConfig, offsetLeft, offsetTop) {
+        show: function( tooltipData, tooltipConfig, offsetLeft, offsetTop ) {
             var self = this;
-            var tooltipElementObj = this.generateTooltipHTML(tooltipConfig);
-            var tooltipWidth = tooltipElementObj.width(),
-                tooltipHeight = tooltipElementObj.height(),
-                windowWidth = $(document).width(),
-                tooltipPositionTop = 0,
-                tooltipPositionLeft = offsetLeft;
+            self.params.show++;
+            var tooltipElementObj = self.generateTooltipHTML( tooltipConfig );
 
-            if (offsetTop > tooltipHeight / 2) {
-                tooltipPositionTop = offsetTop - tooltipHeight / 2;
-            }
-
-            if ((windowWidth - offsetLeft) < tooltipWidth) {
-                tooltipPositionLeft = offsetLeft - tooltipWidth - 10;
-            } else {
-                tooltipPositionLeft += 20;
-            }
-
-            $(tooltipElementObj).css({
-                top: tooltipPositionTop,
-                left: tooltipPositionLeft
-            });
-
+            // TODO: This should go to view events
             $(tooltipElementObj).find(".popover-tooltip-footer").find(".btn")
                 .off("click")
                 .on("click", function () {
@@ -71,20 +60,45 @@ define([
                     self.hide();
                     actionCallback(tooltipData);
                 });
-
             $(tooltipElementObj).find(".popover-remove")
                 .off("click")
                 .on("click", function (e) {
                     self.hide();
                 });
 
-            $("body").append(this.$el);
-            this.$el.html(tooltipElementObj);
+            $( "body" ).append( this.$el );
+            this.$el.html( tooltipElementObj );
             this.$el.show();
+
+            // Tooltip dimmensions will be available after render.
+            var tooltipWidth = tooltipElementObj.width();
+            var tooltipHeight = tooltipElementObj.height();
+            var windowWidth = $( document ).width();
+            var tooltipPositionTop = 0;
+            var tooltipPositionLeft = offsetLeft;
+            if( offsetTop > tooltipHeight / 2 ) {
+                tooltipPositionTop = offsetTop - tooltipHeight / 2;
+            }
+            if( (windowWidth - offsetLeft - 25) < tooltipWidth ) {
+                tooltipPositionLeft = offsetLeft - tooltipWidth - 10;
+            }
+            else {
+                tooltipPositionLeft += 20;
+            }
+            $(tooltipElementObj).css({
+                top: tooltipPositionTop,
+                left: tooltipPositionLeft
+            });
         },
 
-        hide: function (d, x, y) {
-            this.$el.hide();
+        hide: function( d, x, y ) {
+            var self = this;
+            self.params.show--;
+            _.delay( function() {
+                if( self.params.show <= 0 ) {
+                    self.$el.hide();
+                }
+            }, 1000 );
         },
 
         render: function () {

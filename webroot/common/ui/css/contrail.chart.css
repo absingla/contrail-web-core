@@ -205,6 +205,10 @@
 .control-panel-legend-group-item i {
     cursor: default;
 }
+.control-panel-filter-item-select.accessor-data-select {
+    position: relative;
+    float: right;
+}
 .chartContainer.value {
     border-bottom:1px solid #888;
     font-size:24px;

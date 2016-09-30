@@ -26,10 +26,6 @@ define([
             this.axisName = options.axisName;
 
             // The child's params are reset by parent.
-
-            // TODO: should child react to model and config changes?
-            //this.listenTo(this.model, "change", this.render);
-            //this.listenTo(this.config, "change", this.render);
             this.eventObject = _.extend({}, Backbone.Events);
         },
 
@@ -61,7 +57,6 @@ define([
                 domains[self.axisName] = domains[self.axisName].concat( domain );
             });
             domains[self.axisName] = d3.extent( domains[self.axisName] );
-            console.log( "LineChartView domains for " + self.getName() + ": ", domains );
             self.params.handledAxisNames = _.keys( domains );
             return domains;
         },
@@ -100,7 +95,6 @@ define([
             //    xVal = xVal.getTime();
             //}
             var index = xBisector( data, xVal, 1 );
-            console.log( "index: ", index, xPos, xVal, data[index - 1] );
             var dataItem = xVal - data[index - 1][self.params.xAccessor] > data[index][self.params.xAccessor] - xVal ? data[index] : data[index - 1];
             return dataItem;
         },
@@ -140,10 +134,10 @@ define([
             svgLines.enter().append( "path" )
                 .attr( "class", function( d ) { return "line line-" + d.key; } )
                 .attr( "d", function( d ) { return zeroLine( data ) } )
+                .merge( svgLines )
                 .on( "mouseover", function( d ) {
                     var pos = d3.mouse(this);//$(this).offset();
                     var offset = $(this).offset();
-                    console.log( pos );
                     var dataItem = self.getTooltipData( d.data, pos[0] );
                     self.eventObject.trigger( "mouseover", dataItem, offset.left + pos[0] - self.params.xScale.range()[0], offset.top );
                     d3.select( this ).classed( "active", true );
@@ -153,59 +147,10 @@ define([
                     self.eventObject.trigger( "mouseout", d, pos.left, pos.top );
                     d3.select( this ).classed( "active", false );
                 })
-                .merge( svgLines ).transition().ease( d3.easeLinear ).duration( self.params.duration )
+                .transition().ease( d3.easeLinear ).duration( self.params.duration )
                 .attr( "stroke", function( d ) { return self.getLineColor( d.key ); } )
                 .attr( "d", function( d ) { return lines[d.key]( data ) } );
             svgLines.exit().remove();
-
-            /*
-            function renderLine(axisLine, data, accessorList) {
-                var lines = [];
-                _.each(accessorList, function (accessor, index) {
-                    // Bars for each accessor will be grouped under a bar-group.
-                    index += 1;
-
-                    var line = d3.line()
-                        .x(function (d) {
-                            return self.params.xScale(d[self.params.xAccessor]);
-                        })
-                        .y(function (d, i) {
-                            return self.getLineY(accessor, d, i);
-                        });
-                    lines.push(line);
-
-                    axisLine.append("g")
-                        .attr("class", "line-group-" + index)
-                        .append("path")
-                        .attr("class", "line")
-                        .attr("stroke", function(d, i) { return self.getLineColor(accessor);})
-                        .on("mouseover", function( data ) {
-                            var pos = d3.mouse(this);//$(this).offset();
-                            var offset = $(this).offset();
-                            var dataItem = self.getTooltipData(data, pos[0]);
-                            var tooltipConfig = self.getTooltipConfig(dataItem);
-                            self.eventObject.trigger("mouseover", dataItem, tooltipConfig, offset.left + pos[0], offset.top);
-                            d3.select(this).classed("active", true);
-                        })
-                        .on("mouseout", function( d ) {
-                            var pos = $(this).offset();
-                            self.eventObject.trigger("mouseout", d, pos.left, pos.top);
-                            d3.select(this).classed("active", false);
-                        });
-
-                    var svgLine = axisLine.select(".line-group-" + index).selectAll(".line").datum(data);
-                    svgLine.attr("d", line);
-
-                });
-            }
-            console.log("Rendering data in (" + self.id + "): ", data, self.params);
-            if (self.params._y1Chart === "line") {
-                renderLine(svg.select(".y1-lines"), data, self.params._y1AccessorList);
-            }
-            if (self.params._y2Chart === "line") {
-                renderLine(svg.select(".y2-lines"), data, self.params._y2AccessorList);
-            }
-            */
         },
 
         render: function () {

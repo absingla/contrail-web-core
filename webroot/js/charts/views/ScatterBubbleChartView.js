@@ -75,7 +75,6 @@ define([
             _.each( domains, function( domain, key ) {
                 domains[key] = d3.extent( domain );
             });
-            console.log( "ScatterBubbleChartView domains for " + self.getName() + ": ", domains );
             self.params.handledAxisNames = _.keys( domains );
             return domains;
         },
@@ -124,13 +123,11 @@ define([
                 var pos = $(this).offset();
                 self.eventObject.trigger( "mouseover", d.data, pos.left, pos.top );
                 d3.select(this).classed( "active", true );
-                //selection.classed( "active", true );
             })
             .on( "mouseout", function( d ) {
                 var pos = $(this).offset();
                 self.eventObject.trigger( "mouseout", d.data, pos.left, pos.top );
                 d3.select(this).classed( "active", false );
-                //selection.classed( "active", false );
             });
         },
 
@@ -174,60 +171,11 @@ define([
                 .each( function( d, i, selection ) {
                     _.bind( self[self.shapeEnterFunctions[d.shape]], self )( d, d3.select( this ) );
                 });
-            //svgBubbles.enter().call( function( selection, d ) { console.log( "d: ", d ); self[self.shapeEnterFunctions[d.shape]]( d, d3.select( this ) ); }, function( d ) { return d; } );
             svgBubbles = self.svgSelection().select( "g.component-" + self.getName() ).selectAll( ".bubble" ).data( flatData, function( d ) { return d.id; } );
             svgBubbles
-            /*
-                .attr( "cx", function( d ) { return d.x; } )
-                .attr( "cy", function( d ) { return d.y; } )
-                .attr( "r", function( d ) { return d.r; } );
-            */
                 .each( function( d ) {
                     self[self.shapeEditFunctions[d.shape]]( d, d3.select( this ) );
                 });
-            /*
-            var svgBubblesGroupEnter = svgBubbles.enter()
-                .append( "g" )
-                .attr( "class", "bubble-group" );
-            _.each( self.params.usableAccessorData, function( accessor, key ) {
-                var scaleName = "y" + accessor.y + "Scale";
-                svgBubblesGroupEnter.append("circle")
-                    .attr( "class", "bubble bubble-" + key )
-                    .attr( "cx", function( d ) {
-                        return self.params.xScale(d[self.params.xAccessor]);
-                    })
-                    .attr( "cy", function( d ) {
-                        return self.params[scaleName]( d[key] );
-                    })
-                    .attr( "r", 0 )
-                    .on( "mouseover", function( d ) {
-                        var pos = $(this).offset();
-                        var tooltipConfig = self.getTooltipConfig(d);
-                        self.eventObject.trigger("mouseover", d, tooltipConfig, pos.left, pos.top);
-                        d3.select(this).classed("active", true);
-                    })
-                    .on( "mouseout", function( d ) {
-                        var pos = $(this).offset();
-                        self.eventObject.trigger("mouseout", d, pos.left, pos.top);
-                        d3.select(this).classed("active", false);
-                    });
-            });
-            var svgBubblesEdit = svgBubblesGroupEnter.merge( svgBubbles ).transition().ease( d3.easeLinear ).duration( self.params.duration );
-            _.each( self.params.usableAccessorData, function( accessor, key ) {
-                var scaleYName = "y" + accessor.y + "Scale";
-                var scaleRName = "r" + accessor.shape + "Scale";
-                svgBubblesEdit.select( ".bubble-" + key )
-                    .attr( "cx", function( d ) {
-                        return self.params.xScale( d[self.params.xAccessor] );
-                    })
-                    .attr( "cy", function( d ) {
-                        return self.params[scaleYName]( d[key] );
-                    })
-                    .attr( "r", function( d ) {
-                        return self.params[scaleRName]( d[accessor.sizeAccessor] );
-                    });
-            });
-            */
             svgBubbles.exit().transition().ease( d3.easeLinear ).duration( self.params.duration )
                 .attr( "r", 0 )
                 .remove();

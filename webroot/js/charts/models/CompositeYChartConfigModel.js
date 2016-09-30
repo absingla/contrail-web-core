@@ -54,9 +54,9 @@ define([
             //Tooltip content & config specific callback
             getTooltipTemplateConfig: function(data) {
                 var tooltipConfig = {
-                    title: {name: data.name || "Title", type: data.type || ""},
-                    content: {iconClass: false, info: []},
-                    dimension: {width: 250}
+                    title: { name: data.name || "", type: data.type || "" },
+                    content: { iconClass: false, info: [] },
+                    dimension: { width: 250 }
                 };
                 _.each(data, function(value, key) {
                     tooltipConfig.content.info.push({label: key, value: value});

@@ -1872,15 +1872,33 @@
 </script>
 
 <script type="text/x-handlebars-template" id="coCharts-control-panel-expanded-accessor-data-template">
-    <div class="control-panel-filter-body">
-        <div class="control-panel-filter-group margin-10">
-            <div class="control-panel-filter-group-items padding-5-0">
-                {{#each accessorData}}
-                    <div class="control-panel-filter-group-item padding-5-0 col-xs-12">
-                        <input type="checkbox" name="control-panel-filter" class="ace-input checkbox-circle accessor-data-checkbox" value="{{@key}}" {{#if enable}}checked{{/if}}/>
-                        <span class="ace-lbl checkbox-circle"> {{label}}</span>
-                    </div>
-                {{/each}}
+    <div class="control-panel-filter-container">
+        <div>
+            <p class="control-panel-filter-title">
+                <span class="pull-left control-panel-filter-title-icon"><i class="{{activeButton.iconClass}}"></i></span>
+                <span class="pull-left control-panel-filter-title-text">{{activeButton.title}}</span>
+                <span class="pull-right control-panel-filter-close"><i class="fa fa-remove"></i></span>
+            </p>
+        </div>
+        <div class="control-panel-filter-body">
+            <div class="control-panel-filter-group margin-10">
+                <div class="control-panel-filter-group-items padding-5-0">
+                    {{#each accessorData}}
+                        <div class="control-panel-filter-group-item padding-5-0 col-xs-8">
+                            <input type="checkbox" name="control-panel-filter" class="ace-input checkbox-circle accessor-data-checkbox" value="{{@key}}" {{#if enable}}checked{{/if}}/>
+                            <span class="ace-lbl checkbox-circle"> {{label}}</span>
+                        </div>
+                        {{#if possibleChartTypes}}
+                            <div class="control-panel-filter-group-item padding-5-0 col-xs-4">
+                                <select class="control-panel-filter-item-select accessor-data-select" name="{{@key}}">
+                                    {{#each possibleChartTypes}}
+                                        <option value="{{name}}" {{#IfCompare name ../chartType}}selected{{/IfCompare}}>{{label}}</option>
+                                    {{/each}}
+                                </select>
+                            </div>
+                        {{/if}}
+                    {{/each}}
+                </div>
             </div>
         </div>
     </div>

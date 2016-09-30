@@ -27,7 +27,6 @@ define([
             console.log( "CompositeYChartView initialize" );
 
             /// View params hold values from the config and computed values.
-            //self.resetParams();
             self.debouncedRenderFunction = _.bind( _.debounce( self.actualRender, 10 ), self );
             self.listenTo( self.model, "change", self.dataModelChanged );
             self.listenTo( self.config, "change", self.configModelChanged );
@@ -348,28 +347,21 @@ define([
                 .attr("height", self.params.chartHeight);
         },
 
-        /*
-        svgSelection: function () {
-            var self = this;
-            return d3.select(self.$el.get(0)).select("svg#" + self.id);
-        },
-        */
-
-        getTooltipConfig: function(dataItem) {
+        getTooltipConfig: function( dataItem ) {
             var self = this,
                 formattedData = {};
             _.each(dataItem, function(value, key) {
-                if (_.has(self.params.accessorData[key], "tooltip")) {
+                if( _.has(self.params.accessorData[key], "tooltip") ) {
                     var formattedKey = key,
                         formattedVal = value;
-                    if (_.has(self.params.accessorData[key].tooltip, "nameFormatter"))
-                        formattedKey = self.params.accessorData[key].tooltip.nameFormatter(key);
-                    if (_.has(self.params.accessorData[key].tooltip, "valueFormatter"))
-                        formattedVal = self.params.accessorData[key].tooltip.valueFormatter(value);
+                    if( _.has(self.params.accessorData[key].tooltip, "nameFormatter") )
+                        formattedKey = self.params.accessorData[key].tooltip.nameFormatter( key );
+                    if( _.has(self.params.accessorData[key].tooltip, "valueFormatter") )
+                        formattedVal = self.params.accessorData[key].tooltip.valueFormatter( value );
                     formattedData[formattedKey] = formattedVal;
                 }
             });
-            var tooltipConfig = self.params.getTooltipTemplateConfig(formattedData);
+            var tooltipConfig = self.params.getTooltipTemplateConfig( formattedData );
             return tooltipConfig;
         },
 
@@ -487,19 +479,19 @@ define([
             });
         },
 
-        onMouseOver: function(dataItem, x, y) {
+        onMouseOver: function( dataItem, x, y ) {
             var self = this;
-            self.eventObject.trigger("showTooltip", dataItem, self.getTooltipConfig(dataItem), x, y);
+            self.eventObject.trigger( "showTooltip", dataItem, self.getTooltipConfig(dataItem), x, y );
         },
 
-        onMouseOut: function(dataItem, x, y) {
+        onMouseOut: function( dataItem, x, y ) {
             var self = this;
-            self.eventObject.trigger("hideTooltip", dataItem, x, y);
+            self.eventObject.trigger( "hideTooltip", dataItem, x, y );
         },
 
         startEventListeners: function() {
             var self = this;
-            _.each(self.components, function(component) {
+            _.each( self.components, function( component ) {
                 self.listenTo( component.eventObject, "mouseover", self.onMouseOver );
                 self.listenTo( component.eventObject, "mouseout", self.onMouseOut );
             });
