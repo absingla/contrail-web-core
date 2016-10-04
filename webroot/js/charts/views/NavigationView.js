@@ -165,8 +165,13 @@ define([
             var x = self.params.xAccessor;
             if( !self.brush ) {
                 var svg = self.svgSelection();
+                var marginInner = self.params.marginInner;
+                var brushHandleHeight = 16;//self.params.yRange[0] - self.params.yRange[1];
+                var brushHandleCenter = (self.params.yRange[0] - self.params.yRange[1] + 2 * marginInner) / 2
                 self.brush = d3.brushX()
-                    .extent( [[self.params.xRange[0], self.params.yRange[1]], [self.params.xRange[1], self.params.yRange[0]]] )
+                    .extent( [
+                        [self.params.xRange[0] - marginInner, self.params.yRange[1] - marginInner],
+                        [self.params.xRange[1] + marginInner, self.params.yRange[0] + marginInner]] )
                     .handleSize( 10 )
                     .on( "brush", function () {
                         var dataWindow = d3.event.selection;
@@ -177,8 +182,33 @@ define([
                         self.config.set( { focusDomain: focusDomain }, { silent: true } );
                         self.focusDataProvider.setRangeFor( focusDomain );
                         self.eventObject.trigger( "windowChanged", xMin, xMax );
+
+                        var gHandles = svg.select( "g.brush" ).selectAll( ".handle--custom" );
+                        if( dataWindow ) {
+                            gHandles
+                                .classed( "hide", false )
+                                .attr( "transform", function( d, i ) { return "translate(" + dataWindow[i] + "," + brushHandleCenter + ") scale(1,2)"; } );
+                        }
+                        else {
+                            gHandles.classed( "hide", true );
+                        }
                     });
-                svg.append( "g" ).attr( "class", "brush" ).call( self.brush );
+                var gBrush = svg.append( "g" ).attr( "class", "brush" ).call( self.brush );
+
+                var handle = gBrush.selectAll( ".handle--custom" )
+                    .data( [{type: "w"}, {type: "e"}] )
+                    .enter().append( "path" )
+                    .attr( "class", "handle--custom hide" )
+                    .attr( "fill", "#666" )
+                    .attr( "fill-opacity", 0.75 )
+                    .attr( "stroke", "#444" )
+                    .attr( "stroke-width", 1 )
+                    .attr( "cursor", "ew-resize" )
+                    .attr( "d", d3.arc()
+                        .innerRadius( 0 )
+                        .outerRadius( brushHandleHeight / 2 )
+                        .startAngle( 0 )
+                        .endAngle( function(d, i) { return i ? Math.PI : -Math.PI; }) );
             }
         },
 

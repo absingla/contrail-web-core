@@ -52,7 +52,7 @@ define([
             xAccessor: "x",
 
             //Tooltip content & config specific callback
-            getTooltipTemplateConfig: function(data) {
+            getTooltipTemplateConfig: function( data ) {
                 var tooltipConfig = {
                     title: { name: data.name || "", type: data.type || "" },
                     content: { iconClass: false, info: [] },
@@ -62,7 +62,7 @@ define([
                     tooltipConfig.content.info.push({label: key, value: value});
                 });
                 return tooltipConfig;
-            },
+            }
         }
     });
 
