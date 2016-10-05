@@ -143,6 +143,21 @@
                      searchable: true,
                      groupDeleteable: true,
                  }
+                 advanceControls: [{
+                     type: "link",
+                     linkElementId: cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID,
+                     disabledLink: true,
+                     title: cowl.TITLE_DELETE_ALL_QUERY_QUEUE,
+                     iconClass: "fa fa-trash",
+                     onClick: function(event, gridContainer) {
+                         var gridCheckedRows = $(gridContainer).data("contrailGrid").getCheckedRows(),
+                             queryIds = $.map(gridCheckedRows, function(rowValue) {
+                                 return rowValue.queryReqObj.queryId;
+                             });
+
+                         showDeleteQueueModal(queryQueueView, queryQueueType, queryIds, queueColorMap);
+                     }
+                 }]
              },
              body: {
                  options: {
@@ -153,6 +168,14 @@
                      },
                      detail: {
                          template: cowu.generateDetailTemplateHTML(getDetailsTemplate(), cowc.APP_CONTRAIL_CONTROLLER)
+                     },
+                     checkboxSelectable: {
+                         onNothingChecked: function() {
+                             $("#" + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).addClass("disabled-link");
+                         },
+                         onSomethingChecked: function() {
+                             $("#" + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).removeClass("disabled-link");
+                         }
                      },
                      actionCell: function(dc) {
                          return getQueueActionColumn(queryQueueView, queryQueueType, dc, queueColorMap);
@@ -320,6 +343,7 @@
          var queryQueueListModel = queryQueueView.model,
              queryFormModelData = queryQueueItem.queryReqObj.formModelAttrs,
              status = queryQueueItem.status,
+             queryId = queryQueueItem.queryReqObj.queryId,
              errorMessage = queryQueueItem.errorMessage,
              queryFormTimeRange = queryFormModelData.time_range,
              actionCell = [];
@@ -372,6 +396,14 @@
                  }
              });
          }
+
+         actionCell.push({
+             title: cowl.TITLE_DELETE_QUERY,
+             iconClass: "fa fa-trash",
+             onClick: function() {
+                 showDeleteQueueModal(queryQueueView, queryQueueType, [queryId], queueColorMap);
+             }
+         });
 
          return actionCell;
      }
@@ -444,6 +476,57 @@
              q: {
                  queryType: queryType,
                  queryFormAttributes: queryFormModelData
+             }
+         });
+     }
+
+     function showDeleteQueueModal(queryQueueView, queryQueueType, queryIds, queueColorMap) {
+         var modalId = queryQueueType + cowl.QE_WHERE_MODAL_SUFFIX,
+             deleteQueryMessage = (queryIds.length === 1) ? cowm.QE_DELETE_SINGLE_QUERY_CONFIRM : cowm.QE_DELETE_MULTIPLE_QUERY_CONFIRM;
+
+         cowu.createModal({
+             modalId: modalId,
+             className: "modal-700",
+             title: cowl.TITLE_DELETE_QUERY,
+             btnName: "Confirm",
+             body: deleteQueryMessage,
+             onSave: function() {
+                 var postDataJSON = { queryQueue: queryQueueType, queryIds: queryIds },
+                     ajaxConfig = {
+                         url: "/api/qe/query",
+                         type: "DELETE",
+                         data: JSON.stringify(postDataJSON)
+                     };
+                 contrail.ajaxHandler(ajaxConfig, null, function() {
+                     var queryQueueGridId = cowc.QE_HASH_ELEMENT_PREFIX + queryQueueType + cowc.QE_QUEUE_GRID_SUFFIX,
+                         gridTabIndex = null,
+                         chartTabIndex = null,
+                         childViewMap = queryQueueView.childViewMap,
+                         queryQueueResultTabView = contrail.checkIfExist(childViewMap[cowl.QE_QUERY_QUEUE_TABS_ID]) ? childViewMap[cowl.QE_QUERY_QUEUE_TABS_ID] : null;
+
+                     $(queryQueueGridId).data("contrailGrid").refreshData();
+
+                     if (queryQueueResultTabView !== null) {
+                         $.each(queryIds, function(queryIdKey, queryIdValue) {
+                             removeBadgeColorFromQueryQueue(queueColorMap, queryIdValue);
+
+                            gridTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_GRID_TAB_ID + "-" + queryIdValue + "-tab"];
+                            if (contrail.checkIfExist(gridTabIndex)) {
+                                queryQueueResultTabView.removeTab(gridTabIndex);
+                            }
+
+                            chartTabIndex = queryQueueResultTabView.tabsIdMap[cowl.QE_QUERY_QUEUE_RESULT_CHART_TAB_ID + "-" + queryIdValue + "-tab"];
+                            if (contrail.checkIfExist(chartTabIndex)) {
+                                queryQueueResultTabView.removeTab(chartTabIndex);
+                            }
+
+                         });
+                     }
+                 });
+                 $("#" + modalId).modal("hide");
+             },
+             onCancel: function() {
+                 $("#" + modalId).modal("hide");
              }
          });
      }
