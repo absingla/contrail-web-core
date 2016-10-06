@@ -42,20 +42,19 @@ define([
             }
         };
 
-        this.updateViewByHash = function (currPageQueryStr) {
+        this.updateViewByHash = function(currPageQueryStr) {
             var renderFn;
 
             //TODO: The renderFunction should be passed from ContentHandler
-            if (currPageQueryStr.type === "flow"){
+            if (currPageQueryStr.type === "flow") {
                 renderFn = "renderFlows";
             }
 
-            this.load({hashParams: currPageQueryStr, "function": renderFn});
+            this.load({ hashParams: currPageQueryStr, "function": renderFn });
         };
 
-        this.destroy = function () {};
+        this.destroy = function() {};
     };
 
     return QEPageLoader;
 });
-

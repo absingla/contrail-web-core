@@ -346,8 +346,6 @@ function testAppInit(testAppConfig) {
                             layoutHandlerLoadDefObj.resolve();
                             layoutHandler.load(menuXML);
 
-                            helpHandler = new HelpHandler();
-
                             var cssList = cotu.getCSSList();
 
                             for (var i = 0; i < cssList.length; i++) {

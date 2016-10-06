@@ -86,7 +86,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'view-config-generator'       : coreWebDir + '/js/common/view.config.generator',
         'iframe-view'                 : coreWebDir + '/js/views/IframeView',
         'jdorn-jsoneditor'            : coreWebDir + '/assets/jdorn-jsoneditor/js/jdorn-jsoneditor',
-        'qe-module'                   : coreWebDir + '/reports/qe/ui/js/qe.module'
+        'qe-module'                   : coreWebDir + '/reports/qe/ui/js/qe.module',
+        'legend-view'                 : coreWebDir + '/js/views/LegendView',
     };
 
     //Separate out aliases that need to be there for both prod & dev environments
@@ -1346,9 +1347,7 @@ if (typeof document !== 'undefined' && document) {
                         require(['underscore'],function(_) {
                             _.noConflict();
                         });
-                        require(['layout-handler', 'content-handler', 'help-handler', 'contrail-load','lodash'], function(LayoutHandler, ContentHandler, HelpHandler, ChartUtils,_) {
-                            var helpHandler = new HelpHandler();
-
+                        require(['layout-handler', 'content-handler', 'help-handler', 'contrail-load','lodash'], function(LayoutHandler, ContentHandler, helpHandler, ChartUtils,_) {
                             window._ = _;
                             contentHandler = new ContentHandler();
                             initBackboneValidation();

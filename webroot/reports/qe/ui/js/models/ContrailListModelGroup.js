@@ -6,12 +6,12 @@ define([
     "lodash",
     "backbone",
     "contrail-list-model"
-], function (_, Backbone, ContrailListModel) {
+], function(_, Backbone, ContrailListModel) {
     var ContrailListModelGroup = Backbone.Model.extend({
 
         constructor: function(modelConfig) {
             var self = this;
-            $.extend(true, self.modelConfig, modelConfig, {childModelConfig: []});
+            $.extend(true, self.modelConfig, modelConfig, { childModelConfig: [] });
             self.data = [];
             self.error = false;
             self.errorList = [];
@@ -19,10 +19,12 @@ define([
             self.onAllRequestsCompleteCB = [];
             // TODO: consider to use the robust deferrable library --- bluebird
             self.initDefObj = $.Deferred(); // eslint-disable-line
-            self.primaryListModel = new ContrailListModel({data: self.getItems()});
+            self.primaryListModel = new ContrailListModel({ data: self.getItems() });
 
-            self.onAllRequestsComplete = new window.Slick.Event();
-            self.onDataUpdate = new window.Slick.Event();
+            /* eslint-disable */
+            self.onAllRequestsComplete = new Slick.Event();
+            self.onDataUpdate = new Slick.Event();
+            /* eslint-enable */
 
             //Default subscription to update the dataView.
             self.onAllRequestsComplete.subscribe(function() {
@@ -123,11 +125,11 @@ define([
             var status = $.Deferred(), // eslint-disable-line
                 model = new ContrailListModel(listModelConfig);
 
-            model.onAllRequestsComplete.subscribe(function() { // eslint-disable-line
+            model.onAllRequestsComplete.subscribe(function() {
                 status.resolve(listModelConfig.id);
 
                 if (model.error) {
-                    return errorHandler({
+                    errorHandler({
                         key: listModelConfig.id,
                         errorList: model.errorList
                     });

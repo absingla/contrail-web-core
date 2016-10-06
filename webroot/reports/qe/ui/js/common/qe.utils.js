@@ -7,489 +7,7 @@ define([
     "moment"
 ], function (_, moment) {
     var serializer = new XMLSerializer(),
-        qeUtils,
         domParser = new DOMParser();
-
-    var QEUtils = function () {
-        var self = this;
-
-        self.generateQueryUUID = function () {
-            var s = [], itoh = "0123456789ABCDEF";
-            for (var i = 0; i < 36; i++) {
-                s[i] = Math.floor(Math.random() * 0x10);
-            }
-            s[14] = 4;
-            s[19] = (s[19] & 0x3) | 0x8;
-            for (i = 0; i < 36; i++) {
-                s[i] = itoh[s[i]];
-            }
-            s[8] = s[13] = s[18] = s[23] = s[s.length] = "-";
-            s[s.length] = (new Date()).getTime();
-            return s.join("");
-        };
-
-        self.setUTCTimeObj = function (queryPrefix, formModelAttrs, serverCurrentTime, timeRange) {
-            timeRange = (contrail.checkIfExist(timeRange)) ? timeRange : getTimeRangeObj(formModelAttrs, serverCurrentTime);
-
-            formModelAttrs.from_time_utc = timeRange.fromTime;
-            formModelAttrs.to_time_utc = timeRange.toTime;
-        };
-
-        self.fetchServerCurrentTime = function(successCB) {
-            var serverCurrentTime;
-
-            $.ajax({
-                url: "/api/service/networking/web-server-info"
-            }).done(function (resultJSON) {
-                serverCurrentTime = resultJSON.serverUTCTime;
-            }).always(function() {
-                successCB(serverCurrentTime);
-            });
-        };
-
-        self.getLabelStepUnit = function (tg, tgUnit) {
-            var baseUnit = null, secInterval = 0;
-            if (tgUnit === "secs") {
-                secInterval = tg;
-                if (tg < 60) {
-                    tg = (-1 * tg);
-                } else {
-                    tg = Math.floor(parseInt(tg / 60));
-                }
-                baseUnit = "minutes";
-            } else if (tgUnit === "mins") {
-                secInterval = tg * 60;
-                baseUnit = "minutes";
-            } else if (tgUnit === "hrs") {
-                secInterval = tg * 3600;
-                baseUnit = "hours";
-            } else if (tgUnit === "days") {
-                secInterval = tg * 86400;
-                baseUnit = "days";
-            }
-            return {labelStep: (1 * tg), baseUnit: baseUnit, secInterval: secInterval};
-        };
-
-        self.getEngQueryStr = function (reqQueryObj) {
-            var engQueryJSON = {
-                select: reqQueryObj.select,
-                from: reqQueryObj.table_name,
-                where: reqQueryObj.where,
-                filter: reqQueryObj.filters,
-                direction: reqQueryObj.direction
-            };
-            if (reqQueryObj.toTimeUTC === "now") {
-                engQueryJSON.from_time = reqQueryObj.from_time;
-                engQueryJSON.to_time = reqQueryObj.to_time;
-            } else {
-                engQueryJSON.from_time = moment(reqQueryObj.from_time_utc).format("MMM DD, YYYY hh:mm:ss A");
-                engQueryJSON.to_time = moment(reqQueryObj.to_time_utc).format("MMM DD, YYYY hh:mm:ss A");
-            }
-
-            return JSON.stringify(engQueryJSON);
-        };
-
-        self.formatEngQuery = function(enqQueryObjStr) {
-            var engQueryObj = JSON.parse(enqQueryObjStr),
-                engQueryStr = "";
-
-            $.each(engQueryObj, function(key, val){
-                if(key === "select" && (!contrail.checkIfExist(val) || val === "")){
-                    engQueryStr += '<div class="row-fluid"><span class="bolder">' + key.toUpperCase() + "</span> &nbsp;*</div>";
-                } else if((key === "where" || key === "filter") && (!contrail.checkIfExist(val) || val === "")){
-                    engQueryStr += "";
-                } else {
-                    var formattedKey = key;
-                    if(key === "from_time" || key === "to_time"){
-                        formattedKey = key.split("_").join(" ");
-                    }
-                    engQueryStr += '<div class="row-fluid word-break-normal"><span class="bolder">' + formattedKey.toUpperCase() + "</span> &nbsp;" + val + "</div>";
-                }
-            });
-            return engQueryStr;
-        };
-
-        self.adjustHeight4FormTextarea = function(queryPrefix) {
-            var elId = "#qe-" + queryPrefix + "-form",
-                texareaNames = ["select", "where", "filters"];
-
-            $.each(texareaNames, function(nameKey, nameValue) {
-                var scrollHeight = $(elId).find('[name="' + nameValue + '"]').get(0).scrollHeight;
-                $(elId).find('[name="' + nameValue + '"]')
-                    .outerHeight(((scrollHeight < 26) ? 26 : (scrollHeight)));
-            });
-        };
-
-        self.getFromTimeElementConfig = function(fromTimeId, toTimeId) {
-            return {
-                formatTime: "h:i A",
-                format: "M d, Y h:i A",
-                displayFormat: "MMM DD, YYYY hh:mm A",
-                onShow: function(cdt) {
-                    this.setOptions(getFromTimeShowOptions(toTimeId, cdt));
-                },
-                onClose: function(cdt) {
-                    this.setOptions(getFromTimeShowOptions(toTimeId, cdt));
-                },
-                onSelectDate: function(cdt) {
-                    this.setOptions(getFromTimeSelectOptions(toTimeId, cdt));
-                }
-            };
-        };
-
-        self.getToTimeElementConfig = function(fromTimeId) {
-            return {
-                formatTime: "h:i A",
-                format: "M d, Y h:i A",
-                displayFormat: "MMM DD, YYYY hh:mm A",
-                onShow: function(cdt) {
-                    this.setOptions(getToTimeShowOptions(fromTimeId, cdt));
-                },
-                onClose: function(cdt) {
-                    this.setOptions(getToTimeShowOptions(fromTimeId, cdt));
-                },
-                onSelectDate: function(cdt) {
-                    this.setOptions(getToTimeSelectOptions(fromTimeId, cdt));
-                }
-            };
-        };
-
-        self.getModalClass4Table = function(tableName) {
-            switch (tableName) {
-                case "StatTable.ServerMonitoringSummary.resource_info_stats":
-                    return "modal-1120";
-
-                case "StatTable.ServerMonitoringInfo.file_system_view_stats.physical_disks":
-                    return "modal-1120";
-
-                default:
-                    return cowc.QE_DEFAULT_MODAL_CLASSNAME;
-            }
-        };
-
-        //TODO- remove this
-        self.addFlowMissingPoints = function(tsData, options, plotFields, color, counter) {
-            var fromTime = options.fromTime,
-                toTime = options.toTime,
-                interval = options.interval * 1000,
-                plotData = [], addPoint, flowClassId = null,
-                sumBytes = [], sumPackets = [];
-
-            for (var key in tsData) {
-                if (contrail.checkIfExist(tsData[key].flow_class_id)) {
-                    flowClassId = tsData[key].flow_class_id;
-                    break;
-                }
-            }
-
-            for (var i = fromTime + interval; i <= toTime; i += interval) {
-                for (var k = 0; k < plotFields.length; k++) {
-                    addPoint = {"x":i, "flow_class_id":flowClassId};
-                    if (contrail.checkIfExist(tsData[i.toString()])) {
-                        addPoint.y = tsData[i.toString()][plotFields[k]];
-                    } else {
-                        addPoint.y = 0;
-                    }
-                    if(plotFields[k] === "sum_bytes") {
-                        sumBytes.push(addPoint);
-                    } else if (plotFields[k] === "sum_packets") {
-                        sumPackets.push(addPoint);
-                    }
-                }
-            }
-
-            if(sumBytes.length > 0) {
-                plotData.push({"key": "#" + counter + ": Sum Bytes", color: color, values: sumBytes});
-            } else if(sumPackets.length > 0) {
-                plotData.push({"key": "#" + counter + ": Sum Packets", color: color, values: sumPackets});
-            }
-
-            return plotData;
-        };
-
-        self.getCurrentTime4Client = function() {
-            var now = new Date(), currentTime;
-            currentTime = now.getTime();
-            return currentTime;
-        };
-
-        self.addChartMissingPoints = function(chartDataRow, queryFormAttributes, plotFields) {
-            var chartDataValues = chartDataRow.values,
-                newChartDataValues = {},
-                emptyChartDataValue  = {},
-                timeGranularity = queryFormAttributes.time_granularity,
-                timeGranularityUnit = queryFormAttributes.time_granularity_unit,
-                timeInterval = timeGranularity * cowc.TIME_GRANULARITY_INTERVAL_VALUES[timeGranularityUnit],
-                toTime = queryFormAttributes.to_time_utc,
-                fromTime = queryFormAttributes.from_time_utc;
-
-            $.each(plotFields, function(plotFieldKey, plotFieldValue) {
-                emptyChartDataValue[plotFieldValue] = 0;
-            });
-
-            for (var i = fromTime; i < toTime; i += timeInterval) {
-                if (!contrail.checkIfExist(chartDataValues[i])) {
-                    newChartDataValues[i] = emptyChartDataValue;
-                } else {
-                    newChartDataValues[i] = chartDataValues[i];
-                }
-            }
-
-            chartDataRow.values = newChartDataValues;
-
-            return chartDataRow;
-        };
-
-        self.parseWhereCollection2String = function(queryFormModel) {
-            var whereOrClauses = queryFormModel.model().get("where_or_clauses"),
-                whereOrClauseStrArr = [];
-
-            $.each(whereOrClauses.models, function(whereOrClauseKey, whereOrClauseValue) {
-                if (whereOrClauseValue.attributes.orClauseText !== "") {
-                    whereOrClauseStrArr.push("(" + whereOrClauseValue.attributes.orClauseText + ")");
-                }
-            });
-
-            return whereOrClauseStrArr.join(" OR ");
-        };
-
-        self.parseFilterCollection2String = function (queryFormModel) {
-            var filterAndClauses = queryFormModel.model().attributes.filter_and_clauses,
-                sort_by = queryFormModel.model().attributes.sort_by,
-                sort_order = queryFormModel.model().attributes.sort_order,
-                limit = queryFormModel.model().attributes.limit,
-                filterAndClausestrArr = [], filterAndClausestr = "";
-
-            $.each(filterAndClauses.models, function (filterAndClauseKey, filterAndClauseValue) {
-                var name, value, operator;
-                name = filterAndClauseValue.attributes.name;
-                operator = filterAndClauseValue.attributes.operator;
-                value = filterAndClauseValue.attributes.value();
-
-                if (name !== "" && operator !== "" && value !== "") {
-                    filterAndClausestrArr.push(name + " " + operator + " " + value);
-                }
-            });
-
-            if (filterAndClausestrArr.length > 0) {
-                filterAndClausestr = filterAndClausestr.concat("filter: ");
-                filterAndClausestr = filterAndClausestr.concat(filterAndClausestrArr.join(" AND "));
-            }
-            if (contrail.checkIfExist(limit)) {
-                if(filterAndClausestr !== "") {
-                    filterAndClausestr = filterAndClausestr.concat(" & limit: " + limit);
-                } else {
-                    filterAndClausestr = filterAndClausestr.concat("limit: " + limit);
-                }
-            }
-            if (contrail.checkIfExist(sort_by)) {
-                if(filterAndClausestr !== "") {
-                    filterAndClausestr = filterAndClausestr.concat(" & sort_fields: " + sort_by);
-                } else {
-                    filterAndClausestr = filterAndClausestr.concat("sort_fields: " + sort_by);
-                }
-            }
-            if (contrail.checkIfExist(sort_order)) {
-                if(filterAndClausestr !== "") {
-                    filterAndClausestr = filterAndClausestr.concat(" & sort: " + sort_order);
-                } else {
-                    filterAndClausestr = filterAndClausestr.concat("sort: " + sort_order);
-                }
-            }
-            return filterAndClausestr;
-        };
-
-        self.parseWhereCollection2JSON = function(queryFormModel) {
-            var whereOrClauses = queryFormModel.model().get("where_or_clauses"),
-                whereOrJSONArr = [];
-
-            $.each(whereOrClauses.models, function(whereOrClauseKey, whereOrClauseValue) {
-                if (whereOrClauseValue.attributes.orClauseText !== "") {
-                    whereOrJSONArr.push(parseWhereANDClause("(" + whereOrClauseValue.attributes.orClauseText + ")"));
-                }
-            });
-
-            return whereOrJSONArr;
-        };
-
-        self.parseSelectString2Array = function(queryFormModel) {
-            var selectString = queryFormModel.select(),
-                selectFields = queryFormModel.select_data_object().select_fields(),
-                checkedFields = (!contrail.checkIfExist(selectString) || selectString.trim() === "") ? [] : selectString.split(", ");
-
-            _.forEach(selectFields, function(selectFieldValue) {
-                queryFormModel.select_data_object().checked_map()[selectFieldValue.name](checkedFields.indexOf(selectFieldValue.name) !== -1);
-            });
-
-        };
-
-        self.parseWhereString2Collection = function(queryFormModel) {
-            queryFormModel.where_json(self.parseWhereString2JSON(queryFormModel));
-            self.parseWhereJSON2Collection(queryFormModel);
-        };
-
-        self.parseFilterString2Collection = function(queryFormModel) {
-            queryFormModel.filter_json(self.parseFilterString2JSON(queryFormModel));
-            self.parseFilterJSON2Collection(queryFormModel);
-        };
-
-        self.parseWhereJSON2Collection = function(queryFormModel) {
-            var whereStr = queryFormModel.model().get("where"),
-                whereOrClauseStrArr = contrail.checkIfExist(whereStr) ? whereStr.split(" OR ") : [],
-                whereOrJSON = queryFormModel.model().get("where_json"),
-                wherOrClauseObjects = [];
-
-            queryFormModel.model().get("where_or_clauses").reset();
-
-            $.each(whereOrJSON, function(whereOrJSONKey, whereOrJSONValue) {
-                wherOrClauseObjects.push({orClauseText: whereOrClauseStrArr[whereOrJSONKey], orClauseJSON: whereOrJSONValue});
-            });
-
-            queryFormModel.addNewOrClauses(wherOrClauseObjects);
-        };
-
-        self.parseFilterJSON2Collection = function(queryFormModel) {
-            var filterOrJSON = queryFormModel.model().attributes.filter_json;
-
-            queryFormModel.model().get("filter_and_clauses").reset();
-            queryFormModel.addNewFilterAndClause(filterOrJSON);
-        };
-
-        self.parseWhereString2JSON = function(queryFormModel) {
-            var whereStr = queryFormModel.model().get("where"),
-                whereOrClauseStrArr = contrail.checkIfExist(whereStr) ? whereStr.split(" OR ") : [],
-                whereOrJSONArr = [];
-
-            $.each(whereOrClauseStrArr, function(whereOrClauseStrKey, whereOrClauseStrValue) {
-                if (whereOrClauseStrValue !== "") {
-                    whereOrJSONArr.push(parseWhereANDClause(whereOrClauseStrValue));
-                }
-            });
-
-            return whereOrJSONArr;
-        };
-
-        self.parseFilterString2JSON = function(queryFormModel) {
-            var filtersStr = queryFormModel.model().attributes.filters;
-            return parseFilterANDClause(filtersStr);
-        };
-
-        self.getAggregateSelectFields = function(selectArray) {
-            var aggregateSelectArray = [];
-
-            $.each(selectArray, function(selectKey, selectValue) {
-                if (self.isAggregateField(selectValue)) {
-                    aggregateSelectArray.push(selectValue);
-                }
-            });
-
-            return aggregateSelectArray;
-        };
-
-        self.getNameSuffixKey = function(name, nameOptionList) {
-            var nameSuffixKey = -1;
-
-            $.each(nameOptionList, function(nameOptionKey, nameOptionValue) { // eslint-disable-line
-                if(nameOptionValue.name === name) {
-                    nameSuffixKey = _.isNull(nameOptionValue.suffixes) ? -1 : nameOptionKey;
-                    return false;
-                }
-            });
-
-            return nameSuffixKey;
-        };
-
-        //format aggregate field names for grids
-        self.formatNameForGrid = function(columnName) {
-            var firstIndex = columnName.indexOf("("),
-                lastIndex = columnName.indexOf(")"),
-                aggregateType = columnName.substr(0,firstIndex),
-                aggregateColumnName = columnName.substr(firstIndex + 1,lastIndex - firstIndex - 1);
-
-            if(qeUtils.isAggregateField(columnName) || aggregateType === "PERCENTILES") {
-                return aggregateType.toUpperCase() + " (" + cowl.get(aggregateColumnName) + ")";
-            } else {
-                return cowl.get(columnName).replace(")", "");
-            }
-        };
-
-        self.isAggregateField = function(fieldName) {
-            var fieldNameLower = fieldName.toLowerCase(),
-                isAggregate = false;
-
-            var AGGREGATE_PREFIX_ARRAY = ["min(", "max(", "count(", "sum(", "avg("];
-
-            for (var i = 0; i < AGGREGATE_PREFIX_ARRAY.length; i++) {
-                if(fieldNameLower.indexOf(AGGREGATE_PREFIX_ARRAY[i]) !== -1) {
-                    isAggregate = true;
-                    break;
-                }
-            }
-
-            return isAggregate;
-        };
-
-        self.getCheckedFields = function(checkedMap) {
-            var checkedFields = [];
-            _.forEach(checkedMap, function(checkedMapValue, checkedMapKey){
-                if (checkedMapValue()) {
-                    checkedFields.push(checkedMapKey);
-                }
-            });
-
-            return checkedFields;
-        };
-
-        //TODO - Delete this
-        self.formatXML2JSON = function(xmlString, is4SystemLogs) {
-            console.warn(cowm.DEPRECATION_WARNING_PREFIX + "Function formatXML2JSON of qe-utils is deprecated. Use formatXML2JSON() of core-utils instead.");
-
-            if (xmlString && xmlString !== "") {
-                var xmlDoc = filterXML(xmlString, is4SystemLogs);
-                return convertXML2JSON(serializer.serializeToString(xmlDoc));
-            } else {
-                return "";
-            }
-        };
-
-        self.getLevelName4Value = function(logValue) {
-            var count = cowc.QE_LOG_LEVELS.length;
-            for (var i = 0; i < count; i++) {
-                if (cowc.QE_LOG_LEVELS[i].value === logValue) {
-                    return cowc.QE_LOG_LEVELS[i].name;
-                }
-            }
-            return logValue;
-        };
-
-        /**
-         * Pass either selectedFlowRecord or formModel attribute to check if session analyzer can be enabled.
-         * @param selectedFlowRecord
-         * @param formModelAttr
-         * @returns {boolean}
-         */
-        self.enableSessionAnalyzer = function(selectedFlowRecord, formModelAttr) {
-            var i, enable = true, disable = !enable,
-                keys = ["vrouter", "sourcevn", "sourceip", "destvn", "destip", "sport", "dport"];
-
-            if (contrail.checkIfExist(selectedFlowRecord)) {
-                for (i = 0; i < keys.length; i++) {
-                    if (!selectedFlowRecord.hasOwnProperty(keys[i]) || !contrail.checkIfExist(selectedFlowRecord[keys[i]])) {
-                        return disable;
-                    }
-                }
-            }
-            if (contrail.checkIfExist(formModelAttr)) {
-                var selectArray = formModelAttr.select.split(", ");
-                for (i = 0; i < keys.length; i++) {
-                    if (selectArray.indexOf(keys[i]) === -1) {
-                        return disable;
-                    }
-                }
-            }
-            return enable;
-        };
-    };
 
     function filterXML(xmlString, is4SystemLogs) {
         var xmlDoc = parseXML(xmlString);
@@ -511,10 +29,8 @@ define([
     }
 
     function parseXML(xmlString) {
-        var xmlDoc = null;
-
         if (window.DOMParser) {
-            xmlDoc = domParser.parseFromString(xmlString, "text/xml");
+            var xmlDoc = domParser.parseFromString(xmlString, "text/xml");
         } else { // Internet Explorer
             xmlDoc = new window.ActiveXObject("Microsoft.XMLDOM");
             xmlDoc.async = false;
@@ -522,7 +38,6 @@ define([
         }
         return xmlDoc;
     }
-
 
     function formatStruct(xmlNode) {
         $(xmlNode).find("list").each(function () {
@@ -687,8 +202,7 @@ define([
     }
 
     function parseFilterBy(filterBy) {
-        var filtersArray, filtersLength,
-            filterClause = [], filterObj, i;
+        var filtersArray, filtersLength, filterClause = [], i, filterObj;
 
         if (contrail.checkIfExist(filterBy) && filterBy.trim() !== "") {
             filtersArray = filterBy.split(" AND ");
@@ -727,7 +241,8 @@ define([
         return filterObj;
     }
 
-    function parseLimitBy(limitBy) { // eslint-disable-line
+    /* eslint-disable */
+    function parseLimitBy(limitBy) {
         try {
             var parsedLimit = parseInt(limitBy);
             return parsedLimit;
@@ -735,22 +250,19 @@ define([
             window.logutils.logger.error(error.stack);
         }
     }
+    /* eslint-enable */
 
     function parseSortFields(sortFields){
         var sortFieldsArr = sortFields.split(",");
-
         for(var i=0; i< sortFieldsArr.length; i++) {
             sortFieldsArr[i] = sortFieldsArr[i].trim();
         }
-
         return sortFieldsArr;
     }
 
     function parseWhereANDClause(whereANDClause) {
         var whereANDArray = whereANDClause.replace("(", "").replace(")", "").split(" AND "),
-            whereANDLength = whereANDArray.length, tempWhereANDClauseWithSuffix,
-            whereANDClauseArray, operator = "", i;
-
+            whereANDLength = whereANDArray.length, i, whereANDClauseArray, operator = "";
         for (i = 0; i < whereANDLength; i += 1) {
             whereANDArray[i] = whereANDArray[i].trim();
             whereANDClause = whereANDArray[i];
@@ -771,6 +283,7 @@ define([
                 // Treat whereANDClauseWithSuffixArrray[0] as a normal AND term and
                 // whereANDClauseWithSuffixArrray[1] as a special suffix term
                 if (contrail.checkIfExist(whereANDClauseWithSuffixArrray) && whereANDClauseWithSuffixArrray.length !== 0) {
+                    var tempWhereANDClauseWithSuffix;
                     for (var j = 0; j < whereANDClauseWithSuffixArrray.length; j++) {
                         if (whereANDClauseWithSuffixArrray[j].indexOf("Starts with") !== -1) {
                             operator = "Starts with";
@@ -798,9 +311,7 @@ define([
         var validLikeOPRFields = ["sourcevn", "destvn"],
             validRangeOPRFields = ["protocol", "sourceip", "destip", "sport", "dport"],
             splitFieldValues;
-
         whereANDClause.name = fieldName;
-
         if (validLikeOPRFields.indexOf(fieldName) !== -1 && fieldValue.indexOf("*") !== -1) {
             whereANDClause.value = fieldValue.replace("*", "");
             whereANDClause.op = 7;
@@ -818,16 +329,505 @@ define([
     function getOperatorCode(operator) {
         var operatorCode = -1;
 
-        $.each(cowc.OPERATOR_CODES, function(operatorCodeKey, operatorCodeValue) { // eslint-disable-line
-            if(operator === operatorCodeValue) {
+        $.each(cowc.OPERATOR_CODES, function(operatorCodeKey, operatorCodeValue) {
+            if (operator === operatorCodeValue) {
                 operatorCode = operatorCodeKey;
                 return false;
+            } else {
+                return true;
             }
         });
 
         return operatorCode;
     }
 
-    qeUtils = new QEUtils();
-    return qeUtils;
+    function _parseWhereJSON2Collection(queryFormModel) {
+        var whereStr = queryFormModel.model().get("where"),
+            whereOrClauseStrArr = !contrail.checkIfExist(whereStr) ? [] : whereStr.split(" OR "),
+            whereOrJSON = queryFormModel.model().get("where_json"),
+            wherOrClauseObjects = [];
+
+        queryFormModel.model().get("where_or_clauses").reset();
+
+        $.each(whereOrJSON, function(whereOrJSONKey, whereOrJSONValue) {
+            wherOrClauseObjects.push({orClauseText: whereOrClauseStrArr[whereOrJSONKey], orClauseJSON: whereOrJSONValue});
+        });
+
+        queryFormModel.addNewOrClauses(wherOrClauseObjects);
+    }
+
+    function _parseFilterJSON2Collection(queryFormModel) {
+        var filterOrJSON = queryFormModel.model().attributes.filter_json;
+
+        queryFormModel.model().get("filter_and_clauses").reset();
+        queryFormModel.addNewFilterAndClause(filterOrJSON);
+    }
+
+    function _parseWhereString2JSON(queryFormModel) {
+        var whereStr = queryFormModel.model().get("where"),
+            whereOrClauseStrArr = (!contrail.checkIfExist(whereStr)) ? [] : whereStr.split(" OR "),
+            whereOrJSONArr = [];
+
+        $.each(whereOrClauseStrArr, function(whereOrClauseStrKey, whereOrClauseStrValue) {
+            if (whereOrClauseStrValue !== "") {
+                whereOrJSONArr.push(parseWhereANDClause(whereOrClauseStrValue));
+            }
+        });
+
+        return whereOrJSONArr;
+    }
+
+    function _parseFilterString2JSON(queryFormModel) {
+        var filtersStr = queryFormModel.model().attributes.filters;
+        return parseFilterANDClause(filtersStr);
+    }
+
+    function _isAggregateField(fieldName) {
+        var fieldNameLower = fieldName.toLowerCase(),
+            isAggregate = false;
+
+        var AGGREGATE_PREFIX_ARRAY = ["min(", "max(", "count(", "sum("];
+
+        for (var i = 0; i < AGGREGATE_PREFIX_ARRAY.length; i++) {
+            if(fieldNameLower.indexOf(AGGREGATE_PREFIX_ARRAY[i]) !== -1) {
+                isAggregate = true;
+                break;
+            }
+        }
+
+        return isAggregate;
+    }
+
+    return {
+        generateQueryUUID: function () {
+            var s = [], itoh = "0123456789ABCDEF";
+            for (var i = 0; i < 36; i++) {
+                s[i] = Math.floor(Math.random() * 0x10);
+            }
+            s[14] = 4;
+            s[19] = (s[19] & 0x3) | 0x8;
+            for (i = 0; i < 36; i++) {
+                s[i] = itoh[s[i]];
+            }
+            s[8] = s[13] = s[18] = s[23] = s[s.length] = "-";
+            s[s.length] = (new Date()).getTime();
+            return s.join("");
+        },
+
+        setUTCTimeObj: function (queryPrefix, formModelAttrs, serverCurrentTime, timeRange) {
+            timeRange = contrail.checkIfExist(timeRange) ? timeRange : getTimeRangeObj(formModelAttrs, serverCurrentTime);
+
+            formModelAttrs.from_time_utc = timeRange.fromTime;
+            formModelAttrs.to_time_utc = timeRange.toTime;
+        },
+
+        fetchServerCurrentTime: function(successCB) {
+            var serverCurrentTime;
+
+            $.ajax({
+                url: "/api/service/networking/web-server-info"
+            }).done(function (resultJSON) {
+                serverCurrentTime = resultJSON.serverUTCTime;
+            }).always(function() {
+                successCB(serverCurrentTime);
+            });
+        },
+
+        getLabelStepUnit: function (tg, tgUnit) {
+            var baseUnit = null, secInterval = 0;
+            if (tgUnit === "secs") {
+                secInterval = tg;
+                if (tg < 60) {
+                    tg = (-1 * tg);
+                } else {
+                    tg = Math.floor(parseInt(tg / 60));
+                }
+                baseUnit = "minutes";
+            } else if (tgUnit === "mins") {
+                secInterval = tg * 60;
+                baseUnit = "minutes";
+            } else if (tgUnit === "hrs") {
+                secInterval = tg * 3600;
+                baseUnit = "hours";
+            } else if (tgUnit === "days") {
+                secInterval = tg * 86400;
+                baseUnit = "days";
+            }
+            return {labelStep: (1 * tg), baseUnit: baseUnit, secInterval: secInterval};
+        },
+
+        getEngQueryStr: function (reqQueryObj) {
+            var engQueryJSON = {
+                select: reqQueryObj.select,
+                from: reqQueryObj.table_name,
+                where: reqQueryObj.where,
+                filter: reqQueryObj.filters,
+                direction: reqQueryObj.direction
+            };
+            if (reqQueryObj.toTimeUTC === "now") {
+                engQueryJSON.from_time = reqQueryObj.from_time;
+                engQueryJSON.to_time = reqQueryObj.to_time;
+            } else {
+                engQueryJSON.from_time = moment(reqQueryObj.from_time_utc).format("MMM DD, YYYY hh:mm:ss A");
+                engQueryJSON.to_time = moment(reqQueryObj.to_time_utc).format("MMM DD, YYYY hh:mm:ss A");
+            }
+
+            return JSON.stringify(engQueryJSON);
+        },
+
+        formatEngQuery: function(enqQueryObjStr) {
+            var engQueryObj = JSON.parse(enqQueryObjStr),
+                engQueryStr = "";
+
+            $.each(engQueryObj, function(key, val){
+                if(key === "select" && (!contrail.checkIfExist(val) || val === "")){
+                    engQueryStr += '<div class="row-fluid"><span class="bolder">' + key.toUpperCase() + "</span> &nbsp;*</div>";
+                } else if((key === "where" || key === "filter") && (!contrail.checkIfExist(val) || val === "")){
+                    engQueryStr += "";
+                } else {
+                    var formattedKey = key;
+                    if(key === "from_time" || key === "to_time"){
+                        formattedKey = key.split("_").join(" ");
+                    }
+                    engQueryStr += '<div class="row-fluid word-break-normal"><span class="bolder">' + formattedKey.toUpperCase() + "</span> &nbsp;" + val + "</div>";
+                }
+            });
+            return engQueryStr;
+        },
+
+        adjustHeight4FormTextarea: function(queryPrefix) {
+            var elId = "#qe-" + queryPrefix + "-form",
+                texareaNames = ["select", "where", "filters"];
+
+            $.each(texareaNames, function(nameKey, nameValue) {
+                var scrollHeight = $(elId).find('[name="' + nameValue + '"]').get(0).scrollHeight;
+                $(elId).find('[name="' + nameValue + '"]')
+                    .outerHeight(((scrollHeight < 36) ? 26 : (scrollHeight- 10)));
+            });
+        },
+
+        getFromTimeElementConfig: function(fromTimeId, toTimeId) {
+            return {
+                formatTime: "h:i A",
+                format: "M d, Y h:i A",
+                displayFormat: "MMM DD, YYYY hh:mm A",
+                onShow: function(cdt) {
+                    this.setOptions(getFromTimeShowOptions(toTimeId, cdt));
+                },
+                onClose: function(cdt) {
+                    this.setOptions(getFromTimeShowOptions(toTimeId, cdt));
+                },
+                onSelectDate: function(cdt) {
+                    this.setOptions(getFromTimeSelectOptions(toTimeId, cdt));
+                }
+            };
+        },
+
+        getToTimeElementConfig: function(fromTimeId) {
+            return {
+                formatTime: "h:i A",
+                format: "M d, Y h:i A",
+                displayFormat: "MMM DD, YYYY hh:mm A",
+                onShow: function(cdt) {
+                    this.setOptions(getToTimeShowOptions(fromTimeId, cdt));
+                },
+                onClose: function(cdt) {
+                    this.setOptions(getToTimeShowOptions(fromTimeId, cdt));
+                },
+                onSelectDate: function(cdt) {
+                    this.setOptions(getToTimeSelectOptions(fromTimeId, cdt));
+                }
+            };
+        },
+
+        getModalClass4Table: function(tableName) {
+            switch (tableName) {
+                case "StatTable.ServerMonitoringSummary.resource_info_stats":
+                    return "modal-1120";
+
+                case "StatTable.ServerMonitoringInfo.file_system_view_stats.physical_disks":
+                    return "modal-1120";
+
+                default:
+                    return cowc.QE_DEFAULT_MODAL_CLASSNAME;
+            }
+        },
+
+        //TODO- remove this
+        addFlowMissingPoints: function(tsData, options, plotFields, color, counter) {
+            var fromTime = options.fromTime,
+                toTime = options.toTime,
+                interval = options.interval * 1000,
+                plotData = [], addPoint, flowClassId = null,
+                sumBytes = [], sumPackets = [];
+
+            for (var key in tsData) {
+                if (contrail.checkIfExist(tsData[key].flow_class_id)) {
+                    flowClassId = tsData[key].flow_class_id;
+                    break;
+                }
+            }
+
+            for (var i = fromTime + interval; i <= toTime; i += interval) {
+                for (var k = 0; k < plotFields.length; k++) {
+                    addPoint = {"x":i, "flow_class_id":flowClassId};
+                    if (contrail.checkIfExist(tsData[i.toString()])) {
+                        addPoint.y = tsData[i.toString()][plotFields[k]];
+                    } else {
+                        addPoint.y = 0;
+                    }
+                    if(plotFields[k] === "sum_bytes") {
+                        sumBytes.push(addPoint);
+                    } else if (plotFields[k] === "sum_packets") {
+                        sumPackets.push(addPoint);
+                    }
+                }
+            }
+
+            if(sumBytes.length > 0) {
+                plotData.push({"key": "#" + counter + ": Sum Bytes", color: color, values: sumBytes});
+            } else if(sumPackets.length > 0) {
+                plotData.push({"key": "#" + counter + ": Sum Packets", color: color, values: sumPackets});
+            }
+
+            return plotData;
+        },
+
+        getCurrentTime4Client: function() {
+            var now = new Date(), currentTime;
+            currentTime = now.getTime();
+            return currentTime;
+        },
+
+        addChartMissingPoints: function(chartDataRow, queryFormAttributes, plotFields) {
+            var chartDataValues = chartDataRow.values,
+                newChartDataValues = {},
+                emptyChartDataValue  = {},
+                timeGranularity = queryFormAttributes.time_granularity,
+                timeGranularityUnit = queryFormAttributes.time_granularity_unit,
+                timeInterval = timeGranularity * cowc.TIME_GRANULARITY_INTERVAL_VALUES[timeGranularityUnit],
+                toTime = queryFormAttributes.to_time_utc,
+                fromTime = queryFormAttributes.from_time_utc;
+
+            $.each(plotFields, function(plotFieldKey, plotFieldValue) {
+                emptyChartDataValue[plotFieldValue] = 0;
+            });
+
+            for (var i = fromTime; i < toTime; i += timeInterval) {
+                if (!contrail.checkIfExist(chartDataValues[i])) {
+                    newChartDataValues[i] = emptyChartDataValue;
+                } else {
+                    newChartDataValues[i] = chartDataValues[i];
+                }
+            }
+
+            chartDataRow.values = newChartDataValues;
+
+            return chartDataRow;
+        },
+
+        parseWhereCollection2String: function(queryFormModel) {
+            var whereOrClauses = queryFormModel.model().get("where_or_clauses"),
+                whereOrClauseStrArr = [];
+
+            $.each(whereOrClauses.models, function(whereOrClauseKey, whereOrClauseValue) {
+                if (whereOrClauseValue.attributes.orClauseText !== "") {
+                    whereOrClauseStrArr.push("(" + whereOrClauseValue.attributes.orClauseText + ")");
+                }
+            });
+
+            return whereOrClauseStrArr.join(" OR ");
+        },
+
+        parseFilterCollection2String: function (queryFormModel) {
+            var filterAndClauses = queryFormModel.model().attributes.filter_and_clauses,
+                sort_by = queryFormModel.model().attributes.sort_by,
+                sort_order = queryFormModel.model().attributes.sort_order,
+                limit = queryFormModel.model().attributes.limit,
+                filterAndClausestrArr = [], filterAndClausestr = "";
+
+            $.each(filterAndClauses.models, function (filterAndClauseKey, filterAndClauseValue) {
+                var name, value, operator;
+                name = filterAndClauseValue.attributes.name;
+                operator = filterAndClauseValue.attributes.operator;
+                value = filterAndClauseValue.attributes.value();
+
+                if (name !== "" && operator !== "" && value !== "") {
+                    filterAndClausestrArr.push(name + " " + operator + " " + value);
+                }
+            });
+
+            if (filterAndClausestrArr.length > 0) {
+                filterAndClausestr = filterAndClausestr.concat("filter: ");
+                filterAndClausestr = filterAndClausestr.concat(filterAndClausestrArr.join(" AND "));
+            }
+            if (contrail.checkIfExist(limit)) {
+                if(filterAndClausestr !== "") {
+                    filterAndClausestr = filterAndClausestr.concat(" & limit: " + limit);
+                } else {
+                    filterAndClausestr = filterAndClausestr.concat("limit: " + limit);
+                }
+            }
+            if (contrail.checkIfExist(sort_by)) {
+                if(filterAndClausestr !== "") {
+                    filterAndClausestr = filterAndClausestr.concat(" & sort_fields: " + sort_by);
+                } else {
+                    filterAndClausestr = filterAndClausestr.concat("sort_fields: " + sort_by);
+                }
+            }
+            if (contrail.checkIfExist(sort_order)) {
+                if(filterAndClausestr !== "") {
+                    filterAndClausestr = filterAndClausestr.concat(" & sort: " + sort_order);
+                } else {
+                    filterAndClausestr = filterAndClausestr.concat("sort: " + sort_order);
+                }
+            }
+            return filterAndClausestr;
+        },
+
+        parseWhereCollection2JSON: function(queryFormModel) {
+            var whereOrClauses = queryFormModel.model().get("where_or_clauses"),
+                whereOrJSONArr = [];
+
+            $.each(whereOrClauses.models, function(whereOrClauseKey, whereOrClauseValue) {
+                if (whereOrClauseValue.attributes.orClauseText !== "") {
+                    whereOrJSONArr.push(parseWhereANDClause("(" + whereOrClauseValue.attributes.orClauseText + ")"));
+                }
+            });
+
+            return whereOrJSONArr;
+        },
+
+        parseSelectString2Array: function(queryFormModel) {
+            var selectString = queryFormModel.select(),
+                selectFields = queryFormModel.select_data_object().select_fields(),
+                checkedFields = (!contrail.checkIfExist(selectString) || selectString.trim() === "") ? [] : selectString.split(", ");
+
+            _.each(selectFields, function(selectFieldValue) {
+                queryFormModel.select_data_object().checked_map()[selectFieldValue.name](checkedFields.indexOf(selectFieldValue.name) !== -1);
+            });
+
+        },
+
+        parseWhereString2Collection: function(queryFormModel) {
+            queryFormModel.where_json(_parseWhereString2JSON(queryFormModel));
+            _parseWhereJSON2Collection(queryFormModel);
+        },
+
+        parseFilterString2Collection: function(queryFormModel) {
+            queryFormModel.filter_json(_parseFilterString2JSON(queryFormModel));
+            _parseFilterJSON2Collection(queryFormModel);
+        },
+
+        parseWhereJSON2Collection: _parseWhereJSON2Collection,
+
+        parseFilterJSON2Collection: _parseFilterJSON2Collection,
+
+        parseWhereString2JSON: _parseWhereString2JSON,
+
+        parseFilterString2JSON: _parseFilterString2JSON,
+
+        getAggregateSelectFields: function(selectArray) {
+            var aggregateSelectArray = [];
+
+            $.each(selectArray, function(selectKey, selectValue) {
+                if (_isAggregateField(selectValue)) {
+                    aggregateSelectArray.push(selectValue);
+                }
+            });
+
+            return aggregateSelectArray;
+        },
+
+        getNameSuffixKey: function(name, nameOptionList) {
+            var nameSuffixKey = -1;
+
+            $.each(nameOptionList, function(nameOptionKey, nameOptionValue) { // eslint-disable-line
+                if(nameOptionValue.name === name) {
+                    nameSuffixKey = _.isNull(nameOptionValue.suffixes) ? -1 : nameOptionKey;
+                    return false;
+                }
+            });
+
+            return nameSuffixKey;
+        },
+
+        //format aggregate field names for grids
+        formatNameForGrid: function(columnName) {
+            var firstIndex = columnName.indexOf("("),
+                lastIndex = columnName.indexOf(")"),
+                aggregateType = columnName.substr(0,firstIndex),
+                aggregateColumnName = columnName.substr(firstIndex + 1,lastIndex - firstIndex - 1);
+
+            if(_isAggregateField(columnName) || aggregateType === "AVG" || aggregateType === "PERCENTILES") {
+                return aggregateType.toUpperCase() + " (" + cowl.get(aggregateColumnName) + ")";
+            } else {
+                return cowl.get(columnName).replace(")", "");
+            }
+        },
+
+        isAggregateField: _isAggregateField,
+
+        getCheckedFields: function(checkedMap) {
+            var checkedFields = [];
+            _.each(checkedMap, function(checkedMapValue, checkedMapKey){
+                if (checkedMapValue()) {
+                    checkedFields.push(checkedMapKey);
+                }
+            });
+
+            return checkedFields;
+        },
+
+        //TODO - Delete this
+        formatXML2JSON: function(xmlString, is4SystemLogs) {
+            console.warn(cowm.DEPRECATION_WARNING_PREFIX + "Function formatXML2JSON of qe-utils is deprecated. Use formatXML2JSON() of core-utils instead.");
+
+            if (xmlString && xmlString !== "") {
+                var xmlDoc = filterXML(xmlString, is4SystemLogs);
+                return convertXML2JSON(serializer.serializeToString(xmlDoc));
+            } else {
+                return "";
+            }
+        },
+
+        getLevelName4Value: function(logValue) {
+            var count = cowc.QE_LOG_LEVELS.length;
+            for (var i = 0; i < count; i++) {
+                if (cowc.QE_LOG_LEVELS[i].value === logValue) {
+                    return cowc.QE_LOG_LEVELS[i].name;
+                }
+            }
+            return logValue;
+        },
+
+        /**
+         * Pass either selectedFlowRecord or formModel attribute to check if session analyzer can be enabled.
+         * @param selectedFlowRecord
+         * @param formModelAttr
+         * @returns {boolean}
+         */
+        enableSessionAnalyzer: function(selectedFlowRecord, formModelAttr) {
+            var enable = true, disable = !enable,
+                keys = ["vrouter", "sourcevn", "sourceip", "destvn", "destip", "sport", "dport"];
+
+            if (contrail.checkIfExist(selectedFlowRecord)) {
+                for (i = 0; i < keys.length; i++) {
+                    if (!selectedFlowRecord.hasOwnProperty(keys[i]) || !contrail.checkIfExist(selectedFlowRecord[keys[i]])) {
+                        return disable;
+                    }
+                }
+            }
+            if (contrail.checkIfExist(formModelAttr)) {
+                var selectArray = formModelAttr.select.split(", ");
+                for (i = 0; i < keys.length; i++) {
+                    if (selectArray.indexOf(keys[i]) === -1) {
+                        return disable;
+                    }
+                }
+            }
+            return enable;
+        },
+    };
+
 });

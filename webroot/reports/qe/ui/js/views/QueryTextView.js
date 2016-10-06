@@ -5,10 +5,9 @@
 define([
     "query-form-view",
     "core-basedir/reports/qe/ui/js/common/qe.utils"
-], function (QueryFormView, qeUtils) {
-
+], function(QueryFormView, qeUtils) {
     var QueryTextView = QueryFormView.extend({
-        render: function () {
+        render: function() {
             var queryPageTmpl = contrail.getTemplate4Id(ctwc.TMPL_QUERY_TEXT),
                 viewConfig = this.attributes.viewConfig,
                 queryFormAttributes = contrail.checkIfExist(viewConfig.queryFormAttributes) ? viewConfig.queryFormAttributes : {};
