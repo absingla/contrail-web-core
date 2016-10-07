@@ -964,6 +964,8 @@ define([
                 .off('scroll', closeFn)
                 .on('scroll', closeFn);
 
+
+
             self.data('contrailCheckedMultiselect', $.extend(true, getDefaultMultiselectMethods(), {
                 getPreChecked: function () {
                     return preChecked;

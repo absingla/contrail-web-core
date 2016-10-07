@@ -143,21 +143,6 @@
                      searchable: true,
                      groupDeleteable: true,
                  }
-                 advanceControls: [{
-                     type: "link",
-                     linkElementId: cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID,
-                     disabledLink: true,
-                     title: cowl.TITLE_DELETE_ALL_QUERY_QUEUE,
-                     iconClass: "fa fa-trash",
-                     onClick: function(event, gridContainer) {
-                         var gridCheckedRows = $(gridContainer).data("contrailGrid").getCheckedRows(),
-                             queryIds = $.map(gridCheckedRows, function(rowValue) {
-                                 return rowValue.queryReqObj.queryId;
-                             });
-
-                         showDeleteQueueModal(queryQueueView, queryQueueType, queryIds, queueColorMap);
-                     }
-                 }]
              },
              body: {
                  options: {
@@ -168,14 +153,6 @@
                      },
                      detail: {
                          template: cowu.generateDetailTemplateHTML(getDetailsTemplate(), cowc.APP_CONTRAIL_CONTROLLER)
-                     },
-                     checkboxSelectable: {
-                         onNothingChecked: function() {
-                             $("#" + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).addClass("disabled-link");
-                         },
-                         onSomethingChecked: function() {
-                             $("#" + cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID).removeClass("disabled-link");
-                         }
                      },
                      actionCell: function(dc) {
                          return getQueueActionColumn(queryQueueView, queryQueueType, dc, queueColorMap);
