@@ -14,7 +14,7 @@ SM_TEST_DIR=$ROOT_DIR/contrail-web-server-manager/webroot/test/ui
 STORAGE_TEST_DIR=$ROOT_DIR/contrail-web-storage/webroot/test/ui
 RUNTEST_ARG=''
 
-if [ $1 = 'set-env' ] ; then
+if [ "$1" = 'set-env' ] ; then
     if command -v nodejs > /dev/null; then
       node_exec=nodejs;
     elif command -v node > /dev/null; then
@@ -30,7 +30,7 @@ fi
 if [ -d "$GRUNT_DIR" ]; then
     IFS=',' read -ra REPOS <<< "$2"
     
-    if [ $1 = 'init' ] ; then
+    if [ "$1" = 'init' ] ; then
         echo -e "== Test infrastructure initialization\n"
         for REPO in "${REPOS[@]}"; do
             if [ $REPO = 'webController' ] ; then
@@ -57,8 +57,8 @@ if [ -d "$GRUNT_DIR" ]; then
         done
     fi
 
-    if [ $1 = 'ui' ] ; then
-        if [ $3 = 'dev' ] ; then
+    if [ "$1" = 'ui' ] ; then
+        if [ ! -z "$3" ] && [ "$3" = 'dev' ] ; then
             RUNTEST_ARG='--force'
         fi
         
