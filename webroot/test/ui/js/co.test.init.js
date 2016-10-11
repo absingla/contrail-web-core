@@ -253,14 +253,29 @@ function testAppInit(testAppConfig) {
                 return webServerInfo;
             }
         }
+
+        function fakeIsAuthenticated(response) {
+            loadUtils.postAuthenticate(response);
+            require(['jquery'],function() {
+                if(globalObj['featureAppDefObj'] == null)
+                    globalObj['featureAppDefObj'] = $.Deferred();
+                if(webServerInfoDefObj == null)
+                    webServerInfoDefObj = $.Deferred();
+                //Ensure the global aliases (like contrail,functions in web-utils) are available before loading
+                //feature packages as they are used in the callback of feature init modules without requiring them
+                require(['nonamd-libs'],function() {
+                    loadFeatureApps(response['featurePkg']);
+                });
+            });
+        }
+
         requirejs(['text!menu.xml',
-            'text!/base/contrail-web-core/webroot/common/ui/templates/core.common.tmpl',
             'co-test-utils',
             'co-test-constants',
             'co-test-messages',
             'co-test-runner',
             'jquery'
-        ], function (menuXML,CoreCommonTmpl,cotu,cotc, cotm, cotr) {
+        ], function (menuXML, cotu, cotc, cotm, cotr) {
             // var fakeServer = sinon.fakeServer.create();
             // fakeServer.autoRespond = true;
             // fakeServer.respondWith("GET", cotu.getRegExForUrl('/api/admin/webconfig/featurePkg/webController'),
@@ -272,10 +287,9 @@ function testAppInit(testAppConfig) {
             // fakeServer.respondWith("GET", cotu.getRegExForUrl('/menu'),
             //     [200, {"Content-Type": "application/xml"}, menuXML]);
 
+            //Dashboard.tmpl substitute
+            $("body").append(cotu.getAppContainerTmpl());
 
-            //Load feature apps
-            if(globalObj['featureAppDefObj'] == null)
-                globalObj['featureAppDefObj'] = $.Deferred();
             require(['core-bundle','nonamd-libs'],function() {
             });
             menuXMLLoadDefObj = $.Deferred();
@@ -293,15 +307,11 @@ function testAppInit(testAppConfig) {
             // });
             // loadUtils.fetchMenu(menuXMLLoadDefObj);
 
-            globalObj['webServerInfo'] = JSON.parse(testAppConfig.webServerInfo);
-            webServerInfoDefObj.resolve();
+            webServerInfoDefObj.done(function() {
+                menuXMLLoadDefObj.resolve(menuXML);
+            });
 
-            /*
-                Adding timeout to simulate the loading core.common.tmpl before loading the feature
-             */
-            setTimeout(function(){
-                loadFeatureApps(globalObj['webServerInfo']['featurePkg']);
-            }, 1000);
+            fakeIsAuthenticated(JSON.parse(testAppConfig.webServerInfo));
 
             require(['chart-libs'],function() {});
             require(['jquery-dep-libs'],function() {});
@@ -335,22 +345,15 @@ function testAppInit(testAppConfig) {
                             contentHandler = new ContentHandler();
                             initBackboneValidation();
                             initCustomKOBindings(window.ko);
-                            initDomEvents();
-
-                            $("body").addClass('navbar-fixed');
-                            $("body").append(cotu.getPageHeaderHTML());
-                            $("body").append(cotu.getSidebarHTML());
-                            $("body").append(CoreCommonTmpl);
-
-                            layoutHandler = new LayoutHandler();
-                            layoutHandlerLoadDefObj.resolve();
-                            layoutHandler.load(menuXML);
+                            //initDomEvents();
 
                             var cssList = cotu.getCSSList();
-
                             for (var i = 0; i < cssList.length; i++) {
                                 $("body").append(cssList[i]);
                             }
+
+                            layoutHandler = new LayoutHandler();
+                            layoutHandlerLoadDefObj.resolve();
 
                             //Start Test runner.
                             requirejs(['co-test-runner'], function (cotr) {
