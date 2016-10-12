@@ -142,7 +142,7 @@
                      refreshable: true,
                      searchable: true,
                      groupDeleteable: true,
-                 }
+                 },
                  advanceControls: [{
                      type: "link",
                      linkElementId: cowl.QE_DELETE_MULTIPLE_QUERY_QUEUE_CONTROL_ID,
@@ -580,7 +580,6 @@
                          elementId: queryResultTextId,
                          view: "QueryTextView",
                          viewPathPrefix: "reports/qe/ui/js/views/",
-                         app: cowc.APP_CONTRAIL_CONTROLLER,
                          viewConfig: {
                              queryFormAttributes: queryFormAttributes
                          }
