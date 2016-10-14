@@ -1,0 +1,81 @@
+<!-- Copyright (c) 2016 Juniper Networks, Inc. All rights reserved. -->
+
+<script type="text/x-handlebars-template" id="core-grid-header-template">
+    <div class="grid-header">
+        <div id="{{gridId}}-header" class="widget-header grid-widget-header">
+            <h4 class="grid-header-text smaller {{headerConfig.title.cssClass}}" data-action="collapse">
+                <i class="grid-header-icon-loading fa fa-spinner fa-spin"></i>
+                <i class="grid-header-icon {{headerConfig.title.icon}} {{headerConfig.title.iconCssClass}} hide"></i> {{headerConfig.title.text}}
+            </h4>
+
+            {{#if headerConfig.defaultControls.collapseable}}
+                <div class="widget-toolbar pull-right">
+                    <a class="widget-toolbar-icon" data-action="collapse">
+                        <i class="collapse-icon fa fa-chevron-up"></i>
+                    </a>
+                </div>
+            {{/if}}
+
+            {{#if headerConfig.defaultControls.refreshable}}
+                <div class="widget-toolbar pull-right">
+                    <a class="widget-toolbar-icon link-refreshable" title="Refresh" data-action="refresh">
+                        <i class="fa fa-repeat"></i>
+                    </a>
+                </div>
+            {{/if}}
+
+            {{#if headerConfig.defaultControls.searchable}}
+                <div class="widget-toolbar pull-right">
+                    <a class="widget-toolbar-icon link-searchbox" title="Search" data-action="search">
+                        <i class="fa fa-search"></i>
+                    </a>
+                    <span class="input-searchbox hidden">
+                        <span class="input-icon">
+                            <input type="text" placeholder="Search {{headerConfig.title.text}}" class="input-medium input-grid-search">
+                            <i class="widget-toolbar-icon fa fa-search"></i>
+                        </span>
+                    </span>
+                </div>
+            {{/if}}
+
+            {{#if headerConfig.defaultControls.exportable}}
+                <div class="widget-toolbar pull-right">
+                    <a class="widget-toolbar-icon" title="Export as CSV" data-action="export">
+                        <i class="fa fa-download"></i>
+                    </a>
+                </div>
+            {{/if}}
+
+            {{#if headerConfig.defaultControls.groupDeleteable}}
+                <div class="widget-toolbar pull-right">
+                    <a class="widget-toolbar-icon disabled-link widget-toolbar-icon-group-delete" title="Delete" data-action="group-delete">
+                        <i class="fa fa-trash"></i>
+                    </a>
+                </div>
+            {{/if}}
+
+            {{#each headerConfig.customControls}}
+                <div class="widget-toolbar pull-right">{{#formatString2HTML this}}{{/formatString2HTML}}</div>
+            {{/each}}
+
+        </div>
+    </div>
+
+    <div class="widget-body-collapsed" data-action="widget-collapse"><a>Click here to expand <i class="fa fa-angle-double-down"></i></a> </div>
+</script>
+
+<script type="text/x-handlebars-template" id="core-grid-footer-template">
+    <div class="grid-footer hidden">
+        <div class="slick-pager">
+            <span class="slick-pager-nav">
+                <span class="pager-control"><i class="fa fa-step-backward icon-disabled pager-control-first"></i></span>
+                <span class="pager-control"> <i class="fa fa-backward icon-disabled pager-control-prev"></i></span>
+                <span class="pager-page-info"><div class="csg-current-page"></div> of <span class="csg-total-page-count"></span></span>
+                <span class="pager-control"> <i class="fa fa-forward icon-disabled pager-control-next"></i></span>
+                <span class="pager-control"> <i class="fa fa-step-forward icon-disabled pager-control-last"></i></span>
+            </span>
+            <span class="slick-pager-info"></span>
+            <span class="slick-pager-sizes"><div class="csg-pager-sizes"></div></span>
+        </div>
+    </div>
+</script>

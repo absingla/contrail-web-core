@@ -82,6 +82,9 @@ define([
         this.TMPL_4COLUMN__2ROW_CONTENT_VIEW = "core-2-row-4-column-template";
         this.TMPL_1COLUMN__1ROW_CONTENT_VIEW = "core-1-row-1-column-template";
 
+        this.TMPL_GRID_HEADER = "core-grid-header-template";
+        this.TMPL_GRID_FOOTER = "core-grid-footer-template";
+
         this.TMPL_ACCORDIAN_VIEW = "core-accordian-view-template";
         this.TMPL_JSON_EDITOR_VIEW = "core-json-editor-view-template";
         this.TMPL_INPUT_VIEW = "core-input-view-template";

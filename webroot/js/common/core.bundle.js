@@ -15,6 +15,7 @@ define([
     'core-contrail-form-elements',
     'chart-utils',
     'text!core-basedir/common/ui/templates/core.common.tmpl',
+    'text!core-basedir/common/ui/templates/core.grid.tmpl',
     'core-basedir/js/common/graph.utils',
     // 'core-alarm-utils',
     // 'core.app.utils',
@@ -53,7 +54,7 @@ define([
     'mon-infra-sysinfo-view',
     'mon-infra-dashboard-view'
 ], function (CoreHandlebarsUtils, CoreUtils, CoreHashUtils, CoreConstants, CoreFormatters, Cache, CoreLabels,
-             CoreMessages, CoreViewsDefaultConfig, Contrail, CoreContrailFormElements, ChartUtils, CoreCommonTmpls) {
+             CoreMessages, CoreViewsDefaultConfig, Contrail, CoreContrailFormElements, ChartUtils, CoreCommonTmpls, CoreGridTmpls) {
     cowc = CoreConstants;
     cowf = new CoreFormatters();
     cowl = new CoreLabels();
@@ -68,7 +69,9 @@ define([
                 cowc.DROPDOWN_VALUE_SEPARATOR);
         });
     });
+
     $("body").append(CoreCommonTmpls);
+    $("body").append(CoreGridTmpls);
 });
 
 
