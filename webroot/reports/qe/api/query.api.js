@@ -44,6 +44,14 @@ function getTables(req, res, appData) {
     sendCachedJSON4Url(opsUrl, res, 3600, appData);
 }
 
+// Handle request to get valid values of a table column.
+function getColumnValues(req, res, appData)
+{
+    var opsUrl =
+        global.GET_TABLE_INFO_URL + "/" + req.param("tableName") +
+        "/column-values/" + req.param("column");
+    sendCachedJSON4Url(opsUrl, res, 3600, appData);
+}
 // Handle request to get table schema.
 function getTableSchema(req, res, appData) {
     var opsUrl = global.GET_TABLE_INFO_URL + "/" + req.param("tableName") + "/schema";
@@ -68,7 +76,9 @@ function getTableColumnValues(req, res, appData) {
         setMicroTimeRange(objectQuery, startTime, endTime);
         queryOptions = { queryId: null, async: false, status: "run", queryJSON: objectQuery, errorMessage: "" };
 
-        executeQuery(res, queryOptions, appData);
+        executeQuery(res.req, queryOptions, appData, null, function(error, data) {
+            commonUtils.handleJSONResponse(error, res, data);
+        });
     }
 }
 
@@ -182,13 +192,23 @@ function getCurrentTime(req, res) {
 }
 
 function runQuery(req, res, queryReqObj, appData, isGetQ) {
+    runQueryCB(req, queryReqObj, appData, isGetQ, function(error, data) {
+        commonUtils.handleJSONResponse(error, res, data);
+    });
+}
+
+function runQueryCB (req, queryReqObj, appData, isGetQ, callback)
+{
     var queryId = queryReqObj.queryId,
         chunk = queryReqObj.chunk,
         chunkSize = parseInt(queryReqObj.chunkSize),
         sort = queryReqObj.sort,
         cachedResultConfig;
 
-    cachedResultConfig = { "queryId": queryId, "chunk": chunk, "sort": sort, "chunkSize": chunkSize, "toSort": true };
+    cachedResultConfig = {
+        "queryId": queryId, "chunk": chunk, "sort": sort,
+        "chunkSize": chunkSize, "toSort": true
+    };
 
     logutils.logger.debug("Query Request: " + JSON.stringify(queryReqObj));
 
@@ -196,24 +216,25 @@ function runQuery(req, res, queryReqObj, appData, isGetQ) {
         redisClient.exists(queryId + ":chunk1", function(err, exists) {
             if (err) {
                 logutils.logger.error(err.stack);
-                commonUtils.handleJSONResponse(err, res, null);
+                callback(err, null);
             } else if (exists === 1) {
-                returnCachedQueryResult(res, cachedResultConfig, handleQueryResponse);
+                returnCachedQueryResult(cachedResultConfig, handleQueryResponse,
+                                        callback);
             } else {
-                runNewQuery(req, res, queryId, queryReqObj, appData, isGetQ);
+                runNewQuery(req, queryId, queryReqObj, appData, isGetQ, callback);
             }
         });
     } else {
-        runNewQuery(req, res, null, queryReqObj, appData, isGetQ);
+        runNewQuery(req, null, queryReqObj, appData, isGetQ, callback);
     }
 }
 
-function runNewQuery(req, res, queryId, queryReqObj, appData, isGetQ) {
+function runNewQuery(req, queryId, queryReqObj, appData, isGetQ, callback) {
     var queryOptions = getQueryOptions(queryReqObj),
         queryJSON = getQueryJSON4Table(queryReqObj);
 
     queryOptions.queryJSON = queryJSON;
-    executeQuery(res, queryOptions, appData, isGetQ);
+    executeQuery(req, queryOptions, appData, isGetQ, callback);
 }
 
 function getQueryOptions(queryReqObj) {
@@ -247,27 +268,34 @@ function getQueryOptions(queryReqObj) {
     return queryOptions;
 }
 
-function executeQuery(res, queryOptions, appData, isGetQ) {
+function executeQuery(req, queryOptions, appData, isGetQ, callback) {
     var queryJSON = queryOptions.queryJSON,
         async = queryOptions.async,
         asyncHeader = { "Expect": "202-accepted" };
 
-    logutils.logger.debug("Query sent to Opserver at " + new Date() + " " + JSON.stringify(queryJSON));
+    logutils.logger.debug("Query sent to Opserver at " + new Date() + " " +
+                          JSON.stringify(queryJSON));
     queryOptions.startTime = new Date().getTime();
     opApiServer.apiPost(global.RUN_QUERY_URL, queryJSON, appData,
         function (error, jsonData) {
             if (error) {
                 logutils.logger.error("Error Run Query: " + error.stack);
-                commonUtils.handleJSONResponse(error, res, null);
+                callback(error, null);
             } else if (async) {
-                initPollingConfig(queryOptions, queryJSON.start_time, queryJSON.end_time);
+                initPollingConfig(queryOptions, queryJSON.start_time,
+                                  queryJSON.end_time);
                 queryOptions.url = jsonData.href;
                 queryOptions.opsQueryId = parseOpsQueryIdFromUrl(jsonData.href);
-                setTimeout(fetchQueryResults, 3000, res, jsonData, queryOptions, appData);
-                queryOptions.intervalId = setInterval(fetchQueryResults, queryOptions.pollingInterval, res, jsonData, queryOptions, appData);
-                queryOptions.timeoutId = setTimeout(stopFetchQueryResult, queryOptions.pollingTimeout, queryOptions);
+                setTimeout(fetchQueryResults, 3000, req, jsonData, queryOptions,
+                           appData, callback);
+                queryOptions.intervalId =
+                    setInterval(fetchQueryResults, queryOptions.pollingInterval,
+                                req, jsonData, queryOptions, appData, callback);
+                queryOptions.timeoutId =
+                    setTimeout(stopFetchQueryResult, queryOptions.pollingTimeout,
+                               queryOptions);
             } else {
-                processQueryResults(res, jsonData, queryOptions, isGetQ);
+                processQueryResults(req, jsonData, queryOptions, isGetQ, callback);
             }
         }, async ? asyncHeader : {});
 }
@@ -304,7 +332,7 @@ function initPollingConfig(options, fromTime, toTime) {
     }
 }
 
-function fetchQueryResults(res, jsonData, queryOptions, appData) {
+function fetchQueryResults(req, jsonData, queryOptions, appData, callback) {
     var progress;
 
     opApiServer.apiGet(jsonData.href, appData, function(error, queryResults) {
@@ -316,7 +344,7 @@ function fetchQueryResults(res, jsonData, queryOptions, appData) {
             clearTimeout(queryOptions.timeoutId);
             queryOptions.progress = progress;
             if (queryOptions.status === "run") {
-                commonUtils.handleJSONResponse(error, res, null);
+                callback(error, null);
             } else if (queryOptions.status === "queued") {
                 queryOptions.status = "error";
                 queryOptions.errorMessage = error;
@@ -333,11 +361,11 @@ function fetchQueryResults(res, jsonData, queryOptions, appData) {
                 queryOptions.progress = progress;
                 queryOptions.status = "queued";
                 updateQueryStatus(queryOptions);
-                commonUtils.handleJSONResponse(null, res, {status: "queued", data: []});
+                callback(null, {status: "queued", data: []});
             }
-            fetchQueryResults(res, jsonData, queryOptions, appData);
+            fetchQueryResults(req, jsonData, queryOptions, appData, callback);
         } else if (_.isNil(progress) || progress === "undefined") {
-            processQueryResults(res, queryResults, queryOptions);
+            processQueryResults(req, queryResults, queryOptions, null, callback);
                 //TODO: Query should be marked complete
             queryOptions.endTime = new Date().getTime();
             queryOptions.status = "completed";
@@ -346,7 +374,7 @@ function fetchQueryResults(res, jsonData, queryOptions, appData) {
             queryOptions.progress = progress;
             queryOptions.status = "queued";
             updateQueryStatus(queryOptions);
-            commonUtils.handleJSONResponse(null, res, { status: "queued", data: [] });
+            callback(null, { status: "queued", data: [] });
         }
     });
 }
@@ -368,7 +396,7 @@ function sendCachedJSON4Url(opsUrl, res, expireTime, appData) {
 }
 
 
-function returnCachedQueryResult(res, queryOptions, callback) {
+function returnCachedQueryResult(queryOptions, handleQRespCB, callback) {
     var queryId = queryOptions.queryId,
         sort = queryOptions.sort,
         statusJSON;
@@ -384,15 +412,15 @@ function returnCachedQueryResult(res, queryOptions, callback) {
                     queryOptions.toSort = false;
                 }
             }
-            callback(res, queryOptions);
+            handleQRespCB(queryOptions, callback);
         });
     } else {
         queryOptions.toSort = false;
-        callback(res, queryOptions);
+        handleQRespCB(queryOptions, callback);
     }
 }
 
-function handleQueryResponse(res, options) {
+function handleQueryResponse(options, callback) {
     var toSort = options.toSort,
         queryId = options.queryId,
         chunk = options.chunk,
@@ -405,7 +433,7 @@ function handleQueryResponse(res, options) {
             if (exists) {
                 chunk = 1;
             } else {
-                commonUtils.handleJSONResponse(null, res, {data: [], total: 0});
+                callback(null, {data: [], total: 0});
             }
         });
     }
@@ -413,7 +441,7 @@ function handleQueryResponse(res, options) {
         var resultJSON = result ? JSON.parse(result) : {data: [], total: 0};
         if (error) {
             logutils.logger.error(error.stack);
-            commonUtils.handleJSONResponse(error, res, null);
+            callback(error, null);
         } else if (toSort) {
             sortJSON(resultJSON.data, sort, function () {
                 var startIndex, endIndex, total, responseJSON;
@@ -421,11 +449,13 @@ function handleQueryResponse(res, options) {
                 startIndex = (chunk - 1) * chunkSize;
                 endIndex = (total < (startIndex + chunkSize)) ? total : (startIndex + chunkSize);
                 responseJSON = resultJSON.data.slice(startIndex, endIndex);
-                commonUtils.handleJSONResponse(null, res, {data: responseJSON, total: total, queryJSON: resultJSON.queryJSON});
+                callback(null,
+                         {data: responseJSON, total: total,
+                          queryJSON: resultJSON.queryJSON});
                 saveQueryResult2Redis(resultJSON.data, total, queryId, chunkSize, sort, resultJSON.queryJSON);
             });
         } else {
-            commonUtils.handleJSONResponse(null, res, resultJSON);
+            callback(null, resultJSON);
         }
     });
 }
@@ -584,13 +614,14 @@ function createStatRedisKey (req, query) {
     return redisKey;
 }
 
-function saveDataToRedisByReqPayload (res, resJson) {
-    var reqPayload = res.req.body;
+function saveDataToRedisByReqPayload (req, resJson) {
+    if (null == req) {
+        return;
+    }
+    var reqPayload = req.body;
 
     if (global.HTTP_REQUEST_GET === res.req.method) {
-        reqPayload = res.req.query;
-    } else {
-        reqPayload = res.req.body;
+        reqPayload = req.query;
     }
 
     var redisKey = createStatRedisKey(res.req, reqPayload);
@@ -626,7 +657,8 @@ function getQueryData (req, res, appData) {
     });
 }
 
-function processQueryResults(res, queryResults, queryOptions, isGetQ) {
+function processQueryResults(req, queryResults, queryOptions, isGetQ,
+                             callback) {
     var startDate = new Date(),
         startTime = startDate.getTime(),
         queryId = queryOptions.queryId,
@@ -638,8 +670,12 @@ function processQueryResults(res, queryResults, queryOptions, isGetQ) {
         endTime, total, responseJSON, resultJSON;
 
     endTime = endDate.getTime();
-    resultJSON = (queryResults && !isEmptyObject(queryResults)) ? queryResults.value : [];
-    logutils.logger.debug("Query results (" + resultJSON.length + " records) received from opserver at " + endDate + " in " + ((endTime - startTime) / 1000) + "secs. " + JSON.stringify(queryJSON));
+    resultJSON = (queryResults && !isEmptyObject(queryResults)) ?
+        queryResults.value : [];
+    logutils.logger.debug("Query results (" + resultJSON.length +
+                          " records) received from opserver at " +
+                          endDate + " in " + ((endTime - startTime) / 1000) +
+                          "secs. " + JSON.stringify(queryJSON));
     total = resultJSON.length;
 
     if (queryOptions.status === "run") {
@@ -657,16 +693,17 @@ function processQueryResults(res, queryResults, queryOptions, isGetQ) {
             chunkSize: chunkSize,
             serverSideChunking: true
         };
-        commonUtils.handleJSONResponse(null, res, resJson);
+        callback(null, resJson);
         if (isGetQ === true) {
-            saveDataToRedisByReqPayload(res, resJson);
+            saveDataToRedisByReqPayload(req, resJson);
         }
     }
 
     if(!_.isNil(queryId)) {
         var workerData = {};
 
-        saveQueryResult2Redis(resultJSON, total, queryId, chunkSize, getSortStatus4Query(queryJSON), queryJSON);
+        saveQueryResult2Redis(resultJSON, total, queryId, chunkSize,
+                              getSortStatus4Query(queryJSON), queryJSON);
         workerData.selectFields = queryJSON.select_fields;
         workerData.dataJSON = resultJSON;
 
@@ -1093,7 +1130,6 @@ function parseFilters(query, filters) {
             if (filterBy.length > 0) {
                 parseFilterBy(query, filterBy);
             }
-
         } else if (filter.indexOf("limit:") !== -1) {
             limitBy = splitString2Array(filter, "limit:")[1];
 
@@ -1116,24 +1152,41 @@ function parseFilters(query, filters) {
     }
 }
 
-function parseFilterBy(query, filterBy) {
+function parseFilterBy(query, filterBy)
+{
     var filtersArray, filtersLength, filterClause = [],
         i, filterObj;
+    if (_.isNil(filterBy) || ("" === filterBy.trim())) {
+        return;
+    }
+    filtersArray = filterBy.split(" OR ");
+    filtersLength = filtersArray.length;
+    query.filter = [];
+    if (!filtersLength) {
+        filterAndClause = parseFilterByAndClause(query, filterBy);
+        query.filter.push(filterAndClause);
+        return;
+    }
+    for (i = 0; i < filtersLength; i++) {
+        filtersArray[i] = filtersArray[i].trim();
+        filterAndClause = parseFilterByAndClause(query, filtersArray[i]);
+        query.filter.push(filterAndClause);
+    }
+}
 
+function parseFilterByAndClause (query, filterBy)
+{
+    var filtersArray, filtersLength, filterClause = [],
+        i, filterObj;
     if (!_.isNil(filterBy) && filterBy.trim() !== "") {
-        filtersArray = filterBy.split(" AND ");
+        filtersArray = filterBy.replace("(", "").replace(")", "").split(" AND ");
         filtersLength = filtersArray.length;
         for (i = 0; i < filtersLength; i += 1) {
             filtersArray[i] = filtersArray[i].trim();
             filterObj = getFilterObj(filtersArray[i]);
             filterClause.push(filterObj);
         }
-        // Loop through the default filters and add the UI submitted ones to each
-        for (var j = 0; j < query.filter.length; j++) {
-            var filterArr = query.filter[j];
-            filterArr = filterArr.concat(filterClause);
-            query.filter[j] = filterArr;
-        }
+        return filterClause;
     }
 }
 
@@ -1160,8 +1213,9 @@ function parseLimitBy(query, limitBy) {
 }
 
 function parseSortOrder(query, sortOrder) {
+    var sort = ("asc" === sortOrder) ? 1 : 2;
     try {
-        query.sort = sortOrder;
+        query.sort = sort;
     } catch (error) {
         logutils.logger.error(error.stack);
     }
@@ -1316,7 +1370,9 @@ function isEmptyObject(obj) {
 
 exports.runGETQuery = runGETQuery;
 exports.runPOSTQuery = runPOSTQuery;
+exports.runQueryCB = runQueryCB;
 exports.getTables = getTables;
+exports.getColumnValues = getColumnValues;
 exports.getTableColumnValues = getTableColumnValues;
 exports.getTableSchema = getTableSchema;
 exports.getQueryQueue = getQueryQueue;

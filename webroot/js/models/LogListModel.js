@@ -4,10 +4,28 @@
 
 define(['contrail-list-model'], function(ContrailListModel) {
     var LogListModel = function() {
+        var postData = {
+            async: false,
+            formModelAttrs: {
+                from_time_utc: "now-10m",
+                to_time_utc: "now",
+                limit: 10,
+                filters: "limit: 10",
+                level: 4,
+                table_name: "MessageTable",
+                select: "MessageTS, Type, Source, ModuleId, Messagetype, " +
+                    "Xmlmessage, Level, Category",
+                filters: "filter: (Type = 1 AND Level <= 4) OR (Type = 10 AND " +
+                    "Level <= 4) & limit: 10 & sort_fields: MessageTS & " +
+                    "sort: desc"
+            }
+        };
         var listModelConfig = {
             remote : {
                 ajaxConfig : {
-                    url : cowl.DASHBOARD_LOGS_URL
+                    url : '/api/qe/query',
+                    type: 'POST',
+                    data: JSON.stringify(postData)
                 },
                 dataParser : parseDashboardLogs,
             },
