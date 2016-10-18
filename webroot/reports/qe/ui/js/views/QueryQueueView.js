@@ -157,7 +157,7 @@
                      actionCell: function(dc) {
                          return getQueueActionColumn(queryQueueView, queryQueueType, dc, queueColorMap);
                      },
-                     rowDelete: true,
+                     rowDelete: {title: cowl.TITLE_DELETE_QUERY},
                      deleteActionConfig: getDeleteModalConfig(queryQueueView, queryQueueType, queueColorMap)
 
                  },
@@ -320,6 +320,7 @@
          var queryQueueListModel = queryQueueView.model,
              queryFormModelData = queryQueueItem.queryReqObj.formModelAttrs,
              status = queryQueueItem.status,
+             queryId = queryQueueItem.queryReqObj.queryId,
              errorMessage = queryQueueItem.errorMessage,
              queryFormTimeRange = queryFormModelData.time_range,
              actionCell = [];
@@ -608,7 +609,6 @@
                          elementId: queryResultTextId,
                          view: "QueryTextView",
                          viewPathPrefix: "reports/qe/ui/js/views/",
-                         app: cowc.APP_CONTRAIL_CONTROLLER,
                          viewConfig: {
                              queryFormAttributes: queryFormAttributes
                          }
