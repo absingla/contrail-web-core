@@ -30,20 +30,23 @@ define([
             },
             body: {
                 options: {
-                    actionCell: false,
+                    // slick Grid options
                     autoHeight: true,
-                    autoRefresh: false,
-                    checkboxSelectable: true,
                     forceFitColumns: true,
-                    detail: {
-                        template: '<pre>{{{formatJSON2HTML this.data this.ignoreKeys}}}</pre>'
-                    },
+                    fullWidthRows: true,
+                    rowHeight: 30,
                     enableCellNavigation: true,
                     enableColumnReorder: false,
                     enableTextSelectionOnCells: true,
-                    fullWidthRows: true,
                     multiColumnSort: true,
-                    rowHeight: 30,
+
+                    // Custom added Options
+                    actionCell: false,
+                    autoRefresh: false,
+                    checkboxSelectable: true, // option to show checkbox
+                    detail: {
+                        template: '<pre>{{{formatJSON2HTML this.data this.ignoreKeys}}}</pre>'
+                    },
                     fixedRowHeight: false,
                     gridHeight: 500,
                     rowSelectable: false,

@@ -44,6 +44,7 @@ define([
             }
 
             gridConfig = $.extend(true, {}, covdc.gridConfig, viewConfig.elementConfig);
+            //TODO - check if this is needed
             customGridConfig = $.extend(true, {}, gridConfig);
 
             contrailListModel = (contrail.checkIfExist(self.model) && self.model._type === "contrailListModel") ? self.model : new ContrailListModel(listModelConfig);
@@ -126,6 +127,8 @@ define([
         initGridHeader(grid, gridContainer, gridConfig, contrailGridObject.searchColumns);
         gridColumnsObject = initGridColumnOptions(gridContainer, gridConfig, contrailListModel, checkboxSelector, contrailGridObject.gridSortColumns);
         gridContainer.append('<div class="grid-body"></div>');
+
+        //TODO - autoHeight doesn't work for autoHeight = false
         if (gridOptions.autoHeight === false) {
             gridContainer.find(".grid-body").height(gridOptions.gridHeight);
         }
@@ -170,7 +173,7 @@ define([
         $.each(gridColumns, function (columnKey, columnValue) {
             // Setting sortable:true for columns wherever necessary
             if (gridOptions.sortable !== false) {
-                if (!contrail.checkIfExist(columnValue.sortable)) {
+                    if (!contrail.checkIfExist(columnValue.sortable)) {
                     gridColumns[columnKey].sortable = true;
                 }
                 if (contrail.checkIfExist(gridOptions.sortable.defaultSortCols) && contrail.checkIfExist(gridOptions.sortable.defaultSortCols[columnValue.field])) {
@@ -254,7 +257,8 @@ define([
         }
 
         function applyColumnPicker(event, ui) {
-            var checkedColumns = $(gridContainer).find("#columnPicker").data("contrailCheckedMultiselect").getChecked();
+            var grid = $(gridContainer).data("contrailGrid")._grid,
+                checkedColumns = $(gridContainer).find("#columnPicker").data("contrailCheckedMultiselect").getChecked();
             function getColumnIdsPicked(checkedColumns) {
                 var checkedColumnIds = [];
                 if (checkedColumns.length !== 0) {
@@ -473,6 +477,7 @@ define([
                         var enabled = true,
                             selectedRows = gridContainer.data("contrailGrid")._grid.getSelectedRows();
 
+                        //TODO - Check if we are using enableRowCheckbox
                         if (contrail.checkIfFunction(gridOptions.checkboxSelectable.enableRowCheckbox)) {
                             enabled = gridOptions.checkboxSelectable.enableRowCheckbox(dc);
                         }
@@ -695,7 +700,6 @@ define([
             gridContainer.find(".slick-row-detail-template-" + id).parents(".slick-row-detail").remove();
         }
     }
-
 
     function addGridRowActionDroplist(actionConfig, gridConfig, gridContainer, rowIndex, targetElement, rowData) {
         var gridOptions = gridConfig.body.options,
