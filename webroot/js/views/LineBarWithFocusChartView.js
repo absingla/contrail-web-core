@@ -30,16 +30,16 @@ define([
 
             if (self.model !== null) {
                 if (self.model.loadedFromCache || !(self.model.isRequestInProgress())) {
-                    self.renderChart(selector, viewConfig, self.model);
+                    self.updateChart(selector, viewConfig, self.model);
                 }
 
                 self.model.onAllRequestsComplete.subscribe(function () {
-                    self.renderChart(selector, viewConfig, self.model);
+                    self.updateChart(selector, viewConfig, self.model);
                 });
 
                 if (viewConfig.loadChartInChunks) {
                     self.model.onDataUpdate.subscribe(function () {
-                        self.renderChart(selector, viewConfig, self.model);
+                        self.updateChart(selector, viewConfig, self.model);
                     });
                 }
             }
@@ -72,33 +72,13 @@ define([
 
             //Store the chart object as a data attribute so that the chart can be updated dynamically
             $(selector).data('chart', chartModel);
+
             if (chartOptions['showLegend'] && chartOptions['legendView'] != null) {
-                var barData = [], lineData = [];
-                $.each(data, function(idx, obj) {
-                    if (obj['bar']) {
-                        barData.push({
-                            name: obj['key'],
-                            color: obj['color']
-                        })
-                    } else {
-                        lineData.push({
-                            name: obj['key'],
-                            color: obj['color']
-                        })
-                    }
-                });
-                new chartOptions['legendView']({
+                self.legendView = new chartOptions['legendView']({
                     el: $(selector),
-                    legendConfig: {
-                        showLegend: chartOptions['showLegend'],
-                        legendData: [{
-                            label: getValueByJsonPath(chartOptions, 'title'),
-                            legend: barData
-                        }, {
-                            legend: lineData
-                        }]
-                    }
+                    viewConfig: getLegendViewConfig(chartOptions, data)
                 });
+                self.legendView.render();
             }
 
             nv.addGraph(function () {
@@ -110,16 +90,11 @@ define([
                 } else {
                     setData2Chart(self, chartViewConfig, chartViewModel, chartModel);
                 }
-                var resizeFunction = function (e) {
-                    if ($(selector).is(':visible')) {
-                        setData2Chart(self, chartViewConfig, chartViewModel, chartModel);
-                    }
-                };
-                $(window)
-                    .off('resize', resizeFunction)
-                    .on('resize', resizeFunction);
 
-                nv.utils.windowResize(chartModel.update);
+                self.resizeFn = _.debounce(function () {
+                    chUtils.updateChartOnResize($(self.$el), self.chartModel);
+                }, 500);
+                nv.utils.windowResize(self.resizeFn);
 
                 chartModel.dispatch.on('stateChange', function (e) {
                     nv.log('New State:', JSON.stringify(e));
@@ -161,6 +136,12 @@ define([
             $(selector).find('.nv-requestState').remove();
         },
 
+
+        resize: function () {
+            var self = this;
+            _.isFunction(self.resizeFn) && self.resizeFn();
+        },
+
         getChartViewConfig: function(chartData, chartOptions) {
             var chartViewConfig = {};
 
@@ -184,6 +165,22 @@ define([
             chartViewConfig['chartOptions'] = chartOptions;
 
             return chartViewConfig;
+        },
+
+        updateChart: function(selector, viewConfig, dataModel) {
+            var self = this,
+                dataModel = dataModel ? dataModel : self.model(),
+                data = dataModel.getItems();
+
+            if (_.isFunction(viewConfig.parseFn)) {
+                data = viewConfig['parseFn'](data, viewConfig.chartOptions);
+            }
+            //Todo remove the dependency to calculate the chartData and chartOptions via below function.
+            var chartViewConfig = self.getChartViewConfig(data, viewConfig.chartOptions);
+            //If legendView exist, update with new config built from new data.
+            if (self.legendView) self.legendView.update(getLegendViewConfig(chartViewConfig.chartOptions, data));
+
+            setData2Chart(self, chartViewConfig, dataModel, self.chartModel);
         }
     });
 
@@ -237,6 +234,36 @@ define([
         forceY2 = cowu.getForceAxis4Chart(dataAllLines, "y", defaultForceY2);
         return forceY2;
     };
+
+    function formatLegendData(data) {
+        var barData = [], lineData = [];
+        _.each(data, function(obj) {
+            if (obj['bar']) {
+                barData.push({
+                    name: obj['key'],
+                    color: obj['color']
+                })
+            } else {
+                lineData.push({
+                    name: obj['key'],
+                    color: obj['color']
+                })
+            }
+        });
+        return {bar: barData, line: lineData};
+    };
+
+    function getLegendViewConfig(chartOptions, data) {
+        return {
+            showLegend: chartOptions['showLegend'],
+            legendData: [{
+                label: getValueByJsonPath(chartOptions, 'title'),
+                legend: formatLegendData(data).bar
+            }, {
+                legend: formatLegendData(data).line
+            }]
+        };
+    }
 
     return LineBarWithFocusChartView;
 });
