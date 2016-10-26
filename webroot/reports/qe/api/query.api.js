@@ -17,6 +17,8 @@ var assert = require("assert"), util = require("util"),
     redisReadStream = require("redis-rstream"),
     Worker = require("webworker-threads").Worker,
     crypto = require("crypto"),
+    qUtils = require(process.mainModule.exports.corePath +
+                     '/src/serverroot/common/queries.utils.js'),
     _ = require("lodash");
 
 var redisServerPort = (config.redis_server_port) ? config.redis_server_port : global.DFLT_REDIS_SERVER_PORT,
@@ -30,7 +32,8 @@ if (!module.parent) {
 
 function runGETQuery(req, res, appData) {
     var reqQuery = req.query;
-    runQuery(req, res, reqQuery, appData);
+    req.query = qUtils.formatQEUIQuery(reqQuery);
+    runQuery(req, res, req.query, appData);
 }
 
 function runPOSTQuery(req, res, appData) {
@@ -619,8 +622,7 @@ function saveDataToRedisByReqPayload (req, resJson) {
         return;
     }
     var reqPayload = req.body;
-
-    if (global.HTTP_REQUEST_GET === res.req.method) {
+    if (global.HTTP_REQUEST_GET === req.method) {
         reqPayload = req.query;
     }
 
