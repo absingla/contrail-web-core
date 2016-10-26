@@ -56,9 +56,7 @@ define([
                 defaultZeroLineDisplay = getValueByJsonPath(viewConfig,'chartOptions;defaultZeroLineDisplay', false);
 
             if (contrail.checkIfFunction(viewConfig['parseFn'])) {
-                data = viewConfig['parseFn'](data);
-            } else if (data != null && data.length > 0) {
-                data = cowu.chartDataFormatter(data, viewConfig['chartOptions']);
+                data = viewConfig['parseFn'](data, viewConfig['chartOptions']);
             }
 
             //plot default line
@@ -74,7 +72,9 @@ define([
                 viewConfig.chartOptions.defaultDataStatusMessage = false;
                 data.push(defData);
             }
-
+            if (cowu.isGridStackWidget($(selector)) && $(selector).parents('.gridstack-item').height() != 0) {
+                viewConfig['chartOptions']['height'] = $(selector).parents('.gridstack-item').height() - 40;
+            }
             chartViewConfig = self.getChartViewConfig(data, viewConfig);
             chartOptions = chartViewConfig['chartOptions'];
             chartModel = new LineWithFocusChartModel(chartOptions);
@@ -91,24 +91,13 @@ define([
 
             //Store the chart object as a data attribute so that the chart can be updated dynamically
             $(selector).data('chart', chartModel);
+
             if (chartOptions['showLegend'] && chartOptions['legendView'] != null) {
-                var lineData = [];
-                $.each(data, function(idx, obj) {
-                    lineData.push({
-                        name: obj['key'],
-                        color: obj['color']
-                    });
-                });
-                new chartOptions['legendView']({
+                self.legendView = new chartOptions['legendView']({
                     el: $(selector),
-                    legendConfig: {
-                        showLegend: chartOptions['showLegend'],
-                        legendData: [{
-                            label: getValueByJsonPath(chartOptions, 'title'),
-                            legend: lineData
-                        }]
-                    }
+                    viewConfig: getLegendViewConfig(chartOptions, data)
                 });
+                self.legendView.render();
             }
 
             if (!($(selector).is(':visible'))) {
@@ -218,15 +207,14 @@ define([
 
             //Todo 'parseFn' may not be defined always. May need to make chartDataFormatter with a config.
             if (_.isFunction(viewConfig.parseFn)) {
-                data = viewConfig['parseFn'](data);
-            } else if (data != null && data.length > 0) {
-                data = cowu.chartDataFormatter(data, viewConfig['chartOptions']);
+                data = viewConfig['parseFn'](data, viewConfig['chartOptions']);
             }
             //Todo remove the dependency to calculate the chartData and chartOptions via below function.
             var chartViewConfig = self.getChartViewConfig(data, viewConfig);
+            //If legendView exist, update with new config built from new data.
+            if (self.legendView) self.legendView.update(getLegendViewConfig(chartViewConfig.chartOptions, data));
 
             setData2Chart(self, chartViewConfig, dataModel, self.chartModel);
-
         }
     });
 
@@ -287,6 +275,27 @@ define([
         forceY = cowu.getForceAxis4Chart(dataAllLines, yAxisDataField, defaultForceY);
         return forceY;
     };
+
+    function formatLegendData(data) {
+        var lineData = [];
+        _.each(data, function(obj) {
+            lineData.push({
+                name: obj['key'],
+                color: obj['color']
+            });
+        });
+        return {line: lineData};
+    };
+
+    function getLegendViewConfig(chartOptions, data) {
+        return {
+            showLegend: chartOptions['showLegend'],
+            legendData: [{
+                label: getValueByJsonPath(chartOptions, 'title'),
+                legend: formatLegendData(data).line
+            }]
+        };
+    }
 
     return LineWithFocusChartView;
 });
