@@ -657,7 +657,7 @@ define([
 
         this.checkAndRefreshContrailGrids = function(elements) {
             if (_.isArray(elements)) {
-                _.each(elements, function(elementKey, elementValue) {
+                _.each(elements, function(elementValue) {
                     if (contrail.checkIfExist($(elementValue).data('contrailGrid'))) {
                         $(elementValue).data('contrailGrid').refreshView();
                     }
