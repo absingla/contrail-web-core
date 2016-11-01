@@ -9,7 +9,7 @@ define([
     "knockback",
     "validation",
     "core-constants",
-    "/reports/udd/ui/js/views/BaseContentConfigView.js"
+    "core-basedir/reports/udd/ui/js/views/BaseContentConfigView"
 ], function(ko, kb, kbValidation, coreConstants, BaseContentConfigView) {
     return BaseContentConfigView.extend({
         render: function() {
@@ -90,6 +90,22 @@ define([
                                 }
                             }
                         }, {
+                            elementId: "lineValue",
+                            view: "FormDropdownView",
+                            viewConfig: {
+                                label: window.cowl.CHART_LINE_VALUE,
+                                path: "lineValue",
+                                dataBindValue: "lineValue",
+                                dataBindOptionList: "yAxisValues",
+                                class: "col-xs-6",
+                                elementConfig: {
+                                    placeholder: window.cowl.CHART_LINE_VALUE_PLACEHOLDER,
+                                    defaultValueId: 1
+                                }
+                            }
+                        }]
+                    }, {
+                        columns: [{
                             elementId: "barValueUnit",
                             view: "FormDropdownView",
                             viewConfig: {
@@ -103,22 +119,6 @@ define([
                                     dataValueField: "id",
                                     data: coreConstants.INFERRED_UNIT_TYPES,
                                     placeholder: window.cowl.CHART_BAR_VALUE_UNIT_PLACEHOLDER,
-                                    defaultValueId: 1
-                                }
-                            }
-                        }]
-                    }, {
-                        columns: [{
-                            elementId: "lineValue",
-                            view: "FormDropdownView",
-                            viewConfig: {
-                                label: window.cowl.CHART_LINE_VALUE,
-                                path: "lineValue",
-                                dataBindValue: "lineValue",
-                                dataBindOptionList: "yAxisValues",
-                                class: "col-xs-6",
-                                elementConfig: {
-                                    placeholder: window.cowl.CHART_LINE_VALUE_PLACEHOLDER,
                                     defaultValueId: 1
                                 }
                             }
