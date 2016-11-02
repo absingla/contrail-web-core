@@ -1,10 +1,14 @@
 /*
  * Copyright (c) 2014 Juniper Networks, Inc. All rights reserved.
  */
-var logutils = require('../utils/log.utils');
-var commonUtils = require('../utils/common.utils');
-var global = require('./global');
-var opApiServer = require('./opServer.api');
+var logutils = require(process.mainModule.exports.corePath +
+                       "/src/serverroot/utils/log.utils");
+var commonUtils = require(process.mainModule.exports.corePath +
+                          '/src/serverroot/utils/common.utils');
+var global = require(process.mainModule.exports.corePath +
+                     '/src/serverroot/common/global');
+var opApiServer = require(process.mainModule.exports.corePath +
+                          '/src/serverroot/common/opServer.api');
 
 function createTimeQueryJsonObj (minsSince, endTime)
 {
@@ -26,8 +30,8 @@ function createTimeQueryJsonObj (minsSince, endTime)
     }
 
     if (minsSince != -1) {
-        startTime = 
-            commonUtils.getUTCTime(commonUtils.adjustDate(new Date(endTime), 
+        startTime =
+            commonUtils.getUTCTime(commonUtils.adjustDate(new Date(endTime),
                                                           {'min':-minsSince}).getTime());
     }
 

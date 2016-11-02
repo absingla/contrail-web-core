@@ -16,7 +16,6 @@ define([
     'core-contrail-form-elements',
     'chart-utils',
     'text!core-basedir/common/ui/templates/core.common.tmpl',
-    'qe-utils',
     'core-basedir/js/common/graph.utils',
     // 'core-alarm-utils',
     // 'core.app.utils',
@@ -64,7 +63,6 @@ define([
     covdc = new CoreViewsDefaultConfig();
     contrail = new Contrail();
     cowch = new Cache();
-    cowqu = new QEUtils();
     webServerInfoDefObj.done(function () {
         require(['nonamd-libs'], function () {
             cowc.DROPDOWN_VALUE_SEPARATOR = getValueByJsonPath(globalObj,

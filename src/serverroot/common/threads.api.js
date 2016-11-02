@@ -22,8 +22,8 @@ function runInThread (threadCB, data, callback)
     newThread.eval(threadCB);
     /* Now call the function */
     newThread.eval(
-        threadCB(data, function(data) {
-            callback(data);
+        threadCB(data, function(error, data) {
+            callback(error, data);
         }), function(error, result) {
             newThread.destroy();
         }
