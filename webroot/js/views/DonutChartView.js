@@ -36,13 +36,12 @@ define([
                         self.renderChart(selector, viewConfig, self.model);
                     });
                 }
-                var resizeFunction = function (e) {
-                    self.renderChart(selector, viewConfig, self.model);
-                };
+                self.resizeFunction = _.debounce(function (e) {
+                     self.renderChart($(self.$el), viewConfig, self.model);
+                 },cowc.THROTTLE_RESIZE_EVENT_TIME);
 
-                $(window)
-                    .off('resize', resizeFunction)
-                    .on('resize', resizeFunction);
+                $(window).on('resize',self.resizeFunction);
+
             }
         },
 
@@ -55,7 +54,9 @@ define([
             if (contrail.checkIfFunction(viewConfig['parseFn'])) {
                 data = viewConfig['parseFn'](data);
             }
-
+            if ($(selector).parents('.custom-grid-stack-item').length != 0) {
+                viewConfig['chartOptions']['height'] = $(selector).parents('.custom-grid-stack-item').height() - 20;
+            }
             chartViewConfig = getChartViewConfig(data, viewConfig);
             chartOptions = chartViewConfig['chartOptions'];
             chartModel = new DonutChartModel(chartOptions);
@@ -65,7 +66,6 @@ define([
             if ($(selector).find("svg") != null) {
                 $(selector).empty();
             }
-
             $(selector).append(chartTemplate(chartOptions));
 
             //Store the chart object as a data attribute so that the chart can be updated dynamically

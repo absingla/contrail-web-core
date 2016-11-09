@@ -16,9 +16,7 @@ webroot/html/*.html
 webroot/html/*.tmpl
 webroot/img/sdn-logo.png
 webroot/test/ui/js/co.test.init.js
+webroot/test/ui/js/co.test.config.js
 
 node_modules
 dump.rdb
-
-
-

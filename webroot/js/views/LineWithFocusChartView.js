@@ -30,35 +30,44 @@ define([
 
             if (self.model !== null) {
                 if(self.model.loadedFromCache || !(self.model.isRequestInProgress())) {
-                    self.renderChart(selector, viewConfig, self.model);
+                    self.updateChart(selector, viewConfig, self.model);
                 }
 
                 self.model.onAllRequestsComplete.subscribe(function() {
-                    self.renderChart(selector, viewConfig, self.model);
+                    self.updateChart(selector, viewConfig, self.model);
                 });
 
                 if(viewConfig.loadChartInChunks) {
                     self.model.onDataUpdate.subscribe(function() {
-                        self.renderChart(selector, viewConfig, self.model);
+                        self.updateChart(selector, viewConfig, self.model);
                     });
                 }
+                var prevDimensions = chUtils.getDimensionsObj(self.$el);
+                self.resizeFunction = _.debounce(function (e) {
+                    if(!chUtils.isReRenderRequired({
+                        prevDimensions:prevDimensions,
+                        elem:self.$el})) {
+                        return;
+                    }
+                     self.renderChart($(self.$el), viewConfig, self.model);
+                 },cowc.THROTTLE_RESIZE_EVENT_TIME);
+
+                $(self.$el).parents('.custom-grid-stack-item').on('resize',self.resizeFunction);
             }
         },
 
-        renderChart: function (selector, viewConfig, chartViewModel) {
+        renderChart: function (selector, viewConfig, chartDataModel) {
             var self = this,
-                modelData = chartViewModel.getItems(),
+                modelData = chartDataModel.getItems(),
                 data = modelData.slice(0),
                 chartTemplate = contrail.getTemplate4Id(cowc.TMPL_CHART),
                 widgetConfig = contrail.checkIfExist(viewConfig.widgetConfig) ? viewConfig.widgetConfig : null,
-                chartViewConfig, chartOptions, chartModel,
+                chartViewConfig, chartOptions, chartViewModel,
                 showLegend = getValueByJsonPath(viewConfig,'chartOptions;showLegend',false),
                 defaultZeroLineDisplay = getValueByJsonPath(viewConfig,'chartOptions;defaultZeroLineDisplay', false);
 
             if (contrail.checkIfFunction(viewConfig['parseFn'])) {
-                data = viewConfig['parseFn'](data);
-            } else if (data != null && data.length > 0) {
-                data = cowu.chartDataFormatter(data, viewConfig['chartOptions']);
+                data = viewConfig['parseFn'](data, viewConfig['chartOptions']);
             }
 
             //plot default line
@@ -75,13 +84,15 @@ define([
                 data.push(defData);
             }
 
+            if ($(selector).parents('.custom-grid-stack-item').length != 0) {
+                viewConfig['chartOptions']['height'] = $(selector).parents('.custom-grid-stack-item').height() - 40;
+            }
             chartViewConfig = self.getChartViewConfig(data, viewConfig);
             chartOptions = chartViewConfig['chartOptions'];
-            chartModel = new LineWithFocusChartModel(chartOptions);
+            chartViewModel = new LineWithFocusChartModel(chartOptions);
+            chartViewModel.chartOptions = chartOptions;
 
-            chartModel.chartOptions = chartOptions;
-
-            self.chartModel = chartModel;
+            self.chartViewModel = chartViewModel;
 
             if ($(selector).find("svg") != null) {
                 $(selector).empty();
@@ -90,45 +101,37 @@ define([
             $(selector).append(chartTemplate(chartOptions));
 
             //Store the chart object as a data attribute so that the chart can be updated dynamically
-            $(selector).data('chart', chartModel);
+            $(selector).data('chart', chartViewModel);
+
             if (chartOptions['showLegend'] && chartOptions['legendView'] != null) {
-                var lineData = [];
-                $.each(data, function(idx, obj) {
-                    lineData.push({
-                        name: obj['key'],
-                        color: obj['color']
-                    });
-                });
-                new chartOptions['legendView']({
+                self.legendView = new chartOptions['legendView']({
                     el: $(selector),
-                    legendConfig: {
-                        showLegend: chartOptions['showLegend'],
-                        legendData: [{
-                            label: getValueByJsonPath(chartOptions, 'title'),
-                            legend: lineData
-                        }]
-                    }
+                    viewConfig: getLegendViewConfig(chartOptions, data)
                 });
+                self.legendView.render();
             }
 
-            if (!($(selector).is(':visible'))) {
-                $(selector).find('svg').bind("refresh", function () {
-                    setData2Chart(self, chartViewConfig, chartViewModel, chartModel);
-                });
-            } else {
-                setData2Chart(self, chartViewConfig, chartViewModel, chartModel);
-            }
-
-            nv.utils.windowResize(function () {
-                chUtils.updateChartOnResize(selector, chartModel);
+            $(selector).find('svg').bind("refresh", function () {
+                self.updateChart(selector, viewConfig, chartDataModel);
             });
+
+            self.resizeFn = _.debounce(function () {
+                chUtils.updateChartOnResize($(self.$el), self.chartViewModel);
+            }, 500);
+            nv.utils.windowResize(self.resizeFn);
+
+            if ($(selector).is(':visible')) {
+                setData2Chart(self, chartViewConfig, chartDataModel, chartViewModel);
+            }
+            updateDataStatusMessage(self, chartViewConfig, chartDataModel);
+
             //Seems like in d3 chart renders with some delay so this deferred object helps in that situation,which resolves once the chart is rendered
             if (chartOptions['deferredObj'] != null)
                 chartOptions['deferredObj'].resolve();
 
             if (widgetConfig !== null) {
-                this.renderView4Config(selector.find('.chart-container'), chartViewModel, widgetConfig, null, null, null, function(){
-                    chUtils.updateChartOnResize(selector, chartModel);
+                this.renderView4Config(selector.find('.chart-container'), chartDataModel, widgetConfig, null, null, null, function(){
+                    chUtils.updateChartOnResize(selector, chartViewModel);
                 });
             }
 
@@ -138,7 +141,7 @@ define([
             var self = this,
                 message = contrail.handleIfNull(message, ""),
                 selector = contrail.handleIfNull(selector, $(self.$el)),
-                chartOptions = contrail.handleIfNull(chartOptions, self.chartModel.chartOptions),
+                chartOptions = contrail.handleIfNull(chartOptions, self.chartViewModel.chartOptions),
                 container = d3.select($(selector).find("svg")[0]),
                 requestStateText = container.selectAll('.nv-requestState').data([message]),
                 textPositionX = $(selector).width() / 2,
@@ -162,6 +165,11 @@ define([
                 selector = contrail.handleIfNull(selector, $(self.$el));
 
             $(selector).find('.nv-requestState').remove();
+        },
+
+        resize: function() {
+            var self = this;
+            _.isFuntion(self.resizeFn) && self.resizeFn();
         },
 
         getChartViewConfig: function(chartData, viewConfig) {
@@ -202,28 +210,50 @@ define([
             chartViewConfig['chartOptions'] = chartOptions;
 
             return chartViewConfig;
+        },
+
+        updateChart: function(selector, viewConfig, dataModel) {
+            var self = this,
+                dataModel = dataModel ? dataModel : self.model(),
+                data = dataModel.getItems();
+
+            //Todo 'parseFn' may not be defined always. May need to make chartDataFormatter with a config.
+            if (_.isFunction(viewConfig.parseFn)) {
+                data = viewConfig['parseFn'](data, viewConfig['chartOptions']);
+            }
+            //Todo remove the dependency to calculate the chartData and chartOptions via below function.
+            var chartViewConfig = self.getChartViewConfig(data, viewConfig);
+            //If legendView exist, update with new config built from new data.
+            if (self.legendView) self.legendView.update(getLegendViewConfig(chartViewConfig.chartOptions, data));
+
+            setData2Chart(self, chartViewConfig, dataModel, self.chartViewModel);
+            updateDataStatusMessage(self, chartViewConfig, dataModel);
         }
     });
 
-    function setData2Chart(self, chartViewConfig, chartViewModel, chartModel) {
+    function setData2Chart(self, chartViewConfig, chartDataModel, chartViewModel) {
+        var chartDataObj = {
+                data: chartViewConfig.chartData,
+                requestState: getDataRequestState(chartViewConfig, chartDataModel)
+            };
+        d3.select($(self.$el)[0]).select('svg').datum(chartDataObj).call(chartViewModel);
+    }
 
+    function getDataRequestState(chartViewConfig, chartDataModel) {
         var chartData = chartViewConfig.chartData,
             checkEmptyDataCB = function (data) {
                 return (!data || data.length === 0 || !data.filter(function (d) { return d.values.length; }).length);
-            },
-            chartDataRequestState = cowu.getRequestState4Model(chartViewModel, chartData, checkEmptyDataCB),
-            chartDataObj = {
-                data: chartData,
-                requestState: chartDataRequestState
-            },
-            chartOptions = chartViewConfig['chartOptions'];
+            };
+        return cowu.getRequestState4Model(chartDataModel, chartData, checkEmptyDataCB);
+    }
 
-        d3.select($(self.$el)[0]).select('svg').datum(chartDataObj).call(chartModel);
-
+    function updateDataStatusMessage(self, chartViewConfig, dataModel) {
+        var chartDataModel = dataModel || self.model(),
+            chartOptions = chartViewConfig.chartOptions,
+            chartDataRequestState = getDataRequestState(chartViewConfig, chartDataModel);
         if (chartOptions.defaultDataStatusMessage) {
             var messageHandler = chartOptions.statusMessageHandler;
             self.renderMessage(messageHandler(chartDataRequestState));
-
         } else {
             self.removeMessage();
         }
@@ -262,6 +292,27 @@ define([
         forceY = cowu.getForceAxis4Chart(dataAllLines, yAxisDataField, defaultForceY);
         return forceY;
     };
+
+    function formatLegendData(data) {
+        var lineData = [];
+        _.each(data, function(obj) {
+            lineData.push({
+                name: obj['key'],
+                color: obj['color']
+            });
+        });
+        return {line: lineData};
+    };
+
+    function getLegendViewConfig(chartOptions, data) {
+        return {
+            showLegend: chartOptions['showLegend'],
+            legendData: [{
+                label: getValueByJsonPath(chartOptions, 'title'),
+                legend: formatLegendData(data).line
+            }]
+        };
+    }
 
     return LineWithFocusChartView;
 });

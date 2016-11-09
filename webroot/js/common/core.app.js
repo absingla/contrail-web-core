@@ -5,7 +5,7 @@
 var contentContainer = "#content-container";
 var slickGridSearchtimer = null;
 // Need to add a check and declare globalObj only if it doesn't exist and if exists need to extend with this map
-if(typeof(globalObj) == "undefined") 
+if(typeof(globalObj) == "undefined")
     globalObj = {};
 globalObj['env'] = "";
 globalObj['loadedScripts'] = [];
@@ -43,6 +43,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'jquery-dep-libs'             : coreWebDir + '/js/common/jquery.dep.libs',
         'nonamd-libs'                 : coreWebDir + '/js/common/nonamd.libs',
         //Files not in bundles
+        'gridstack'                   : coreWebDir + '/assets/gridstack/js/gridstack',
         'underscore'                  : coreWebDir + '/assets/underscore/underscore-min',
         'slickgrid-utils'             : coreWebDir + "/js/slickgrid-utils",
         //'jquery'                      : coreWebDir + '/assets/jquery/js/jquery-1.8.3.min',
@@ -53,6 +54,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'vis-node-model'              : coreWebDir + '/js/models/VisNodeModel',
         'vis-edge-model'              : coreWebDir + '/js/models/VisEdgeModel',
         'vis-tooltip-model'           : coreWebDir + '/js/models/VisTooltipModel',
+        'gs-view'                     : coreWebDir + '/js/views/GridStackView',
         'graph-view'                  : coreWebDir + '/js/views/GraphView',
         'contrail-graph-model'        : coreWebDir + '/js/models/ContrailGraphModel',
         'dagre'                       : coreWebDir + '/assets/joint/js/dagre',
@@ -86,7 +88,9 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'view-config-generator'       : coreWebDir + '/js/common/view.config.generator',
         'iframe-view'                 : coreWebDir + '/js/views/IframeView',
         'jdorn-jsoneditor'            : coreWebDir + '/assets/jdorn-jsoneditor/js/jdorn-jsoneditor',
+        'jquery-linedtextarea'        : coreWebDir + '/assets/jquery-linedtextarea/js/jquery-linedtextarea',
         'qe-module'                   : coreWebDir + '/reports/qe/ui/js/qe.module',
+        'udd-module'                  : coreWebDir + '/reports/udd/ui/js/udd.module',
         'legend-view'                 : coreWebDir + '/js/views/LegendView',
     };
 
@@ -216,6 +220,9 @@ var coreAppShim =  {
     'jquery' : {
         exports: 'jQuery'
     },
+    'gridstack' :{
+        deps:['jquery-ui']
+    },
     'jquery.multiselect' : {
         deps: ['jquery-ui'],
     },
@@ -285,7 +292,7 @@ var coreAppShim =  {
     },
     'slick.rowselectionmodel': {
         deps: ['jquery']
-    },        
+    },
     'slick.checkboxselectcolumn': {
         deps: ['jquery']
     },
@@ -508,6 +515,7 @@ var coreBundles = {
             'jsonpath'
         ],
         'qe-module': [
+            "core-basedir/reports/qe/ui/templates/qe.tmpl",
             'core-basedir/reports/qe/ui/js/common/qe.utils',
             'core-basedir/reports/qe/ui/js/common/qe.parsers',
             'core-basedir/reports/qe/ui/js/common/qe.grid.config',
@@ -521,7 +529,30 @@ var coreBundles = {
             'core-basedir/reports/qe/ui/js/models/ContrailListModelGroup',
             'core-basedir/reports/qe/ui/js/models/ObjectLogsFormModel',
             'core-basedir/reports/qe/ui/js/models/StatQueryFormModel',
-            'core-basedir/reports/qe/ui/js/models/SystemLogsFormModel'
+            'core-basedir/reports/qe/ui/js/models/SystemLogsFormModel',
+        ],
+        'udd-module': [
+            "core-basedir/reports/udd/ui/templates/udd.tmpl",
+            "core-basedir/reports/udd/ui/js/common/udd.form.validation.config",
+            "core-basedir/reports/udd/ui/js/common/udd.constants",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/GridConfigModel",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/LineBarChartConfigModel",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/LineChartConfigModel",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/LogsConfigModel",
+            "core-basedir/reports/udd/ui/js/models/dataSourceConfigs/QueryConfigModel",
+            "core-basedir/reports/udd/ui/js/models/ContentConfigModel",
+            "core-basedir/reports/udd/ui/js/models/WidgetModel",
+            "core-basedir/reports/udd/ui/js/models/WidgetsCollection",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/GridConfigView",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/LineBarChartConfigView",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/LineChartConfigView",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/LogsConfigView",
+            "core-basedir/reports/udd/ui/js/views/dataSourceConfigs/QueryConfigView",
+            "core-basedir/reports/udd/ui/js/views/BaseContentConfigView",
+            "core-basedir/reports/udd/ui/js/views/GridStackView",
+            "core-basedir/reports/udd/ui/js/views/LogsView",
+            "core-basedir/reports/udd/ui/js/views/UDDashboardView",
+            "core-basedir/reports/udd/ui/js/views/WidgetView",
         ]
     };
 
@@ -982,7 +1013,7 @@ if (typeof document !== 'undefined' && document) {
     var loadFeatureApps = function (featurePackages) {
         var featureAppDefObjList= [],
             initAppDefObj, url;
-        
+
         for (var key in featurePackages) {
             if(globalObj['initFeatureAppDefObjMap'][key] == null) {
                 if(featurePackages[key] &&
@@ -1076,7 +1107,7 @@ if (typeof document !== 'undefined' && document) {
                     if($('#content-container').length == 0) {
                         $('#app-container').html($('#app-container-tmpl').text());
                         $('#app-container').removeClass('hide');
-                    } else 
+                    } else
                         $('#app-container').removeClass('hide');
                         //Reset content-container
                         $('#content-container').html('');
@@ -1356,7 +1387,7 @@ if (typeof document !== 'undefined' && document) {
                             layoutHandler = new LayoutHandler();
                             layoutHandlerLoadDefObj.resolve();
 
-                            helpHandler.init();
+                            // helpHandler.init();
                         });
                     });
                 });

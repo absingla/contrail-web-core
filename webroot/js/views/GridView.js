@@ -44,6 +44,7 @@ define([
 
             gridConfig = $.extend(true, {}, covdc.gridConfig, viewConfig.elementConfig);
             gridContainer = $(this.$el);
+            gridContainer.html("");
             // gridContainer = $(contentContainer);
             customGridConfig = $.extend(true, {}, gridConfig);
 
@@ -561,7 +562,9 @@ define([
                                     if (contrail.checkIfFunction(gridOptions.actionCell.optionList)) {
                                         actionCellArray = gridOptions.actionCell.optionList(dc);
                                     } else {
-                                        actionCellArray = gridOptions.actionCell.optionList;
+                                        _.each(gridOptions.actionCell.optionList, function(option) {
+                                            actionCellArray.push(option);
+                                        });
                                     }
 
                                     return (actionCellArray.length > 0) ? '<i class="fa fa-cog icon-only bigger-110 grid-action-dropdown"></i>' : '';
@@ -771,7 +774,9 @@ define([
                                 if (contrail.checkIfFunction(gridOptions.actionCell.optionList)) {
                                     actionCellArray = gridOptions.actionCell.optionList(rowData);
                                 } else {
-                                    actionCellArray = gridOptions.actionCell.optionList;
+                                    _.each(gridOptions.actionCell.optionList, function(option) {
+                                        actionCellArray.push(option);
+                                    });
                                 }
 
                                 if (gridOptions.rowDelete !== false) {
