@@ -6,7 +6,7 @@ define([
     'underscore',
     'contrail-remote-data-handler'
 ], function (_, ContrailRemoteDataHandler) {
-    var ContrailListModel = function (listModelConfig, parentModelList) {
+    var ContrailListModel = function (listModelConfig, parentModelList, parentModelConfig) {
         var contrailListModel = {}, newContrailListModel = {},
             hlContrailListModel, contrailDataHandler = null, newContrailDataHandler, self = this,
             cachedData, remoteHandlerConfig, hlModelConfig,
@@ -60,7 +60,9 @@ define([
 
                         if (hlModelConfig != null) {
                             var childModelConfig = $.extend(true, {}, childDefaultCacheConfig, hlModelConfig);
-                            hlContrailListModel = getNewContrailListModel(childModelConfig, [newContrailListModel, contrailListModel]);
+                            hlContrailListModel = getNewContrailListModel(childModelConfig,
+                                                                          [newContrailListModel, contrailListModel],
+                                                                          parentModelConfig);
                         }
                         bindDataHandler2Model(contrailListModel, newContrailDataHandler, hlContrailListModel);
                         bindDataHandler2Model(newContrailListModel, newContrailDataHandler, hlContrailListModel);
@@ -78,9 +80,11 @@ define([
         function createRemoteDataHandler(autoFetchData) {
             if (hlModelConfig != null) {
                 var childModelConfig = $.extend(true, {}, childDefaultCacheConfig, hlModelConfig);
-                hlContrailListModel = getNewContrailListModel(childModelConfig, [contrailListModel]);
+                hlContrailListModel = getNewContrailListModel(childModelConfig, [contrailListModel],
+                                                              modelConfig);
             }
-            remoteHandlerConfig = getRemoteHandlerConfig(modelConfig, contrailListModel, parentModelList, autoFetchData);
+            remoteHandlerConfig = getRemoteHandlerConfig(modelConfig, contrailListModel,
+                                                         parentModelList, autoFetchData, parentModelConfig);
             contrailDataHandler = new ContrailRemoteDataHandler(remoteHandlerConfig);
 
             bindDataHandler2Model(contrailListModel, contrailDataHandler, hlContrailListModel);
@@ -176,6 +180,12 @@ define([
             },
             performDefaultSort: function() {
                 performDefaultSort(sortConfig, this);
+            },
+            setHLData: function(response, contrailListModelData) {
+                this.hlData = {response: response, contrailListModelData: contrailListModelData};
+            },
+            getHLData: function() {
+                return this.hlData;
             }
         });
 
@@ -206,6 +216,18 @@ define([
             return (currentModelRequestInProgress || hlModelRequestInProgress);
         };
 
+        contrailListModel['isHLRequestInProgress'] = function () {
+            /* Return values:
+               null  -> HL config is not associated
+               false -> HL request is completed, irrespective of its own VL completed or not
+               true  -> HL request is not completed
+             */
+            var hlModelRequestInProgress = (hlContrailListModel != null) ?
+                hlContrailListModel.isPrimaryRequestInProgress() : null;
+
+            return hlModelRequestInProgress;
+        };
+
         contrailListModel['refreshData'] = function () {
             if (contrailDataHandler != null && !contrailDataHandler.isRequestInProgress()) {
                 resetListModel4Refresh(contrailListModel);
@@ -217,7 +239,8 @@ define([
          }
     };
 
-    function getRemoteHandlerConfig(listModelConfig, contrailListModel, parentModelList, autoFetchData) {
+    function getRemoteHandlerConfig(listModelConfig, contrailListModel, parentModelList,
+                                    autoFetchData, parentModelConfig) {
         var remoteHandlerConfig = {
                 autoFetchData: (autoFetchData != null) ? autoFetchData : true
             },
@@ -265,6 +288,29 @@ define([
                         for (var i = 0; i < 1; i++) {
                             if (!parentModelList[i].isRequestInProgress()) {
                                 updateDataInCache(parentModelList[i]);
+                            }
+                            if ((contrail.checkIfFunction(parentModelList[i].isPrimaryRequestInProgress)) &&
+                                (contrail.checkIfFunction(parentModelList[i].isHLRequestInProgress))) {
+                                if (false == parentModelList[i].isHLRequestInProgress()) {
+                                    parentModelList[i].setHLData(response, contrailListModel.getItems());
+                                    if (false == parentModelList[i].isPrimaryRequestInProgress()) {
+                                        if (contrail.checkIfFunction(parentModelConfig.remote.hpCompleteCallback)) {
+                                            parentModelConfig.remote.hpCompleteCallback(response, parentModelList[i]);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        if ((contrail.checkIfFunction(contrailListModel.isHLRequestInProgress)) &&
+                            (contrail.checkIfFunction(contrailListModel.isPrimaryRequestInProgress))) {
+                            if (false === contrailListModel.isHLRequestInProgress()) {
+                                //contrailListModel.setHLData(response, contrailListModel.getItems());
+                                if (false === contrailListModel.isPrimaryRequestInProgress()) {
+                                    if (contrail.checkIfFunction(primaryRemote.hpCompleteCallback)) {
+                                        primaryRemote.hpCompleteCallback(response, contrailListModel);
+                                    }
+                                }
                             }
                         }
                     }
@@ -470,8 +516,8 @@ define([
         }
     };
 
-    function getNewContrailListModel(modelConfig, parentListModel) {
-        return new ContrailListModel(modelConfig, parentListModel);
+    function getNewContrailListModel(modelConfig, parentListModel, parentModelConfig) {
+        return new ContrailListModel(modelConfig, parentListModel, parentModelConfig);
     };
 
     function resetListModel4Refresh(listModel) {
