@@ -281,7 +281,7 @@ define([
 
         clone: function() {
             var posMeta = ["x", "y", "width", "height"],
-                vmParams = ["editingTitle", "isReady", "step"],
+                vmParams = ["editingTitle", "isReady", "step", "canProceed"],
                 widgetTileMeta = this.model.get(uddConstants.modelIDs.WIDGET_META).model().attributes, // positioning, title and other UI state flags
                 clonedWidgetConfig = this.model.toJSON(), // overall widget component config
                 tabId = clonedWidgetConfig.tabId,
@@ -348,6 +348,10 @@ define([
                 || this.currentStep === this.steps.VISUAL_META_CONFIG) {
                 this.model.restoreConfigState();
                 this.goStep(this.steps.SHOW_VISUALIZATION);
+                
+                // Fix corrupted Chart if it's rendered behind the scene,
+                // while a configuration step is open
+                this.$el.find("svg").trigger("refresh");
             } else {
                 this.goStep(this.steps.DATA_CONFIG);
                 this.model.get(uddConstants.modelIDs.DATA_SOURCE).onChangeTime();
