@@ -4,10 +4,26 @@
 
 define([
     "core-constants",
+    "core-basedir/reports/udd/ui/js/common/udd.form.validation.config",
     "core-basedir/reports/udd/ui/js/models/ContentConfigModel"
-], function(cowc, ContentConfigModel) {
-    
+], function(cowc, formValidationConfig, ContentConfigModel) {
+
     return ContentConfigModel.extend({
+        constructor: function(modelConfig, modelRemoteDataConfig) {
+            ContentConfigModel.prototype.constructor.call(this, modelConfig, modelRemoteDataConfig);
+            
+            if (this.barLabel() === "") {
+                this.barValue.subscribe(function(newValue) {
+                    this.barLabel(newValue);
+                }, this);
+            }
+
+            if (this.lineLabel() === "") {
+                this.lineValue.subscribe(function(newValue) {
+                    this.lineLabel(newValue);
+                }, this);
+            }
+        },
         defaultConfig: {
             barColor:  cowc.D3_COLOR_CATEGORY5[1],
             lineColor: cowc.D3_COLOR_CATEGORY5[3],
@@ -35,7 +51,17 @@ define([
 
         // update fields dependent on data model
         onDataModelChange: function(viewModel) {
-            this.yAxisValues(this.timeSeries(viewModel.get("select")));
+            var UIAddedParams = viewModel.get("ui_added_parameters"),
+                plottableFields = viewModel.get("select");
+
+            if (UIAddedParams) {
+                var columnSchemaMap = viewModel.get("ui_added_parameters").table_schema_column_names_map;
+                
+                plottableFields = formValidationConfig
+                    .getPlottableFields(plottableFields, columnSchemaMap);
+            }
+
+            this.yAxisValues(this.timeSeries(plottableFields));
         },
 
         toJSON: function() {
@@ -86,7 +112,8 @@ define([
                 chartOptions: {
                     axisLabelDistance: 5,
                     height: 300,
-                    yAxisLabels: [this.barLabel(), this.lineLabel()],
+                    y1AxisLabel: this.barLabel(),
+                    y2AxisLabel: this.lineLabel(),
                     colors: [this.barColor(), this.lineColor()],
                     forceY: [0, 10],
                     y1Formatter: window.cowf.getFormattedValue.bind(window.cowf, [{

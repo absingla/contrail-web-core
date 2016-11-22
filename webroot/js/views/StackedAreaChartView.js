@@ -76,10 +76,9 @@ define([
             var widgetConfig = contrail.checkIfExist(viewConfig.widgetConfig) ?
                     viewConfig.widgetConfig : null;
             var chartOptions = getValueByJsonPath(viewConfig, 'chartOptions', {});
-            var totalHeight = getValueByJsonPath(chartOptions,'height',300);
-            totalHeight = ($(selector).closest('.custom-grid-stack-item').length > 0 )?
+            var totalHeight = ($(selector).closest('.custom-grid-stack-item').length > 0 )?
                     $(selector).closest('.custom-grid-stack-item').height() - 20:
-                        totalHeight;
+                        cowu.getValueByJsonPath(chartOptions, 'height', 300);
 
             chartOptions['timeRange'] =  getValueByJsonPath(self, 'model;queryJSON');
             var totalWidth = $(selector).find('.stacked-area-chart-container').width();
@@ -114,7 +113,7 @@ define([
               heightOverview = totalHeight - marginOverview.top - marginOverview.bottom;
 
             if (contrail.checkIfFunction(viewConfig['parseFn'])) {
-                data = viewConfig['parseFn'](data, chartViewModel);
+                data = viewConfig['parseFn'](data, chartOptions);
               //Need to check and remove the data.length condition because invalid for object
             } else if (data != null && data.length > 0) {
                 data = cowu.chartDataFormatter(data, chartOptions);
@@ -174,16 +173,16 @@ define([
               //Add the axis labels
               var xaxisLabel = svg.append("text")
                                   .attr("class", "axis-label")
-                                  .attr("text-anchor", "end")
+                                  .attr("text-anchor", "middle")
                                   .attr("x", width/2)
                                   .attr("y", height + 40)
                                   .style('font-size', '10px')
                                   .text(xAxisLabel);
               var yaxisLabel = svg.append("text")
                                   .attr("class", "axis-label")
-                                  .attr("text-anchor", "end")
+                                  .attr("text-anchor", "middle")
 //                                  .attr("y", -margin.left)
-                                  .attr("x", -height/2)
+                                  .attr("x", -totalHeight/2)
                                   .attr("dy", ".75em")
                                   .attr("dx", ".75em")
                                   .style('font-size', '10px')

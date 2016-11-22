@@ -115,7 +115,7 @@ define([
             var groupBy = chartOptions['groupBy'], groups = [], yAxisMaxValue;
             chartOptions['timeRange'] =  getValueByJsonPath(self, 'model;queryJSON');
             if (contrail.checkIfFunction(viewConfig['parseFn'])) {
-                data = viewConfig['parseFn'](data, chartViewModel);
+                data = viewConfig['parseFn'](data, chartOptions);
               //Need to check and remove the data.length condition because invalid for object
             } else {
                 if (data === null || data.length === 0 && defaultZeroLineDisplay){
@@ -232,15 +232,15 @@ define([
             //Add the axis labels
             var xaxisLabel = main.append("text")
                                 .attr("class", "axis-label")
-                                .attr("text-anchor", "end")
+                                .attr("text-anchor", "middle")
                                 .attr("x", width/2)
                                 .attr("y", height + 40)
                                 .text(xAxisLabel);
             var yaxisLabel = main.append("text")
                                 .attr("class", "axis-label")
-                                .attr("text-anchor", "end")
+                                .attr("text-anchor", "middle")
                                 .attr("y", -margin.left)
-                                .attr("x", -height/2)
+                                .attr("x", -totalHeight/2)
                                 .attr("dy", ".75em")
                                 .attr("dx", ".75em")
                                 .attr("transform", "rotate(-90)")

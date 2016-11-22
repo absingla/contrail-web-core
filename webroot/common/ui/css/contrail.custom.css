@@ -1110,6 +1110,7 @@ button#close-error-popup{
  bottom: 0;
  font-size: 25px;
  color: #666;
+ height:100px;
 }
 .carousel-inner{
  padding: 10px 25px 0px 25px;
@@ -1163,40 +1164,29 @@ button#close-error-popup{
 .carousel-indicators li{
   border: 1px solid #aaaaaa;
 }
-
 .carousel .carousel-indicators .active{
   background-color: #aaaaaa;
 }
 .carousel-control-cover-story {
-  position: absolute;
-  display: none;
-  width: 200px;
+  width: 230px;
   height: 100px;
-  font-size: 13px;
-  line-height: 2.5em;
-  color: #666;
+  font-size: 12px;
+  line-height: 29px;
+  color: #9a9a9a;
   top: 0px;
-  font-style: italic;
+  font-style: normal;
+  text-align: left;
   background-color: #fff;
-  text-align: center;
-  padding: 3px 3px 2px 2px;
+  padding: 6px 10px 0px 10px;
   border: 1px solid #f2f2f2;
-  white-space: post-wrap;
-  white-space: -moz-post-wrap;
-  white-space: -post-wrap;
-  white-space: -o-post-wrap;
-  word-wrap: break-word;
+  position: absolute;
+  display: none; 
+  max-width: 300px;
+  margin: 0 auto;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.carousel-control-cover-story:after {
-  content: "...";
-  text-align: right;
-  position: absolute;
-  bottom: -1px;
-  right: 5px;
-  width: 70%;
-  height: 2.5em;
 }
 .carousel-control-cover-left-story {
   border-radius: 0 5px 5px 0;
@@ -1215,11 +1205,16 @@ button#close-error-popup{
   border-right: none;
 }
 .carousel-control-cover-story:hover{
-  text-decoration: underline;
+  color: #888;
+  text-decoration:underline;
 }
 .custom-grid-stack .custom-grid-stack-item .item-content {
     height: 100%;
 }
+.custom-grid-stack .drag-handle {
+    cursor: move;
+}
+
 .custom-grid-stack .custom-grid-stack-item .item-content .nv-axislabel,
 .custom-grid-stack .custom-grid-stack-item .item-content .axis-label,
 .custom-grid-stack .custom-grid-stack-item .item-content .contrail-chart-title text {
@@ -1230,3 +1225,73 @@ button#close-error-popup{
 .custom-grid-stack .custom-grid-stack-item:hover {
     border: 0px solid #f2f2f2;
 }
+
+
+/* Start - Event-drops css */
+/*.event-drops-tooltip {
+    position: absolute;
+    text-align: center;
+    width: 60px;
+    height: 28px;
+    padding: 2px;
+    font: 12px sans-serif;
+    background: lightsteelblue;
+    border: 0px;
+    border-radius: 8px;
+    pointer-events: none;
+}*/
+.event-drops-tooltip {
+    position: absolute;
+    background: #fff;
+    border: 3px solid #e7e7e7;
+    border-radius: 1rem;
+    padding: .5rem 1rem;
+    /* width: 10rem; */
+    width: 200px;
+    line-height: 1.4rem;
+}
+
+.event-drops-tooltip::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: -.65rem;
+    width: 1rem;
+    height: 1rem;
+    background: #fff;
+    border: 3px solid #e7e7e7;
+    border-width: 3px 0 0 3px;
+    transform: rotate(45deg);
+    z-index: 1;
+}
+
+.event-drops-tooltip.left::before {
+    left: 1.65rem;
+}
+
+.event-drops-tooltip.right::before {
+    right: 1.65rem;
+}
+
+.event-drops-tooltip::before {
+    content: '';
+    display: block;
+    position: absolute;
+    top: -.65rem;
+    width: 1rem;
+    height: 1rem;
+    background: #fff;
+    border: 3px solid #e7e7e7;
+    border-width: 3px 0 0 3px;
+    transform: rotate(45deg);
+    z-index: 1;
+}
+
+.event-drops-tooltip.left::before {
+    left: 1.65rem;
+}
+
+.event-drops-tooltip.right::before {
+    right: 1.65rem;
+}
+/* End - Event-drops CSS */
