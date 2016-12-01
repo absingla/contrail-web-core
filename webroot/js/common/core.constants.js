@@ -188,6 +188,8 @@ define([
         this.TMPL_ELEMENT_TOOLTIP_TITLE = "element-tooltip-title-template";
         this.TMPL_ELEMENT_TOOLTIP_CONTENT = "element-tooltip-content-template";
 
+        this.TMPL_NETWORK_POLICY_RULE = "network-policy-rule-template";
+
         this.APP_CONTRAIL_CONTROLLER = "contrail-controller";
         this.APP_CONTRAIL_SM = "contrail-sm";
         this.APP_CONTRAIL_STORAGE = "contrail-storage";
@@ -427,6 +429,7 @@ define([
         this.BYTE_PREFIX = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 
         this.URL_QUERY = "/api/qe/query";
+        this.URL_QE_QUERY = '/api/qe/query';
         this.URL_TABLES = "/api/qe/tables";
         this.URL_PREFIX_TABLE_SCHEMA = "/api/qe/table/schema/";
 
