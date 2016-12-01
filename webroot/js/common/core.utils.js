@@ -211,14 +211,37 @@ define([
         };
 
         this.updateSettingsWithCookie =  function (viewConfig) {
-            this.updateColorSettingsWithCookie();
-            var cookieSettings = JSON.parse(contrail.getCookie(cowc.COOKIE_CHART_SETTINGS));
-            if(cookieSettings && viewConfig && viewConfig.chartOptions) {
-                for(var key in cookieSettings) {
-                    viewConfig.chartOptions[key] = cookieSettings[key];
+            try {
+                this.updateColorSettingsWithCookie();
+                var cookieSettings = JSON.parse(contrail.getCookie(cowc.COOKIE_CHART_SETTINGS));
+                if(cookieSettings && viewConfig && viewConfig.chartOptions) {
+                    for(var key in cookieSettings) {
+                        viewConfig.chartOptions[key] = cookieSettings[key];
+                    }
                 }
             }
+            catch(e) {
+
+            }
         };
+
+        this.updateMultiViewSettingsFromCookie = function() {
+            try {
+                var cookieSettings =
+                    JSON.parse(contrail.getCookie(cowc.COOKIE_CHART_SETTINGS));
+                if(cookieSettings) {
+                    for(var key in cookieSettings) {
+                        if(key == cowc.SHOW_MULTI_VIEWS) {
+                            cowc.ENABLE_CAROUSEL = cookieSettings[key];
+                            break;
+                        }
+                    }
+                }
+            }
+            catch(e){
+
+            }
+        }
 
         this.enableModalLoading = function (modalId) {
             $('#' + modalId).find('.modal-header h6').prepend('<i class="fa fa-spinner fa-spin margin-right-10 modal-loading-icon">');
@@ -1997,6 +2020,15 @@ define([
             primaryDS.updateData(primaryData);
         };
 
+        self.resetGridStackLayout = function(allPages) {
+            var gridStackId = $('.custom-grid-stack').attr('data-widget-id');
+            localStorage.removeItem(gridStackId);
+            var gridStackInst = $('.custom-grid-stack').data('grid-stack-instance')
+            if(gridStackInst != null ) {
+                gridStackInst.render()
+            }
+        };
+
         /**
          * Takes input as an array of configs.
          * The first one is considered as primary req and the rest are added as
@@ -2052,13 +2084,11 @@ define([
                                 type: 'POST',
                                 data: JSON.stringify(postData)
                             },
-                            dataParser : function (response) {
-                                var data = response['data'];
-                                if (statsConfig['parser'] != null && typeof statsConfig['parser'] == "function") {
-                                    data = statsConfig['parser'](data);
-                                }
-                                return data;
-                            }
+                            dataParser : (statsConfig['parser'])? statsConfig['parser'] :
+                                                function (response) {
+                                                    var data = getValueByJsonPath(response,'data',[]);
+                                                    return data;
+                                                }
                         };
                     primaryRemoteConfig = remoteObj;
                 } else {
@@ -2070,10 +2100,19 @@ define([
                                 data: JSON.stringify(postData)
                             }
                         },
-                        successCallback: function(response, contrailListModel) {
-                            var data = getValueByJsonPath(response,'data',[]);
-                            statsConfig['mergeFn'] (data,contrailListModel,'MAX(flow_rate.active_flows)');
-                        }
+                        dataParser : (statsConfig['parser'])? statsConfig['parser'] :
+                            function (response) {
+                                var data = getValueByJsonPath(response,'data',[]);
+                                return data;
+                            },
+                        successCallback: (statsConfig['parser'])?
+                            function(data, contrailListModel) {
+                                statsConfig['mergeFn'] (data,contrailListModel);
+                            }:
+                                function(response, contrailListModel) {
+                                var data = getValueByJsonPath(response,'data',[]);
+                                statsConfig['mergeFn'] (data,contrailListModel);
+                            }
                     };
                     vlRemoteList.push (vlRemoteObj);
                 }
