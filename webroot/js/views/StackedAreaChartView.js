@@ -12,6 +12,20 @@ define([
 ], function (_, ContrailView,  ContrailListModel, LegendView, cowc,chUtils) {
     var cfDataSource;
     var stackedAreaChartView = ContrailView.extend({
+        settingsChanged: function(newSettings) {
+            var self = this,
+                vc = self.attributes.viewConfig;
+            if(vc.hasOwnProperty("chartOptions")) {
+                vc.chartOptions["resetColor"] = true;
+                for(var key in newSettings) {
+                    if(key in vc.chartOptions) {
+                        vc.chartOptions[key] = newSettings[key];
+                    }
+                }
+            }
+            self.renderChart($(self.$el), vc, self.model);
+        },
+
         render: function () {
             var viewConfig = this.attributes.viewConfig,tooltipElementObj,
                 ajaxConfig = viewConfig['ajaxConfig'],
@@ -19,7 +33,8 @@ define([
                 widgetConfig = contrail.checkIfExist(viewConfig.widgetConfig) ?
                         viewConfig.widgetConfig : null,
                 resizeId;
-
+            //settings
+            cowu.updateSettingsWithCookie(viewConfig);
             cfDataSource = viewConfig.cfDataSource;
             if (self.model === null && viewConfig['modelConfig'] != null) {
                 self.model = new ContrailListModel(viewConfig['modelConfig']);
@@ -93,6 +108,7 @@ define([
             var failureLabel = getValueByJsonPath(chartOptions,'failureLabel', cowc.FAILURE_LABEL);
             var tooltipFn = getValueByJsonPath(chartOptions,'tooltipFn', defaultTooltipFn);
             var colors = getValueByJsonPath(chartOptions,'colors', {yAxisLabel: cowc.DEFAULT_COLOR});
+            var resetColor = getValueByJsonPath(chartOptions,'resetColor',false);
             var yAxisOffset = getValueByJsonPath(chartOptions,'yAxisOffset',0);
             var yAxisFormatter = getValueByJsonPath(chartOptions,'yAxisFormatter',function (value) {
                 return cowu.numberFormatter(value);
@@ -120,7 +136,7 @@ define([
             }
             if (colors != null) {
                 if (typeof colors == 'function') {
-                    self.colors = colors(_.without(_.pluck(data, 'key'), failureLabel));
+                    self.colors = colors(_.without(_.pluck(data, 'key'), failureLabel), resetColor);
                 } else if (typeof colors == 'object') {
                     self.colors = colors;
                 }
@@ -144,7 +160,7 @@ define([
               var chart = nv.models.stackedAreaChart()
                             .x(function(d) { return d['x'] })   //We can modify the data accessor functions...
                             .y(function(d) { return d['y'] })   //...in case your data is formatted differently.
-                            .useInteractiveGuideline(false)    //Tooltips which show all data points. Very nice!
+                            .useInteractiveGuideline(true)    //Tooltips which show all data points. Very nice!
                             .showControls(false)       //Allow user to choose 'Stacked', 'Stream', 'Expanded' mode.
                             .showLegend(false)
                             .clipEdge(true);
@@ -189,12 +205,14 @@ define([
                                   .attr("transform", "rotate(-90)")
                                   .text(yAxisLabel);
               //Use the tooltip formatter if present
-              chart.tooltip.contentGenerator(function (obj) {
-                      return tooltipFn(obj.point,yAxisFormatter)})
-
+               if(chartOptions.tooltipFn) {
+                   chart.interactiveLayer.tooltip.contentGenerator(function (obj) {
+                                return chartOptions.tooltipFn(obj,chartOptions, yAxisFormatter);
+                            })
+                        }
               //Add the modified legends
               showControls=false;
-              if (showControls == true || showLegend == true) {
+              //if (showControls == true || showLegend == true) {
                   var colorsMap = self.colors,
                       nodeLegend = [],
                       legendData = [];
@@ -243,7 +261,7 @@ define([
                               transitionStacked(self);
                           }
                       });
-              }
+              //}
 //              nv.utils.windowResize(chart.update); Not using since we need to do other stuff on resize
 
               return chart;

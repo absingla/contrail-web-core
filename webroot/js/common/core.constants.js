@@ -8,6 +8,7 @@ define([
     var CoreConstants = function () {
         var self = this;
 
+        this.ENABLE_CAROUSEL = false;
         this.THROTTLE_RESIZE_EVENT_TIME = 500;
         this.TMPL_SUFFIX_ID = "-template";
         this.RESULTS_SUFFIX_ID = "-results";
@@ -151,9 +152,20 @@ define([
         this.TMPL_LOADING_SPINNER = "core-loading-spinner-template";
         this.TMPL_NOT_FOUND_MESSAGE = "core-not-found-message-template";
         this.TMPL_INFOBOXES_VIEW = "core-infobox-template";
-
+        /* Color Settings - Begin */
+        this.TMPL_SETTINGS_COLOR_VIEW = "core-settings-color-template";
+        this.TMPL_SETTINGS_COLOR_MORE = "core-settings-color-more-template";
+        this.SETTINGS_COLOR_MODAL_ID = 'settings-color';
+        this.SETTINGS_COLOR_PREFIX_ID = 'cs';
+        this.SHOW_MULTI_VIEWS =  "showMultiViews";
+        this.COOKIE_COLOR_SCHEME = "color_scheme";
+        this.COOKIE_CHART_SETTINGS = "chartData";
+        this.NUM_OF_COLORS = "6";
+        /* Color Settings - End */
         //stacked bar chart
         this.TMPL_CUSTOM_CHART_LEGEND = 'custom-chart-legend';
+        this.TOOLTIP_TEMPLATE = "tooltip-template";
+        this.TOOLTIP_LINEAREACHART_TEMPLATE = "tooltip-lineareachart-template";
 
         this.TMPL_NODE_DETAIL_SPARKLINE_BOX = 'node-details-sparkline-template';
         this.TMPL_NODE_DETAIL_INFOBOXES_BOX = 'node-details-infoboxes-template';
@@ -228,6 +240,14 @@ define([
         this.DATA_REQUEST_STATE_SUCCESS_EMPTY = 'success-empty';
         this.DATA_REQUEST_STATE_SUCCESS_NOT_EMPTY = 'success-not-empty';
         this.DATA_REQUEST_STATE_INITIAL_EMPTY = 'inital-empty';
+
+        //Toolbar Constants
+        this.COLOR_PALETTE = 'color_palette';
+        this.CHART_SETTINGS = 'chart_settings';
+        this.COLOR_PALETTE_CLASS = 'contrailGlyph-palette';
+        this.CHART_SETTINGS_CLASS = 'fa-bar-chart-o';
+        this.SETTINGS_MODAL_ID = 'settings_modal';
+        this.SETTINGS_PREFIX_ID = 'toolbar_settings';
 
         // QE Constants - Start
         this.QE_TIMEOUT = 12000;
