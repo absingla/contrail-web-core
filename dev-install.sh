@@ -278,20 +278,11 @@ cp -af ./$THIRD_PARTY/ajv-4.1.0/ajv.min.js webroot/assets/ajv/ajv.min.js
 rm -rf webroot/assets/jsoneditor
 mkdir -p webroot/assets/jsoneditor/js
 mkdir -p webroot/assets/jsoneditor/css/img
-#END - Copy jsoneditor from $THIRD_PARTY
-
-#Start - Copy d3-v4 from $THIRD_PARTY
-rm -rf webroot/assets/d3-v4.1.1
-mkdir -p webroot/assets/d3-v4.1.1/js
-cp -af ./$THIRD_PARTY/d3-v4.min.js webroot/assets/d3-v4.1.1/js/d3-v4.min.js
-#End - Copy d3-v4 from $THIRD_PARTY
-
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/dist/jsoneditor.min.js webroot/assets/jsoneditor/js/jsoneditor.min.js
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/dist/jsoneditor.js webroot/assets/jsoneditor/js/jsoneditor.js
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/dist/jsoneditor.min.css webroot/assets/jsoneditor/css/jsoneditor.min.css
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/dist/jsoneditor.css webroot/assets/jsoneditor/css/jsoneditor.css
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/src/css/img/jsoneditor-icons.svg webroot/assets/jsoneditor/css/img/jsoneditor-icons.svg
-
 rm -rf webroot/common/ui/css/img
 mkdir -p webroot/common/ui/css/img
 cp -af ./$THIRD_PARTY/jsoneditor-5.5.6/src/css/img/jsoneditor-icons.svg webroot/common/ui/css/img/jsoneditor-icons.svg
@@ -310,6 +301,21 @@ mkdir -p webroot/assets/jquery-linedtextarea/css
 cp -af ./$THIRD_PARTY/jquery-linedtextarea.js webroot/assets/jquery-linedtextarea/js/jquery-linedtextarea.js
 cp -af ./$THIRD_PARTY/jquery-linedtextarea.css webroot/assets/jquery-linedtextarea/css/jquery-linedtextarea.css
 #End - Copy jquery-linedtextarea from $THIRD_PARTY
+
+#Start - Copy d3-v4 from $THIRD_PARTY
+rm -rf webroot/assets/d3-v4.1.1
+mkdir -p webroot/assets/d3-v4.1.1/js
+cp -af ./$THIRD_PARTY/d3-v4.min.js webroot/assets/d3-v4.1.1/js/d3-v4.min.js
+#End - Copy d3-v4 from $THIRD_PARTY
+
+#Start - Copy contrail-charts from $THIRD_PARTY
+rm -rf webroot/assets/contrail-charts
+mkdir -p webroot/assets/contrail-charts/js
+mkdir -p webroot/assets/contrail-charts/css
+cp -af ./$THIRD_PARTY/contrail-charts-v1.0/js/contrail-charts.min.js webroot/assets/contrail-charts/js/contrail-charts.min.js
+cp -af ./$THIRD_PARTY/contrail-charts-v1.0/js/contrail-charts.js webroot/assets/contrail-charts/js/contrail-charts.js
+cp -af ./$THIRD_PARTY/contrail-charts-v1.0/css/contrail-charts.css webroot/assets/contrail-charts/css/contrail-charts.css
+#End - Copy contrail-charts from $THIRD_PARTY
 
 #Start - Merging All CSS files
 rm -f webroot/css/contrail.unified.css

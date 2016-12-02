@@ -98,6 +98,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'qe-module'                   : coreWebDir + '/reports/qe/ui/js/qe.module',
         'udd-module'                  : coreWebDir + '/reports/udd/ui/js/udd.module',
         'legend-view'                 : coreWebDir + '/js/views/LegendView',
+        'contrail-charts'             : coreWebDir + '/assets/contrail-charts/js/contrail-charts',
     };
 
     //Separate out aliases that need to be there for both prod & dev environments
@@ -171,7 +172,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             //End - thirdparty-libs aliases
             //Start - chart-libs aliases
             'd3'                        : coreWebDir + '/assets/d3-v3.5.6/js/d3',
-            'd3-v4'                     : coreWebDir + '/assets/d3-v4.1.1/js/d3-v4.min',
+            'd3v4'                      : coreWebDir + '/assets/d3-v4.1.1/js/d3-v4.min',
             'nv.d3'                     : coreWebDir + '/assets/nvd3-v1.8.1/js/nv.d3',
             //End - chart-libs aliases
             //Start - nonamd-libs aliases
@@ -203,7 +204,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
             'controller-basedir'          : coreBaseDir,
             'backbone'                    : coreWebDir + '/assets/backbone/backbone-min',
             'knockout'                    : coreWebDir + '/assets/knockout/knockout',
-            'knockback'                 : coreWebDir + '/assets/backbone/knockback.min',
+            'knockback'                   : coreWebDir + '/assets/backbone/knockback.min',
             'validation'                  : coreWebDir + '/assets/backbone/backbone-validation-amd'
         }
         //Merge common (for both prod & dev) alias

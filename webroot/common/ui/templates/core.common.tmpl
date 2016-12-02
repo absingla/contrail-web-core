@@ -2585,18 +2585,14 @@
     </div>
 </script>
 <script type="text/x-handlebars-template" id="coCharts-chart-template">
-    <div id="coCharts-{{chartId}}" class="coCharts-container" style="height:{{height}}px;">
+    <div id="coCharts-{{chartId}}" class="coCharts-container" style="height:{{height}}px; width:100%">
         <div class="colleft">
             <div class="col1wrap">
-                <div class="col1 coCharts-main-container"></div>
-                {{#if controlPanel.enable}}
-                    <div class="col2 coCharts-control-panel-container"></div>
-                {{/if}}
+                <div id="{{chartId}}-xyChart" class="col1"></div>
             </div>
+            <div id="{{chartId}}-controlPanel" class="col2"></div>
         </div>
-        {{#if navigation.enable}}
-            <div class="coCharts-navigation-container"></div>
-        {{/if}}
+            <div id="{{chartId}}-navigation"></div>
     </div>
 </script>
 
