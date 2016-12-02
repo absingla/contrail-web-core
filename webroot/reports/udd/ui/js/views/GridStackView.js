@@ -21,8 +21,8 @@ define([
                 removeTimeout: 100,
                 acceptWidgets: ".grid-stack-item",
                 handle: ".panel-heading",
-                verticalMargin: 2,
-                cellHeight: 63,
+                verticalMargin: 4,
+                cellHeight: 61,
                 minWidth: 1,
                 minHeight: 5,
             }, this.attributes.viewConfig);
