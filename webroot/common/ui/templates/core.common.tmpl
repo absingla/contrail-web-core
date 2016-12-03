@@ -2585,69 +2585,14 @@
     </div>
 </script>
 <script type="text/x-handlebars-template" id="coCharts-chart-template">
-    <div id="coCharts-{{chartId}}" class="coCharts-container" style="height:{{height}}px; width:100%">
+    <div id="coCharts-{{chartId}}" class="coCharts-container" style="height:{{chartHeight}}px; width:100%">
         <div class="colleft">
             <div class="col1wrap">
+                <div id="{{chartId}}-legend" class="col1"></div>
                 <div id="{{chartId}}-xyChart" class="col1"></div>
             </div>
             <div id="{{chartId}}-controlPanel" class="col2"></div>
         </div>
             <div id="{{chartId}}-navigation"></div>
-    </div>
-</script>
-
-<script type="text/x-handlebars-template" id="coCharts-navigation-panel">
-    <div class="prev"><a data-action="page-{{chunkNum}}">&lt;&lt;</a></div>
-    <div class="next"><a data-action="page-{{chunkNum}}">&gt;&gt;</a></div>
-</script>
-
-<script type="text/x-handlebars-template" id="coCharts-tooltip">
-    <span>name={{name}}</span>
-</script>
-
-<script type="text/x-handlebars-template" id="coCharts-message">
-    <div class="message-container">
-        {{#each data}}
-            <div id="{{this.id}}" class="message-{{this.type}}-container">
-                {{#each this.messages}}
-                    <div>
-                        <span class="message-{{this.level}}">{{this.message}}</span>
-                    </div>
-                {{/each}}
-            </div>
-        {{/each}}
-    </div>
-</script>
-
-<script type="text/x-handlebars-template" id="coCharts-variable-selector">
-    <div>
-        <span>Choose a variable</span>
-        {{#each variables}}
-            <label>{{this.key}}</label>
-            <select class="variable-selector" data-variable-key="{{this.key}}">
-                {{#each this.options}}
-                    {{#IfCompare this.name ../this.name operator="=="}}
-                        <option value="{{this.name}}" selected>{{this.description}}</option>
-                    {{else}}
-                        <option value="{{this.name}}">{{this.description}}</option>
-                    {{/IfCompare}}
-                {{/each}}
-            </select>
-        {{/each}}
-    </div>
-</script>
-
-<script type="text/x-handlebars-template" id="d3-linebar-chart-controls">
-    <div class="controls-left-side">
-        <div><div class="controls-button" data-x-axis="1" data-chart="coCharts.charts.LineChart">to lines</div></div>
-        <div><div class="controls-button" data-x-axis="1" data-chart="coCharts.charts.BarChart" data-type="stacked">to stacked bars</div></div>
-        <div><div class="controls-button" data-x-axis="1" data-chart="coCharts.charts.BarChart" data-type="grouped">to grouped bars</div></div>
-        <div class="field-select"></div>
-    </div>
-    <div class="controls-right-side">
-        <div><div class="controls-button" data-x-axis="2" data-chart="coCharts.charts.LineChart">to lines</div></div>
-        <div><div class="controls-button" data-x-axis="2" data-chart="coCharts.charts.BarChart" data-type="stacked">to stacked bars</div></div>
-        <div><div class="controls-button" data-x-axis="2" data-chart="coCharts.charts.BarChart" data-type="grouped">to grouped bars</div></div>
-        <div class="field-select"></div>
     </div>
 </script>
