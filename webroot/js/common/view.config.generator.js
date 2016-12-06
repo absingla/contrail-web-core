@@ -2,8 +2,8 @@
  * Copyright (c) 2014 Juniper Networks, Inc. All rights reserved.
  */
 
-define([], function () {
-    var ViewConfigGenerator = function (prefixId, model) {
+define(["sm-constants"], function (smwc) {
+    var ViewConfigGenerator = function (prefixId) {
         var self = this;
         self.prefixId = prefixId;
         self.viewConfigs = [];
@@ -121,7 +121,9 @@ define([], function () {
                             var groupLinkPath = endPoint + ".properties." + linkKeys[k];
                             linkConfig.viewConfig.class = "col-xs-6 margin-0-0-10";
                             linkConfig.viewConfig.elementConfig.class = "sm-schema-text-link";
-                            linkConfig.viewConfig.click = "function(){$root.goForward('" + options.rootViewPath + "' , '" + groupLinkPath + "', '" + prefixId + "', " + options.rowIndex + ")}";
+                            linkConfig.viewConfig.click = "function(){$root.goForward('" +
+                                JSON.stringify(options) + "' , '" + groupLinkPath + "', '" +
+                                prefixId + "')}";
                             options.path = groupLinkPath;
                             options.element = linkKeys[k];
 
@@ -418,9 +420,12 @@ define([], function () {
                         //special handling for FormEditableGridView
                         if (element.view == 'FormEditableGridView') {
                             element.viewConfig.validation = group[keys[i]].get('validation');
+                            /* Need to uncomment it when new auto generated code for
+                             * FormEditableGridView is done.
                             element.viewConfig.collection = group[keys[i]].get('collection');
                             element.viewConfig.rowActions = group[keys[i]].get('rowActions');
                             element.viewConfig.gridActions = group[keys[i]].get('gridActions');
+                            */
                             element.viewConfig.columns = [
                                 {
                                     elementId: group[keys[i]].get('elementId'),
@@ -519,9 +524,12 @@ define([], function () {
                         //special handling for FormEditableGridView
                         if (element.view == 'FormEditableGridView') {
                             element.viewConfig.validation = group[keys[i]].get('validation');
+                            /* Need to uncomment it when new auto generated code for
+                             * FormEditableGridView is done.
                             element.viewConfig.collection = group[keys[i]].get('collection');
                             element.viewConfig.rowActions = group[keys[i]].get('rowActions');
                             element.viewConfig.gridActions = group[keys[i]].get('gridActions');
+                            */
                             element.viewConfig.columns = [
                                 {
                                     elementId: group[keys[i]].get('elementId'),
@@ -553,10 +561,9 @@ define([], function () {
                 //check there is an element in the key
                 if (oddElement.columns.length > 0) {
                     //append oddElement on Schema to the previous row, if the previous row has only one element
-                    if(rows[rows.length - 1].columns == 1){
+                    if ((rows.length > 0) && (rows[rows.length - 1].columns.length == 1)) {
                         rows[rows.length - 1].columns.push(oddElement);
-                    }
-                    else{
+                    } else{
                         rows.push(oddElement);
                     }
                 }
@@ -595,7 +602,7 @@ define([], function () {
                 return object;
             },
             capitalizeSentence: function (sentence) {
-                var word = sentence.split(" ");
+                var word = sentence.split("_");
                 for (var i = 0; i < word.length; i++) {
                     word[i] = word[i].charAt(0).toUpperCase() + word[i].slice(1);
                 }

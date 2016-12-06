@@ -1484,19 +1484,25 @@ define([
             return obj;
         };
 
-        this.getAttributes4Schema = function(attributes, schema, schemaStart) {
+        this.getAttributes4Schema = function(attributes, schemas, schemaStart) {
             var json = $.extend(true, {}, attributes);
 
+            var schema = getValueByJsonPath(schemas, "defaultSchema", null);
             if (!schemaStart) {
-                finalSchema = contrail.checkIfExist(schema['items']) ? schema['items']['properties'] : schema['properties'];
+                finalSchema = getValueByJsonPath(schema, "items;properties",
+                                                 getValueByJsonPath(schema, "properties", null));
             } else {
                 finalSchema = schemaStart;
+            }
+            if (cowu.isNil(finalSchema)) {
+                return json;
             }
             for(var key in json) {
                 if(!contrail.checkIfExist(finalSchema[key])) {
                     delete json[key];
                 }
             }
+            json.contrailUIJSONSchemas = schemas;
             return json;
         };
 

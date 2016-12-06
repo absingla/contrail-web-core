@@ -13,8 +13,10 @@ define([
 
             var self = this;
             var onError = false;
+            var schemas = self.model.contrailUIJSONSchemas();
+            var defaultSchema = schemas.defaultSchema;
             var ajv = Ajv({ allErrors: true, verbose: true, removeAdditional: true  });
-            var validate = ajv.compile(self.model.schema());
+            var validate = ajv.compile(defaultSchema);
 
             var editorTempl = contrail.getTemplate4Id(cowc.TMPL_JSON_EDITOR_VIEW),
                 viewConfig = this.attributes.viewConfig,
@@ -24,13 +26,20 @@ define([
             this.$el.html(editorTempl({viewConfig: viewConfig, elementId: elId}));
             var jsonContainer = document.getElementById(cowc.ID_JSON_EDITOR);
             var jsonOptions = {
-                schema : self.model.schema(),
+                schema : defaultSchema,
                 ajv : ajv,
                 onChange: function () {
                     try{
-                        var valid = validate(jsonEditor.get());
-                        self.model.model().attributes = jsonEditor.get();
-
+                        /* Update the updated data in attributes field to update the model */
+                        var editedData = jsonEditor.get();
+                        var originalData = self.model.model()._originalAttributes;
+                        var modelAttr = self.model.model().attributes;
+                        for (key in editedData) {
+                            if (!cowu.isNil(originalData[key]) &&
+                                !cowu.isNil(modelAttr[key])) {
+                                self.model.model().attributes[key] = editedData[key];
+                            }
+                        }
                         //if error button on UI is on, disable save button
                         var isValidJSON = validate(jsonEditor.get());
                         toggleSaveButton(isValidJSON);
@@ -43,11 +52,13 @@ define([
 
             jsonEditor.setMode(cowc.JSON_EDITOR_MODE_CODE);
 
-            if (contrail.checkIfExist(self.model.model()._originalAttributes.customJSON) && (self.model.model()._originalAttributes.customJSON !== {})) {
+            if (contrail.checkIfExist(self.model.model()._originalAttributes.customJSON) &&
+                (self.model.model()._originalAttributes.customJSON !== {})) {
                 jsonData = self.model.model()._originalAttributes.customJSON;
             } else {
-                jsonData = self.model.model()._originalAttributes.json;
+                jsonData = self.model.model()._originalAttributes;
             }
+            delete jsonData.contrailUIJSONSchemas;
             jsonEditor.set(jsonData);
 
             var isValidJSON = validate(jsonEditor.get());
