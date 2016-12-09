@@ -146,6 +146,19 @@
     position:relative;
     left:45px;
 }
+.zoom-scatter-chart-container .coCharts-message-view {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.zoom-scatter-chart-container .coCharts-message-view .message-body {
+    display: block;
+    width: auto;
+    font: 5rem bold;
+}
+
 .control-panel-filter-title,
 .control-panel-legend-title {
     background-color: #F5F5F5;
