@@ -216,8 +216,11 @@ define([
                 this.updateColorSettingsWithCookie();
                 var cookieSettings = JSON.parse(contrail.getCookie(cowc.COOKIE_CHART_SETTINGS));
                 if(cookieSettings && viewConfig && viewConfig.chartOptions) {
-                    for(var key in cookieSettings) {
-                        viewConfig.chartOptions[key] = cookieSettings[key];
+                    var isChartSettingsOverride = cowu.getValueByJsonPath(viewConfig, "chartOptions;isChartSettingsOverride", true);
+                    if(isChartSettingsOverride) {
+                        for(var key in cookieSettings) {
+                            viewConfig.chartOptions[key] = cookieSettings[key];
+                        }
                     }
                 }
             }
@@ -1558,8 +1561,14 @@ define([
          */
         this.bucketizeStats = function (stats, options) {
             var bucketSize = getValueByJsonPath(options, 'bucketSize', cowc.DEFAULT_BUCKET_DURATION),
-                insertEmptyBuckets = getValueByJsonPath(options, 'insertEmptyBuckets', true),
-                timeRange = getValueByJsonPath(options, 'timeRange'),
+                insertEmptyBuckets = getValueByJsonPath(options, 'insertEmptyBuckets', true);
+            if (options['timeRange'] == null) {
+                options['timeRange'] = cowu.getValueByJsonPath(stats, '0;queryJSON');
+            }
+            var timeRange = getValueByJsonPath(options, 'timeRange', {
+                    start_time: Date.now() * 1000 - (2 * 60 * 60 * 1000 * 1000), // converting to micros secs
+                    end_time: Date.now() * 1000
+                }),
                 stats = ifNull(stats, []);
             bucketSize = parseFloat(bucketSize) * 60 * 1000 * 1000 //Converting to micros seconds
             var timestampField = 'T';
@@ -1636,7 +1645,7 @@ define([
                 && response.length > 0) {
                 parsedData.push({
                    key: failureLabel,
-                   color: cowc.FAILURE_COLOR,
+                   color: cowu.getValueByJsonPath(options, 'failureColor', cowc.FAILURE_COLOR),
                    values: []
                 });
             }
@@ -1670,6 +1679,7 @@ define([
                 }
             } else if (groupBy != null) {
                 var groupByMap = groupDim.group().all(),
+                    groupByMap = _.sortBy(groupByMap, 'key'),
                     groupByMapLen = groupByMap.length,
                     groupByKeys = _.pluck(groupByMap, 'key');
                 if (colors != null && typeof colors == 'function') {
@@ -1686,7 +1696,7 @@ define([
             } else {
                 parsedData.push({
                     key: yAxisLabel,
-                    color: cowc.DEFAULT_COLOR,
+                    color: $.isArray(cowc.DEFAULT_COLOR) ? cowc.DEFAULT_COLOR[0] : cowc.DEFAULT_COLOR,
                     values: []
                 });
             }
@@ -1844,7 +1854,7 @@ define([
                 parsedData[yField] = {"key":key,"color":colors[i],values:[]};
                 var values = parsedData[yField]['values'];
                 $.each(data,function(j,d){
-                    values.push({x:getValueByJsonPath(d,"T="),y:getValueByJsonPath(d,yField,0)});
+                    values.push({x:parseInt(getValueByJsonPath(d,"T=",0))/1000,y:getValueByJsonPath(d,yField,0)});
                 });
                 parsedData[yField]['values'] = values;
             });
@@ -1860,7 +1870,7 @@ define([
                 parsedData[yField] = {"key":key,"color":colors[i],values:[]};
                 var values = parsedData[yField]['values'];
                 $.each(data,function(j,d){
-                    values.push({x:getValueByJsonPath(d,"T="),y:getValueByJsonPath(d,yField,0)});
+                    values.push({x:parseInt(getValueByJsonPath(d,"T=",0))/1000,y:getValueByJsonPath(d,yField,0)});
                 });
                 parsedData[yField]['values'] = values;
             });
@@ -2021,6 +2031,15 @@ define([
             primaryDS.updateData(primaryData);
         };
 
+        self.getGridItemsForWidgetId = function(widgetId) {
+            var gridInst = $("[data-widget-id='" + widgetId + "']").find('.contrail-grid').data('contrailGrid');
+            var items = [];
+            if(gridInst != null) {
+                items = gridInst._dataView.getItems();
+            }
+            return items;
+        }
+
         self.resetGridStackLayout = function(allPages) {
             var gridStackId = $('.custom-grid-stack').attr('data-widget-id');
             localStorage.removeItem(gridStackId);
@@ -2095,10 +2114,15 @@ define([
                                 data: JSON.stringify(postData)
                             },
                             dataParser : (statsConfig['parser'])? statsConfig['parser'] :
-                                                function (response) {
-                                                    var data = getValueByJsonPath(response,'data',[]);
-                                                    return data;
-                                                }
+                                function (response) {
+                                    var data = getValueByJsonPath(response,'data',[]);
+                                    if (response['queryJSON'] != null) {
+                                        data = _.map(data, function(obj) { 
+                                            return _.extend({}, obj, {queryJSON: response['queryJSON']});
+                                        });
+                                    }
+                                    return data;
+                                }
                         };
                     primaryRemoteConfig = remoteObj;
                 } else {
@@ -2113,6 +2137,11 @@ define([
                         dataParser : (statsConfig['parser'])? statsConfig['parser'] :
                             function (response) {
                                 var data = getValueByJsonPath(response,'data',[]);
+                                if (response['queryJSON'] != null) {
+                                    data = _.map(data, function(obj) { 
+                                        return _.extend({}, obj, {queryJSON: response['queryJSON']});
+                                    });
+                                }
                                 return data;
                             },
                         successCallback: (statsConfig['parser'])?
@@ -2211,6 +2240,7 @@ define([
         }
     };
     function getDeepDiffOfKey(updatedObj, oldObj, oldJson){
+        var forwardFlag = false;
         for(var i in updatedObj){
             if(typeof updatedObj[i] === 'number' || typeof updatedObj[i] === 'string' || typeof updatedObj[i] === 'boolean'){
                 if(oldObj === undefined){
@@ -2257,14 +2287,26 @@ define([
                         if(oldJson !== undefined && oldJson !== null){
                             if(oldJson[i] !== undefined && oldJson[i] !== null){
                                 updatedObj[i] = oldJson[i];
+                            }else{
+                                delete updatedObj[i];
                             }
                         }else{
                             delete updatedObj[i];
                         }
+                }else if(updatedObj[i].length == 1 && updatedObj[i][0] == undefined){
+                    delete updatedObj[i];
                 }else if(typeof updatedObj[i][0] === 'string'){
                     if(oldObj !== undefined){
                         if(updatedObj[i].length === oldObj[i].length){
-                            delete updatedObj[i]
+                            if(oldJson != undefined){
+                                if(updatedObj[i].length == oldJson[i].length){
+                                    updatedObj[i] = updatedObj[i];
+                                }else{
+                                    delete updatedObj[i];
+                                }
+                            }else{
+                                delete updatedObj[i];
+                            }
                         }else{
                             var updatedVal = updatedObj[i].filter(function(n){ return n != ""});
                             if(updatedVal.length == 0){
@@ -2285,46 +2327,63 @@ define([
                           }
                         }
                     }
-                    
-                }else if(typeof updatedObj[i][0] === 'object' && updatedObj[i][0] !== null && updatedObj[i][0].constructor !== Array){
-                    for(var j = 0; j < updatedObj[i].length; j++){
-                        if(oldJson !== undefined && oldJson !== null){
-                            if(oldJson[i] !== undefined){
-                                getDeepDiffOfKey(updatedObj[i][j], oldObj[i][j], oldJson[i][j]);
-                            }else{
-                                getDeepDiffOfKey(updatedObj[i][j], oldObj[i][j], undefined);
-                            }
-                        }else{
-                            if(oldObj !== undefined){
-                                getDeepDiffOfKey(updatedObj[i][j], oldObj[i][j], undefined);
-                            }else{
-                                getDeepDiffOfKey(updatedObj[i][j], undefined, undefined);
-                            }
+                }else if((typeof updatedObj[i][0] === 'object' || typeof updatedObj[i][updatedObj[i].length - 1] === 'object') && (updatedObj[i][0] !== null || updatedObj[i][updatedObj[i].length - 1] !== null)){
+                    if(updatedObj[i][0] != undefined){
+                        if(updatedObj[i][0].constructor !== Array){
+                            forwardFlag = true;
                         }
-                        if(Object.keys(updatedObj[i][j]).length === 0){
-                            if(oldJson !== undefined){
-                                if(oldJson[i] !== undefined && oldJson[i] !== null){
-                                    if(oldJson[i][j] === null){
-                                        updatedObj[i][j] = null;
+                    }else if(updatedObj[i][updatedObj[i].length - 1] != undefined){
+                        if(updatedObj[i][updatedObj[i].length - 1].constructor !== Array){
+                            forwardFlag = true;
+                        }
+                    }
+                    if(forwardFlag){
+                        for(var j = 0; j < updatedObj[i].length; j++){
+                            if(oldJson !== undefined && oldJson !== null){
+                                if(oldJson[i] !== undefined){
+                                    getDeepDiffOfKey(updatedObj[i][j], oldObj[i][j], oldJson[i][j]);
+                                }else{
+                                    getDeepDiffOfKey(updatedObj[i][j], oldObj[i][j], undefined);
+                                }
+                            }else{
+                                if(oldObj !== undefined){
+                                    getDeepDiffOfKey(updatedObj[i][j], oldObj[i][j], undefined);
+                                }else{
+                                    getDeepDiffOfKey(updatedObj[i][j], undefined, undefined);
+                                }
+                            }
+                            if(updatedObj[i][j] != undefined){
+                                if(Object.keys(updatedObj[i][j]).length === 0 ){
+                                    if(oldJson !== undefined){
+                                        if(oldJson[i] !== undefined && oldJson[i] !== null){
+                                            if(oldJson[i][j] === null){
+                                                updatedObj[i][j] = null;
+                                            }else{
+                                                delete updatedObj[i][j];
+                                                updatedObj[i] = updatedObj[i].filter(function(n){ return n != undefined });
+                                            }
+                                        }else{
+                                            delete updatedObj[i][j];
+                                            updatedObj[i] = updatedObj[i].filter(function(n){ return n != undefined });
+                                         }
                                     }else{
                                         delete updatedObj[i][j];
                                         updatedObj[i] = updatedObj[i].filter(function(n){ return n != undefined });
                                     }
-                                }else{
-                                    delete updatedObj[i][j];
-                                    updatedObj[i] = updatedObj[i].filter(function(n){ return n != undefined });
-                                 }
-                            }else{
-                                delete updatedObj[i][j];
-                                updatedObj[i] = updatedObj[i].filter(function(n){ return n != undefined });
+                                }
                             }
                         }
-                    }
-                    if(updatedObj[i].length == 0){
-                        if(oldJson !== undefined){
-                            if(oldJson[i].length === updatedObj[i].length){}
-                        }else{
-                            delete updatedObj[i];
+                        updatedObj[i] = updatedObj[i].filter(function(n){ return n != undefined });
+                        if(updatedObj[i].length == 0){
+                            if(oldJson !== undefined){
+                                if(oldJson[i] !== undefined){
+                                    if(oldJson[i].length === updatedObj[i].length){}
+                                }else{
+                                    delete updatedObj[i];
+                                }
+                            }else{
+                                delete updatedObj[i];
+                            }
                         }
                     }
                 }
@@ -2341,26 +2400,43 @@ define([
           if (lodash.isObject(v)) {
               if (lodash.isArray(v)) {
                 if (v.length > 0 || b[k].length > 0) {
-                    var isSame = true; 
+                    var isSame = true;
+                    b[k] = b[k].filter(function(n){ return n != '' });
                      if(v.length == b[k].length){
-                            for(var i =0; i < v.length ; i++){
-                                var found = false;
-                               for(var j=0; j< b[k].length;j++){
-                                   if(lodash.isEqual(v[i], b[k][j])){
-                                       found = true;
-                                       break;
-                                   }
-                               }  
-                               if(!found) {
-                                   isSame = false;
-                                   break;
-                               }
-                            }
-                            if(!isSame){
-                                value = b[k];
-                            }
+                            if(oldJson !== undefined){
+                                 var diff = getDeepDiffOfKey(b[k],v, oldJson[Object.keys(oldJson)[0]][k]);
+                             }else{
+                                 var diff = getDeepDiffOfKey(b[k],v, undefined);
+                             }
+                             for(var i =0; i < v.length ; i++){
+                                 var found = false;
+                                for(var j=0; j< diff.length;j++){
+                                    if(lodash.isEqual(v[i], diff[j])){
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                                if(!found) {
+                                    isSame = false;
+                                    break;
+                                }
+                             }
+                             if(!isSame){
+                                 value = diff;
+                             }
                         }else if(v.length > b[k].length || v.length < b[k].length){
-                            value = b[k];
+                            if(oldJson !== undefined){
+                                var diff = getDeepDiffOfKey(b[k],v, oldJson[Object.keys(oldJson)[0]][k]);
+                            }else{
+                                var diff = getDeepDiffOfKey(b[k],v, undefined);
+                            }
+                            var newVal = diff.filter(function(n){ return n != undefined });
+                            if(newVal.length != 0){
+                                value = newVal;
+                            }
+                            if(v.length != 0 && newVal.length == 0){
+                                value = newVal;
+                            }
                         }
                   }
               } else {
