@@ -97,6 +97,10 @@ prod-env:
 	# For test files, we will setting the env file with current environment.
 	./unit-test.sh set-env "prod"
 
+introspect:
+	make dev-env REPO=webController
+	./introspect.sh
+
 clear-cache-dev:
 	./prod-dev.sh webroot/html/dashboard.html dev_env prod_env false
 	./prod-dev.sh webroot/html/login.html dev_env prod_env false
