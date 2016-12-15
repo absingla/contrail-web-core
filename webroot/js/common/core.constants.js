@@ -382,6 +382,23 @@ define([
             days: 24 * 60 * 60 * 1000
         };
 
+        this.UVEModuleIds = {
+                VROUTER_AGENT       : 'contrail-vrouter-agent',
+                CONTROLNODE         : 'contrail-control',
+                COLLECTOR           : 'contrail-collector',
+                OPSERVER            : 'contrail-analytics-api',
+                QUERYENGINE         : 'contrail-query-engine',
+                APISERVER           : 'contrail-api',
+                DISCOVERY_SERVICE   : 'contrail-discovery',
+                SERVICE_MONITOR     : 'contrail-svc-monitor',
+                SCHEMA              : 'contrail-schema',
+                ANALYTICS_NODEMGR   : 'contrail-analytics-nodemgr',
+                CONFIG_NODE         : 'ConfigNode',
+                IFMAP               : 'ifmap',
+                DATABASE            : 'contrail-database',
+                KAFKA               : 'kafka'
+        }
+
         this.OPERATOR_CODES = {
             1: '=',
             2: '!=',
