@@ -3,7 +3,7 @@
  */
 
 define([
-    'underscore',
+    'lodash',
     'moment',
     'handlebars',
     'lodash',
@@ -341,7 +341,7 @@ define([
             intoObject = intoObject || {};
             prefix = prefix || '';
 
-            _.each(object, function (value, key) {
+            _.forEach(object, function (value, key) {
                 if (object.hasOwnProperty(key)) {
                     if (value && typeof value === 'object' && !(value instanceof Array || value instanceof Date || value instanceof RegExp || value instanceof Backbone.Model || value instanceof Backbone.Collection)) {
                         self.flattenObject(value, intoObject, prefix + key + '.');
@@ -548,7 +548,7 @@ define([
                                     $.each(groupValue.items, function (itemKey, itemValue) {
                                         var controlPanelFilterGroupElement = $('#control-panel-filter-group-items-' + groupValue.id).find('input')[itemKey];
 
-                                        _.each(itemValue.events, function (eventValue, eventKey) {
+                                        _.forEach(itemValue.events, function (eventValue, eventKey) {
                                             $(controlPanelFilterGroupElement)
                                                 .off(eventKey)
                                                 .on(eventKey, function (event) {
@@ -563,7 +563,7 @@ define([
                                 $.each(groupValue.items, function (itemKey, itemValue) {
                                     var controlPanelFilterGroupElement = $('#control-panel-filter-group-items-' + groupValue.id).find('input')[itemKey];
 
-                                    _.each(itemValue.events, function (eventValue, eventKey) {
+                                    _.forEach(itemValue.events, function (eventValue, eventKey) {
                                         $(controlPanelFilterGroupElement)
                                             .off(eventKey)
                                             .on(eventKey, function (event) {
@@ -741,7 +741,7 @@ define([
 
         this.checkAndRefreshContrailGrids = function(elements) {
             if (_.isArray(elements)) {
-                _.each(elements, function(elementValue) {
+                _.forEach(elements, function(elementValue) {
                     if (contrail.checkIfExist($(elementValue).data('contrailGrid'))) {
                         $(elementValue).data('contrailGrid').refreshView();
                     }
@@ -1547,7 +1547,7 @@ define([
                 }
                 var timeStamp = Math.floor((data[i]["T="] || data[i].T) / 1000);
 
-                _.each(config.dataFields, function (dataField, seriesIndex) {
+                _.forEach(config.dataFields, function (dataField, seriesIndex) {
                     if (i === 0) {
                         series[seriesIndex] = {values: []};
                     }
