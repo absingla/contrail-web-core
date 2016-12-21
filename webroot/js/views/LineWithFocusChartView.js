@@ -15,6 +15,7 @@ define([
             var self = this,
                 vc = self.attributes.viewConfig;
             if(vc.hasOwnProperty("chartOptions")) {
+                vc.chartOptions["resetColor"] = true;
                 for(var key in newSettings) {
                     if(key in vc.chartOptions) {
                         vc.chartOptions[key] = newSettings[key];
@@ -203,7 +204,10 @@ define([
             chartOptions['forceY'] = getForceYAxis(chartData, chartOptions);
 
             if (chartData.length > 0) {
-                spliceBorderPoints(chartData);
+                if (chartOptions['spliceAtBorders'] != false) {
+                    spliceBorderPoints(chartData);
+                }
+
                 var values = chartData[0].values,
                     brushExtent = null,
                     hideFocusChart = getValueByJsonPath(chartOptions,'hideFocusChart', false),

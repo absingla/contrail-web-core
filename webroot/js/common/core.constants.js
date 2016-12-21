@@ -8,6 +8,7 @@ define([
     var CoreConstants = function () {
         var self = this;
 
+        this.INFRA_MODEL_CACHE_TIMEOUT = 5 * 60;
         this.ENABLE_CAROUSEL = false;
         this.THROTTLE_RESIZE_EVENT_TIME = 500;
         this.TMPL_SUFFIX_ID = "-template";
@@ -380,6 +381,23 @@ define([
             hrs: 60 * 60 * 1000,
             days: 24 * 60 * 60 * 1000
         };
+
+        this.UVEModuleIds = {
+                VROUTER_AGENT       : 'contrail-vrouter-agent',
+                CONTROLNODE         : 'contrail-control',
+                COLLECTOR           : 'contrail-collector',
+                OPSERVER            : 'contrail-analytics-api',
+                QUERYENGINE         : 'contrail-query-engine',
+                APISERVER           : 'contrail-api',
+                DISCOVERY_SERVICE   : 'contrail-discovery',
+                SERVICE_MONITOR     : 'contrail-svc-monitor',
+                SCHEMA              : 'contrail-schema',
+                ANALYTICS_NODEMGR   : 'contrail-analytics-nodemgr',
+                CONFIG_NODE         : 'ConfigNode',
+                IFMAP               : 'ifmap',
+                DATABASE            : 'contrail-database',
+                KAFKA               : 'kafka'
+        }
 
         this.OPERATOR_CODES = {
             1: '=',
@@ -2003,9 +2021,11 @@ define([
         //Node color schemes
         this.SINGLE_NODE_COLOR = ['#6f97ae'];
         this.THREE_NODE_COLOR = ['#a8c0d1', '#6f97ae', '#617683'];
-        this.FIVE_NODE_COLOR = ['#819eb5', '#6b8295', '#876f8a', '#b2a198', '#eccc9b'];
+        this.FIVE_NODE_COLOR = ['rgb(168,192,209)', 'rgb(111,151,174)', 'rgb(97,118,131)', 'rgb(185,213,232)', 'rgb(209,230,245)'];
         this.FAILURE_COLOR = '#d95436';
-        this.OTHERS_COLORS = '#a3b8a0';
+        this.OTHERS_COLORS = 'rgb(177, 189, 197)';
+        
+        this.DEFAULT_CHART_DURATION = 2;
 
         this.OTHERS = 'Others';
         this.FAILURE_LABEL = 'Failures';

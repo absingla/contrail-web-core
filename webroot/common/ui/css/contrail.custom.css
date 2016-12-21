@@ -1226,6 +1226,11 @@ button#close-error-popup{
     border: 0px solid #f2f2f2;
 }
 
+.custom-grid-stack.show-borders .custom-grid-stack-item {
+    border: 1px solid #f2f2f2;
+}
+
+
 /* Start - Event-drops css */
 /*.event-drops-tooltip {
     position: absolute;
@@ -1368,7 +1373,6 @@ color settings styles - begin
 .modal-popover {
     margin: 0px!important;
 }
-
 #settings_modal .modal-header .modal-footer {
     border: none;
     padding: 8px 0px 0px 0px;
@@ -1393,6 +1397,7 @@ color settings styles - begin
 }
 #settings_modal {
     width: 280px!important;
+    height:auto!important;
 }
 #settings_modal h6.modal-header i {
     font-size: 20px;
@@ -1504,11 +1509,18 @@ color settings styles - begin
     border-color: #6482bd!important;
     padding: 0px 10px;
 }
-
 /*
 color settings styles - end
 */
+/*
+Stack area chart opacity
+*/
+.custom-grid-stack-item .nvd3.nv-stackedarea path.nv-area {
+    fill-opacity: 1 !important;
+}
+
 /* Carousel custom tooltip CSS - Starts*/
+
 .custom-grid-stack-item .popover.popover-tooltip .popover-content {
     margin-top: -74px;
 }
@@ -1545,3 +1557,9 @@ color settings styles - end
     background-color: rgba(255,255,255,.95)!important;
 }
 /* Carousel custom tooltip CSS - Ends*/
+.custom-grid-stack > .custom-grid-stack-item > .grid-stack-item-content {
+	z-index: auto !important;
+}
+div.stack-bar-chart-tooltip > .popover.popover-tooltip {
+	opacity: 1;
+}
