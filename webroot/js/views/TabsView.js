@@ -285,7 +285,7 @@ define([
       self.$(self.selectors.tabs).append(panels);
 
       self.tabs.splice(to, 0, self.tabs.splice(from, 1)[0]);
-      self.$(self.selectors.tabs).data("contrailTabs").refresh();
+      self.$el.data("contrailTabs").refresh();
       return true;
     },
 
