@@ -143,6 +143,25 @@ define([
         },
 
         create: function(event, ui) {
+          if (viewConfig.dragToReorder && ui.tab.length > 0) {
+            var $tabLinks = $(ui.tab[0]).closest(self.selectors.linkList);
+
+              $tabLinks.sortable({
+                items: "> [role='tab']",
+                update: function() {
+                  var serializedTabLinks = $tabLinks.sortable("serialize", {
+                    key: "UUID",
+                    attribute: "aria-labelledby",
+                    expression: /([0-9A-Z\-]+)[-]/
+                  });
+
+                  if (viewConfig.dragToReorderHandler) {
+                    viewConfig.dragToReorderHandler(serializedTabLinks);
+                  }
+                }
+              });
+          }
+
           var tab = self.tabs[ui.tab.index()];
 
           if (!tab._rendered) self.renderTab(tab);

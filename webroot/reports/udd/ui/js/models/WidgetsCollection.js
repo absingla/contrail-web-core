@@ -92,6 +92,15 @@ define([
         },
         getTabCreationTime: function() {
             return this.models[0] ? this.models[0].get("tabCreationTime") : Date.now();
+        },
+        getCustomizedTabListOrder: function() {
+            if (this.models.length > 0) {
+                var deserialized = this.models[0].get("customizedTabListOrder").split(/&?UUID=/img);
+                _.remove(deserialized, _.isEmpty);
+                return deserialized;
+            } else {
+                return [];
+            }
         }
     });
     return WidgetsCollection;

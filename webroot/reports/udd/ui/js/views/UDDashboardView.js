@@ -25,13 +25,16 @@ define([
         getViewConfig: function() {
             var self = this,
                 currentTabNumber = 0, // get from array
-                tabIds = this.model.tabIds(this.currentDashboard);
+                tabIds = this.model.tabIds(this.currentDashboard),
+                customTabOrder = this.model.getCustomizedTabListOrder(),
+                customizedTabNumber = customTabOrder.length;
 
             // add default tab
             if (_.isEmpty(tabIds)) {
                 tabIds.push(this.currentTab);
             }
 
+            // sort by creationTime
             var tabs = _.sortBy(
                 _.map(tabIds, function(tabId) {
                     return this.getConfig4Tab(tabId);
@@ -39,6 +42,12 @@ define([
                 function(tab) {
                     return tab.model.getTabCreationTime();
                 });
+
+            // do a stable sort based on the customized tab list order
+            tabs = _.sortBy(tabs, function(tab) {
+                var customOrderIdx = _.indexOf(customTabOrder, tab.elementId);
+                return customOrderIdx === -1 ? customizedTabNumber++ : customOrderIdx;
+            });
 
             return {
                 elementId: "widget-layout-tabs-view-section",
@@ -57,6 +66,13 @@ define([
                                     this.renderNewTab("widget-layout-tabs-view", tabViewConfigs, true);
                                 },
                                 extendable: true,
+                                dragToReorder: true,
+                                dragToReorderHandler: function(serializedTabList) {
+                                    _.forEach(this.model.models, function(model) {
+                                        model.set("customizedTabListOrder", serializedTabList);
+                                        model.save();
+                                    });
+                                }.bind(this)
                             },
                         } ],
                     } ],
