@@ -5,8 +5,9 @@
 define([
     "lodash",
     "contrail-view",
-    "core-basedir/reports/qe/ui/js/common/qe.utils"
-], function(_, ContrailView, qeUtils) {
+    "core-basedir/reports/qe/ui/js/common/qe.utils",
+    "core-basedir/reports/udd/ui/js/common/udd.constants"
+], function(_, ContrailView, qeUtils, uddConstants) {
     var UDDashboardView = ContrailView.extend({
         el: $(window.contentContainer),
 
@@ -72,6 +73,51 @@ define([
                                         model.set("customizedTabListOrder", serializedTabList);
                                         model.save();
                                     });
+                                }.bind(this),
+                                dragToDrop: true,
+                                dragToDropHandler: function(event, ui) {
+                                    // TODO: the logic here is quite similiar to WidgetView.clone()
+                                    // 
+                                    // To reduce the code duplicates, find a way to reuse the WidgetView.clone() or vice versa
+                                    var $toTab = $(event.target),
+                                        $movedEntity = $(ui.draggable[0]);
+
+                                    if ($movedEntity.is(".widget")) {
+                                        var toTabId = $toTab.attr("aria-controls").slice(0, -4),
+                                            fromTabId = $movedEntity.closest(".contrail-tab-content").attr("id"),
+                                            widgetId = $movedEntity.attr("id"),
+                                            widgetModelToMove = this.model.tabModels[fromTabId].collection.get(widgetId),
+                                            toCollection = this.model.tabModels[toTabId],
+                                            posMeta = ["x", "y", "width", "height"],
+                                            vmParams = ["editingTitle", "isReady", "step", "canProceed"],
+                                            widgetTileMeta = widgetModelToMove.get(uddConstants.modelIDs.WIDGET_META).model().attributes, // positioning, title and other UI state flags
+                                            clonedWidgetConfig = widgetModelToMove.toJSON(); // overall widget component config
+
+                                        // Parse the raw initial state of a widget
+                                        widgetModelToMove.parse(clonedWidgetConfig);
+
+                                        // Mark position meta invalid to let UDDGridStackView.onAdd recalculate them.
+                                        clonedWidgetConfig.config = _.transform(clonedWidgetConfig.config, function(result, value, key) {
+                                            if (_.includes(posMeta, key)) {
+                                                result[key] = -1;
+                                            } else {
+                                                result[key] = value;
+                                            }
+                                        });
+
+                                        // Add some ViewModel-generated props which are not saved on backend.
+                                        // These props are used by KO bindings to handle UI logic
+                                        _.merge(clonedWidgetConfig.config, _.pick(widgetTileMeta, vmParams));
+
+                                        // Override the tab related info with the destination tab's
+                                        _.merge(clonedWidgetConfig, toCollection.info);
+
+                                        // Add the clone to destination tab
+                                        toCollection.collection.add(clonedWidgetConfig);
+
+                                        // Remove the moved widget
+                                        widgetModelToMove.destroy();
+                                    }
                                 }.bind(this)
                             },
                         } ],

@@ -387,6 +387,18 @@ rect.bordered {
     background: none;
 }
 
+.ui-tabs .ui-droppable.ui-droppable-hover {
+    background-color: #3182bd;
+}
+
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-droppable.ui-droppable-hover a {
+    color: white;
+}
+
+.drag-to-drop.ui-draggable-dragging {
+    opacity: 0.7;
+}
+
 /* a Links */
 a.disabled-link, a.disabled-link:hover, i.disabled-link, i.disabled-link:hover{
     color: #ccc !important;

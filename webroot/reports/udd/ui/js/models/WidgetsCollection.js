@@ -41,22 +41,33 @@ define([
         //TODO it would be good to use synced subcollections like: https://github.com/anthonyshort/backbone.collectionsubset
         // both params are mandatory to access filtered collections right
         filterBy: function(dashboardId, tabId) {
-            var filtered = new WidgetsCollection(
-                this.filter(function(item) {
-                    var isValid = dashboardId ? item.get("dashboardId") === dashboardId : true;
+            var tabInfoFields = [
+                    "customizedTabListOrder",
+                    "tabCreationTime",
+                    "tabId",
+                    "tabName"
+                ],
+                filtered = new WidgetsCollection(
+                    this.filter(function(item) {
+                        var isValid = dashboardId ? item.get("dashboardId") === dashboardId : true;
 
-                    isValid = isValid && (tabId ? item.get("tabId") === tabId : true);
+                        isValid = isValid && (tabId ? item.get("tabId") === tabId : true);
 
-                    return isValid;
-                }),
-                {
-                    url: this.url
-                }
-            );
+                        return isValid;
+                    }),
+                    {
+                        url: this.url
+                    }
+                );
 
-            filtered.on("add", this._onAdd, this);
+            filtered.on("add", this._onAdd.bind(this, tabId));
 
-            this.tabModels[tabId] = filtered;
+            var onefilteredWidget = filtered.at(0);
+
+            this.tabModels[tabId] = {
+                info: _.pick(onefilteredWidget ? onefilteredWidget.attributes : {}, tabInfoFields),
+                collection: filtered
+            };
 
             return filtered;
         },
@@ -77,13 +88,26 @@ define([
             });
         },
         setTabCreationTime: function(tabCreationTime) {
+            this._tabCreationTime = tabCreationTime;
             _.each(this.models, function(widget) {
                 widget.set("tabCreationTime", tabCreationTime);
                 widget.save();
             });
         },
         // this handler is bound to parent collection
-        _onAdd: function (model) {
+        _onAdd: function (tabId, model) {
+            // Note: tabModels.info needs to be synced if it's adding the first widget to a new tab.
+            if (_.isEmpty(this.tabModels[tabId].info)) {
+                this.tabModels[tabId].info = {
+                    tabId: tabId,
+                    tabName: model.collection._tabName,
+                    tabCreationTime: model.collection._tabCreationTime,
+                    customizedTabListOrder: this.models[0].get("customizedTabListOrder")
+                };
+
+                model.set(this.tabModels[tabId].info);
+            }
+
             this.add(model);
         },
         // each tab has its own collection
