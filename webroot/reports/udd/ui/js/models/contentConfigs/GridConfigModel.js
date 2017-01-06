@@ -38,7 +38,7 @@ define([
             detailedEntry: true,
             visibleColumns: "",
             availableColumns: [],
-            pageSize: 8
+            pageSize: _.get(uddConstants.uddWidget.gridPageSizeList, 0)
         },
 
         validations: {
