@@ -31,6 +31,9 @@ define([
   });
 
   var TabsView = ContrailView.extend({
+    HTMLClass: {
+      droppableHover: "ui-droppable-hover",
+    },
     selectors: {
       tabEdit: ".contrail-tab-link-list .tab-edit-btn",
       linkList: ".contrail-tab-link-list",
@@ -40,7 +43,6 @@ define([
       addLink: ".contrail-tab-link-list .tab-add .link",
       titleEdit: ".popover .tab-menu input.title-updated",
       tabPanel: ".ui-tabs-panel",
-      droppableHover: ".ui-droppable-hover",
       dragToDrop: ".drag-to-drop"
     },
 
@@ -173,13 +175,14 @@ define([
                 tolerance: "pointer",
                 drop: function(event, ui) {
                   viewConfig.dragToDropHandler(event, ui);
-                  $(event.target).removeClass(self.selectors.droppableHover);
+                  $(event.target).removeClass(self.HTMLClass.droppableHover);
                 },
-                over: function(event) {
-                  $(event.target).addClass(self.selectors.droppableHover);
+                over: function(event, ui) {
+                  console.log(event, ui);
+                  $(event.target).addClass(self.HTMLClass.droppableHover);
                 },
                 out: function(event) {
-                  $(event.target).removeClass(self.selectors.droppableHover);
+                  $(event.target).removeClass(self.HTMLClass.droppableHover);
                 }
               });
             });
@@ -406,13 +409,14 @@ define([
             tolerance: "pointer",
             drop: function(event, ui) {
               self.attributes.viewConfig.dragToDropHandler(event, ui);
-              $(event.target).removeClass(self.selectors.droppableHover);
+              $(event.target).removeClass(self.HTMLClass.droppableHover);
             },
-            over: function(event) {
-              $(event.target).addClass(self.selectors.droppableHover);
+            over: function(event, ui) {
+              console.log(event, ui);
+              $(event.target).addClass(self.HTMLClass.droppableHover);
             },
             out: function(event) {
-              $(event.target).removeClass(self.selectors.droppableHover);
+              $(event.target).removeClass(self.HTMLClass.droppableHover);
             }
           });
       });
