@@ -391,7 +391,8 @@ rect.bordered {
     background-color: #3182bd;
 }
 
-.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-droppable.ui-droppable-hover a {
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-tabs-nav li.ui-droppable.ui-droppable-hover a,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-tabs-nav li.ui-tabs-active.ui-droppable-hover .tab-edit-btn {
     color: white;
 }
 

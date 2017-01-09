@@ -34,7 +34,7 @@ define([
             return w.attributes.tabCreationTime;
         },
         parse: function(response) {
-            var _res = response && response.result ? response.result.rows : [];
+            var _res = _.get(response, "result.rows", []);
 
             return _.map(_res, markWidgetAsReady);
         },
@@ -48,10 +48,10 @@ define([
                     "tabName"
                 ],
                 filtered = new WidgetsCollection(
-                    this.filter(function(item) {
-                        var isValid = dashboardId ? item.get("dashboardId") === dashboardId : true;
+                    this.filter(function(model) {
+                        var isValid = !dashboardId || model.get("dashboardId") === dashboardId;
 
-                        isValid = isValid && (tabId ? item.get("tabId") === tabId : true);
+                        isValid = isValid && (!tabId || model.get("tabId") === tabId);
 
                         return isValid;
                     }),
@@ -96,8 +96,9 @@ define([
         },
         // this handler is bound to parent collection
         _onAdd: function (tabId, model) {
-            // Note: tabModels.info needs to be synced if it's adding the first widget to a new tab.
             if (_.isEmpty(this.tabModels[tabId].info)) {
+                // if info is missing, we are adding the first widget to the tab,
+                // the tab's info needs to be synced
                 this.tabModels[tabId].info = {
                     tabId: tabId,
                     tabName: model.collection._tabName,
