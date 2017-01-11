@@ -90,6 +90,7 @@ define([
             if ($(selector).parents('.custom-grid-stack-item').length != 0) {
                 viewConfig['chartOptions']['height'] = $(selector).parents('.custom-grid-stack-item').height() - 20;
             }
+
             chartViewConfig = self.getChartViewConfig(data, viewConfig.chartOptions);
             chartOptions = chartViewConfig['chartOptions'];
             //viewConfig.chartOptions = chartOptions;

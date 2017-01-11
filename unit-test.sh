@@ -12,6 +12,7 @@ WEBCORE_TEST_DIR=$WEBCORE_DIR/webroot/test/ui
 CONTROLLER_TEST_DIR=$ROOT_DIR/contrail-web-controller/webroot/test/ui
 SM_TEST_DIR=$ROOT_DIR/contrail-web-server-manager/webroot/test/ui
 STORAGE_TEST_DIR=$ROOT_DIR/contrail-web-storage/webroot/test/ui
+RUNTEST_SCRIPT='run_tests.sh'
 RUNTEST_ARG=''
 
 if [ "$1" = 'set-env' ] ; then
@@ -68,7 +69,7 @@ if [ -d "$GRUNT_DIR" ]; then
                 echo    "*     Web Controller Unit Tests                  *"
                 echo -e "**************************************************\n"
                 cd $CONTROLLER_TEST_DIR ;\
-                ./run_tests.sh $RUNTEST_ARG ;\
+                ./$RUNTEST_SCRIPT $RUNTEST_ARG ;\
                 cd -
                 echo "DONE"
             fi
@@ -78,7 +79,7 @@ if [ -d "$GRUNT_DIR" ]; then
                 echo    "*     Server Manager Unit Tests           *"
                 echo -e "*******************************************\n"
                 cd $SM_TEST_DIR ;\
-                ./run_tests.sh $RUNTEST_ARG ;\
+                ./$RUNTEST_SCRIPT $RUNTEST_ARG ;\
                 cd -
                 echo "DONE"
             fi
@@ -87,8 +88,9 @@ if [ -d "$GRUNT_DIR" ]; then
                 echo    "*******************************************"
                 echo    "*     Web Storage Unit Tests              *"
                 echo -e "*******************************************\n"
+                echo $STORAGE_TEST_DIR
                 cd $STORAGE_TEST_DIR ;\
-                ./run_test.sh $RUNTEST_ARG ;\
+                ./$RUNTEST_SCRIPT $RUNTEST_ARG ;\
                 cd -
                 echo "DONE"
             fi
