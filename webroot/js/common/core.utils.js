@@ -1195,6 +1195,7 @@ define([
 
         this.loadAlertsPopup = function(cfgObj) {
             var prefixId = 'dashboard-alerts';
+            var notificationView = false;
             var cfgObj = ifNull(cfgObj,{});
             var modalTemplate =
                 contrail.getTemplate4Id('core-modal-template');
@@ -1212,9 +1213,9 @@ define([
             if(!self.getAlarmsFromAnalytics) {
                 modalConfig['title'] = 'Alerts';
             }
-            cowu.createModal(modalConfig);
 
             if(cfgObj.model == null && !self.getAlarmsFromAnalytics) {
+                cowu.createModal(modalConfig);
                 require(['mon-infra-node-list-model','monitor-infra-parsers',
                     'monitor-infra-constants','monitor-infra-utils'],
                     function(NodeListModel,MonitorInfraParsers,MonitorInfraConstants,
@@ -1259,7 +1260,20 @@ define([
                             });
                         }
                     });
+            } else if (notificationView) {
+                require(['js/views/NotificationView', 'core-alarm-parsers', 'core-alarm-utils'],
+                 function (NotificationView, coreAlarmParsers, coreAlarmUtils) {
+                    var notificationView = new NotificationView({
+                        el: $("#alarms-popup-link a"),
+                        viewConfig: {
+                            template: 'notification-popover-template',
+                            title: 'Alarms'
+                        }
+                    });
+                    notificationView.render();
+                });
             } else {
+                cowu.createModal(modalConfig);
                 if(self.getAlarmsFromAnalytics) {
                     require(['js/views/AlarmGridView'], function(AlarmGridView) {
                         var alarmGridView = new AlarmGridView({
@@ -1676,6 +1690,7 @@ define([
             }
             var range = d3.range(minMaxTS[0], minMaxTS[1], bucketSize);
             var xBucketScale = d3.scale.quantize().domain(minMaxTS).range(range);
+            var lastbucketTimestamp = range[range.length - 1];
             var buckets = {};
             if (insertEmptyBuckets) {
                 var rangeLen = range.length;
@@ -1697,6 +1712,9 @@ define([
 
                 buckets[xBucket]['data'].push(obj);
             });
+            if(options.stripLastBucket){
+                delete buckets[lastbucketTimestamp];
+            }
             return buckets;
         };
 
@@ -1704,6 +1722,7 @@ define([
             var cf = crossfilter(response);
             var timeStampField = 'T',
                 parsedData = [], failureCheckFn = getValueByJsonPath(options, 'failureCheckFn'),
+                substractFailures = getValueByJsonPath(options, 'substractFailures'),
                 colors = getValueByJsonPath(options, 'colors',cowc.FIVE_NODE_COLOR),
                 groupBy = getValueByJsonPath(options, 'groupBy'),
                 yField = getValueByJsonPath(options, 'yField'),
@@ -1724,7 +1743,8 @@ define([
             var buckets = cowu.bucketizeStats(response,{
                 bucketSize: getValueByJsonPath(options, 'bucketSize'),
                 timeRange: getValueByJsonPath(options, 'timeRange'),
-                insertEmptyBuckets: getValueByJsonPath(options, 'insertEmptyBuckets', true)
+                insertEmptyBuckets: getValueByJsonPath(options, 'insertEmptyBuckets', true),
+                stripLastBucket: getValueByJsonPath(options, 'stripLastBucket', true)
             });
             var tsDim = cf.dimension(function(d) { return d[timeStampField]});
             if (failureCheckFn != null && typeof failureCheckFn == 'function'
@@ -1812,8 +1832,13 @@ define([
                             groupSumObj = _.indexBy(groupByDimSum.top(Infinity), 'key');
                             groupByMap = [];
                             for (var key in groupCountsObj) {
+                                var count = getValueByJsonPath(groupCountsObj, key+';value', 1);
+                                //To calculate average denominator should be non zero..
+                                if (count == 0) {
+                                    count = 1;
+                                }
                                 groupByMap.push({key: key,
-                                    value: getValueByJsonPath(groupSumObj, key+';value', 0)/getValueByJsonPath(groupCountsObj, key+';value', 1)});
+                                    value: getValueByJsonPath(groupSumObj, key+';value', 0)/count});
                             }
                         } else {
                             //Default is sum
@@ -1860,7 +1885,12 @@ define([
                                 // total failure in this bar(or bucket)
                                 failedBarCnt += failedSliceCnt;
                                 //Subtracting the failures from total records
-                                groupByObjVal -= parseInt(failedSliceCnt);
+                                if (substractFailures == false) {
+                                    total += failedBarCnt;
+                                } else {
+                                    groupByObjVal -= parseInt(failedSliceCnt);
+                                }
+
                             }
                         }
                         if (limit != null && groupByObjKey != cowc.OTHERS) {
@@ -1936,8 +1966,9 @@ define([
             var yFields = getValueByJsonPath(options,'yFields',[]);
             var parsedData = [];
             var colors = getValueByJsonPath(options,'colors',cowc.FIVE_NODE_COLOR);
+            var yLabels = getValueByJsonPath(options,'yLabels', []);
             $.each(yFields,function(i,yField){
-                var key = getLabelForPercentileYField(yField);
+                var key = yLabels[i] != null ? yLabels[i]: getLabelForPercentileYField(yField);
                 parsedData[yField] = {"key":key,"color":colors[i],values:[]};
                 var values = parsedData[yField]['values'];
                 $.each(data,function(j,d){
@@ -2025,6 +2056,9 @@ define([
                     groupCnt = {};
                 tsDim.filter(timestampExtent);
                 var sampleCnt = tsDim.top(Infinity).length;
+                if (sampleCnt == 0) {
+                    sampleCnt = 1;
+                }
                 groupDimData = groupDim.group().all();
                 groupDimData = _.sortBy(groupDimData, 'key');
                 $.each(groupDimData, function(idx, obj) {
@@ -2128,8 +2162,8 @@ define([
         }
 
         self.resetGridStackLayout = function(allPages) {
-            var gridStackId = $('.custom-grid-stack').attr('data-widget-id');
-            localStorage.removeItem(gridStackId);
+            //var gridStackId = $('.custom-grid-stack').attr('data-widget-id');
+            localStorage.clear();
             var gridStackInst = $('.custom-grid-stack').data('grid-stack-instance')
             if(gridStackInst != null ) {
                 gridStackInst.render()
@@ -2173,28 +2207,36 @@ define([
                       "limit": "150000"
                     }
                 };
-
-                if (statsConfig['table_name'] != null) {
-                    postData['formModelAttrs']['table_name'] = statsConfig['table_name'];
+                var remoteConfig ;
+                if (statsConfig['type'] != null && statsConfig['type'] == "non-stats-query") {
+                    if(statsConfig['remoteConfig']) {
+                        remoteConfig = statsConfig['remoteConfig'];
+                    }
+                } else {
+                    if (statsConfig['table_name'] != null) {
+                        postData['formModelAttrs']['table_name'] = statsConfig['table_name'];
+                    }
+                    if (statsConfig['table_type'] != null) {
+                        postData['formModelAttrs']['table_type'] = statsConfig['table_type'];
+                    }
+                    if (statsConfig['select'] != null) {
+                        postData['formModelAttrs']['select'] = statsConfig['select'];
+                    }
+                    if (statsConfig['where'] != null) {
+                        postData['formModelAttrs']['where'] = statsConfig['where'];
+                    }
+                    if (statsConfig['time_granularity'] != null) {
+                        postData['formModelAttrs']['time_granularity'] = statsConfig['time_granularity'];
+                    }
+                    if (statsConfig['time_granularity_unit'] != null) {
+                        postData['formModelAttrs']['time_granularity_unit'] = statsConfig['time_granularity_unit'];
+                    }
                 }
-                if (statsConfig['table_type'] != null) {
-                    postData['formModelAttrs']['table_type'] = statsConfig['table_type'];
-                }
-                if (statsConfig['select'] != null) {
-                    postData['formModelAttrs']['select'] = statsConfig['select'];
-                }
-                if (statsConfig['where'] != null) {
-                    postData['formModelAttrs']['where'] = statsConfig['where'];
-                }
-                if (statsConfig['time_granularity'] != null) {
-                    postData['formModelAttrs']['time_granularity'] = statsConfig['time_granularity'];
-                }
-                if (statsConfig['time_granularity_unit'] != null) {
-                    postData['formModelAttrs']['time_granularity_unit'] = statsConfig['time_granularity_unit'];
-                }
-
                 if(i == 0) {
-                    var remoteObj = {
+                    if (statsConfig['type'] != null && statsConfig['type'] == "non-stats-query"){
+                        primaryRemoteConfig = remoteConfig;
+                    } else {
+                        var remoteObj = {
                             ajaxConfig : {
                                 url : "/api/qe/query",
                                 type: 'POST',
@@ -2211,14 +2253,19 @@ define([
                                     return data;
                                 }
                         };
-                    primaryRemoteConfig = remoteObj;
+                        primaryRemoteConfig = remoteObj;
+                    }
                 } else {
                     var vlRemoteObj = {
-                        getAjaxConfig: function() {
-                            return {
-                                url : "/api/qe/query",
-                                type: 'POST',
-                                data: JSON.stringify(postData)
+                        getAjaxConfig: function(primaryResponse) {
+                            if(statsConfig['getAjaxConfig']) {
+                                return statsConfig['getAjaxConfig'](primaryResponse,postData);
+                            } else {
+                                return {
+                                    url : "/api/qe/query",
+                                    type: 'POST',
+                                    data: JSON.stringify(postData)
+                                }
                             }
                         },
                         dataParser : (statsConfig['parser'])? statsConfig['parser'] :
@@ -2231,13 +2278,10 @@ define([
                                 }
                                 return data;
                             },
-                        successCallback: (statsConfig['parser'])?
-                            function(data, contrailListModel) {
-                                statsConfig['mergeFn'] (data,contrailListModel);
-                            }:
-                                function(response, contrailListModel) {
-                                var data = getValueByJsonPath(response,'data',[]);
-                                statsConfig['mergeFn'] (data,contrailListModel);
+                        successCallback: function(data, contrailListModel) {
+                                if(statsConfig['mergeFn']){
+                                    statsConfig['mergeFn'] (data,contrailListModel);
+                                }
                             }
                     };
                     vlRemoteList.push (vlRemoteObj);
@@ -2327,7 +2371,6 @@ define([
         }
     };
     function getDeepDiffOfKey(updatedObj, oldObj, oldJson){
-        var forwardFlag = false;
         for(var i in updatedObj){
             if(typeof updatedObj[i] === 'number' || typeof updatedObj[i] === 'string' || typeof updatedObj[i] === 'boolean'){
                 if(oldObj === undefined){
@@ -2370,19 +2413,15 @@ define([
                     }
                 }
             }else if(updatedObj[i] !== null && updatedObj[i].constructor === Array){
+                if(updatedObj[i].length > 0){
+                    var updatedVal = updatedObj[i].filter(function(n){ return n != undefined});
+                    if(updatedVal.length == 0){
+                        updatedObj[i] = updatedVal;
+                    }
+                }
                 if(updatedObj[i].length == 0){
-                        if(oldJson !== undefined && oldJson !== null){
-                            if(oldJson[i] !== undefined && oldJson[i] !== null){
-                                updatedObj[i] = oldJson[i];
-                            }else{
-                                delete updatedObj[i];
-                            }
-                        }else{
-                            delete updatedObj[i];
-                        }
-                }else if(updatedObj[i].length == 1 && updatedObj[i][0] == undefined){
-                    delete updatedObj[i];
-                }else if(typeof updatedObj[i][0] === 'string'){
+                       delete updatedObj[i];
+                }else if(typeof checkArrayContainsString(updatedObj[i]) === 'string'){
                     if(oldObj !== undefined){
                         if(updatedObj[i].length === oldObj[i].length){
                             if(oldJson != undefined){
@@ -2414,18 +2453,8 @@ define([
                           }
                         }
                     }
-                }else if((typeof updatedObj[i][0] === 'object' || typeof updatedObj[i][updatedObj[i].length - 1] === 'object') && (updatedObj[i][0] !== null || updatedObj[i][updatedObj[i].length - 1] !== null)){
-                    if(updatedObj[i][0] != undefined){
-                        if(updatedObj[i][0].constructor !== Array){
-                            forwardFlag = true;
-                        }
-                    }else if(updatedObj[i][updatedObj[i].length - 1] != undefined){
-                        if(updatedObj[i][updatedObj[i].length - 1].constructor !== Array){
-                            forwardFlag = true;
-                        }
-                    }
-                    if(forwardFlag){
-                        for(var j = 0; j < updatedObj[i].length; j++){
+                }else if(typeof checkArrayContainsObject(updatedObj[i]) == 'object' && checkArrayContainsObject(updatedObj[i]) !== null && checkArrayContainsObject(updatedObj[i]).constructor !== Array){
+                    for(var j = 0; j < updatedObj[i].length; j++){
                             if(oldJson !== undefined && oldJson !== null){
                                 if(oldJson[i] !== undefined){
                                     getDeepDiffOfKey(updatedObj[i][j], oldObj[i][j], oldJson[i][j]);
@@ -2472,11 +2501,30 @@ define([
                                 delete updatedObj[i];
                             }
                         }
-                    }
                 }
             }
         }
         return updatedObj;
+    };
+    function checkArrayContainsObject(array){
+        var obj;
+        for(var i = 0; i < array.length; i++){
+            if(typeof array[i] == 'object' && array[i].constructor !== Array){
+                obj = array[i];
+                break;
+            }
+        }
+       return obj;
+    };
+    function checkArrayContainsString(array){
+        var str;
+        for(var i = 0; i < array.length; i++){
+            if(typeof array[i] == 'string' || typeof array[i] == 'number'){
+                str = array[i];
+                break;
+            }
+        }
+       return str;
     };
     function deepDiff(a, b, r, reversible, oldJson, enumKeys) {
         lodash.each(a, function(v, k) {
@@ -2488,8 +2536,7 @@ define([
               if (lodash.isArray(v)) {
                 if (v.length > 0 || b[k].length > 0) {
                     var isSame = true;
-                    b[k] = b[k].filter(function(n){ return n != '' });
-                     if(v.length == b[k].length){
+                    if(v.length == b[k].length){
                             if(oldJson !== undefined){
                                  var diff = getDeepDiffOfKey(b[k],v, oldJson[Object.keys(oldJson)[0]][k]);
                              }else{
@@ -2509,6 +2556,7 @@ define([
                                 }
                              }
                              if(!isSame){
+                                 diff = diff.filter(function(n){ return n != "" });
                                  value = diff;
                              }
                         }else if(v.length > b[k].length || v.length < b[k].length){
@@ -2518,6 +2566,7 @@ define([
                                 var diff = getDeepDiffOfKey(b[k],v, undefined);
                             }
                             var newVal = diff.filter(function(n){ return n != undefined });
+                            newVal = newVal.filter(function(n){ return n != "" });
                             if(newVal.length != 0){
                                 value = newVal;
                             }
@@ -2551,6 +2600,9 @@ define([
                    r[k] = value;
                 }
              }
+            if(value === null){
+                r[k] = value;
+            }
           });
 
     };

@@ -13,6 +13,11 @@ globalObj['loadedScripts'] = [];
 globalObj['initFeatureAppDefObjMap'] = {};
 globalObj['siteMap'] = {};
 globalObj['siteMapSearchStrings'] = [];
+/* The below flag signifies while communicating with http introspect, should we go through proxy or
+ * not
+ */
+var loadIntrospectViaProxy = true;
+
 var FEATURE_PCK_WEB_CONTROLLER = "webController",
     FEATURE_PCK_WEB_STORAGE = "webStorage",
     FEATURE_PCK_WEB_SERVER_MANAGER = "serverManager";
@@ -27,6 +32,9 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
      * eg: use 'core-srcdir/js/views/GridView' as path to access GridView source instead of minified.
      */
     var coreWebDir = coreBaseDir + coreBuildDir;
+    if (typeof(window) !== "undefined") {
+        window.coreWebDir = coreWebDir;
+    }
     if(env == null)
         env = globalObj['env'];
     //RequireJS alias mapping
@@ -91,7 +99,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'json-edit-view'              : coreWebDir + '/js/views/JsonEditView',
         'jquery-ui'                   : coreWebDir + '/assets/jquery-ui/js/jquery-ui.min',
         'schema-model'                : coreWebDir + '/js/models/SchemaModel',
-        'view-config-generator'       : coreWebDir + '/js/common/view.config.generator',
+        'json-validator'              : coreWebDir + '/js/common/json.validator',
         'iframe-view'                 : coreWebDir + '/js/views/IframeView',
         'jdorn-jsoneditor'            : coreWebDir + '/assets/jdorn-jsoneditor/js/jdorn-jsoneditor',
         'jquery-linedtextarea'        : coreWebDir + '/assets/jquery-linedtextarea/js/jquery-linedtextarea',
@@ -1218,6 +1226,7 @@ if (typeof document !== 'undefined' && document) {
                     $('.modal').remove();
                     $('.modal-backdrop').remove();
                     $(".focus-config-backdrop").remove();
+                    $(".popover").remove();
                 });
                 loadUtils.bindSignInListeners();
             },
@@ -1306,6 +1315,8 @@ if (typeof document !== 'undefined' && document) {
             logout: function() {
                 //Clear iframes
                 $('.iframe-view').remove();
+                //Clear alarms popup
+                $('.popover').remove();
                 //Clear All Pending Ajax calls
                 $.allajax.abort();
                 $.ajax({
