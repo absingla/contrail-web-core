@@ -43,6 +43,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'jquery-dep-libs'       : coreWebDir + '/js/common/jquery.dep.libs',
         'nonamd-libs'           : coreWebDir + '/js/common/nonamd.libs',
         //Files not in bundles
+        'widget-configmanager'        : coreWebDir + '/js/widget.configmanager',
+        'gridstack'                   : coreWebDir + '/assets/gridstack/js/gridstack',
         'underscore'            : coreWebDir + '/assets/underscore/underscore-min',
         'slickgrid-utils'       : coreWebDir + "/js/slickgrid-utils",
         'jquery'                : coreWebDir + '/assets/jquery/js/jquery.min',
@@ -59,6 +61,8 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'joint.layout.DirectedGraph'  : coreWebDir + '/assets/joint/js/joint.layout.DirectedGraph',
         'joint'                       : coreWebDir + '/assets/joint/js/joint.clean',
         'joint.contrail'              : coreWebDir + '/js/common/joint.contrail',
+
+        'event-drops'                 : coreWebDir + '/assets/event-drops/js/eventDrops',
 
         'core-alarm-utils'           :  coreWebDir + '/js/common/core.alarms.utils',
         'core-alarm-parsers'         :  coreWebDir + '/js/common/core.alarms.parsers',
@@ -84,6 +88,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'schema-model'               : coreWebDir + '/js/models/SchemaModel',
         'view-config-generator'      : coreWebDir + '/js/common/view.config.generator',
         'jquery-ui'                 : coreWebDir + '/assets/jquery-ui/js/jquery-ui',
+        'legend-view'                 : coreWebDir + '/js/views/LegendView',
     };
 
     //Separate out aliases that need to be there for both prod & dev environments
@@ -415,6 +420,7 @@ var coreBundles = {
         ],
         'core-bundle'       : [
             'underscore',
+            'moment',
             'handlebars',
             'core-handlebars-utils',
             'core-utils',
@@ -436,11 +442,10 @@ var coreBundles = {
             'contrail-model',
             'contrail-view-model',
             'contrail-list-model',
-            'contrail-elements',
+            'contrail-element',
             'lodash',
             'crossfilter',
             'text',
-            'moment',
             'layout-handler',
             'menu-handler',
             'help-handler',
@@ -515,6 +520,46 @@ var coreBundles = {
             'xdate',
             'ipv6',
             'jsonpath'
+        ],
+        'qe-module': [
+            "core-basedir/reports/qe/ui/templates/qe.tmpl",
+            "core-basedir/reports/qe/ui/js/common/qe.utils",
+            "core-basedir/reports/qe/ui/js/common/qe.parsers",
+            "core-basedir/reports/qe/ui/js/common/qe.grid.config",
+            "core-basedir/reports/qe/ui/js/common/qe.model.config",
+            "core-basedir/reports/qe/ui/js/views/QueryEngineView",
+            "core-basedir/reports/qe/ui/js/views/QueryQueueView",
+            "core-basedir/reports/qe/ui/js/views/QueryTextView",
+            "core-basedir/reports/qe/ui/js/views/ObjectLogsFormView",
+            "core-basedir/reports/qe/ui/js/views/SystemLogsFormView",
+            "core-basedir/reports/qe/ui/js/views/StatQueryFormView",
+            "core-basedir/reports/qe/ui/js/models/ContrailListModelGroup",
+            "core-basedir/reports/qe/ui/js/models/ObjectLogsFormModel",
+            "core-basedir/reports/qe/ui/js/models/StatQueryFormModel",
+            "core-basedir/reports/qe/ui/js/models/SystemLogsFormModel",
+        ],
+        'udd-module': [
+            "core-basedir/reports/udd/ui/templates/udd.tmpl",
+            "core-basedir/reports/udd/ui/js/common/udd.form.validation.config",
+            "core-basedir/reports/udd/ui/js/common/udd.constants",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/GridConfigModel",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/LineBarChartConfigModel",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/LineChartConfigModel",
+            "core-basedir/reports/udd/ui/js/models/contentConfigs/LogsConfigModel",
+            "core-basedir/reports/udd/ui/js/models/dataSourceConfigs/QueryConfigModel",
+            "core-basedir/reports/udd/ui/js/models/ContentConfigModel",
+            "core-basedir/reports/udd/ui/js/models/WidgetModel",
+            "core-basedir/reports/udd/ui/js/models/WidgetsCollection",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/GridConfigView",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/LineBarChartConfigView",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/LineChartConfigView",
+            "core-basedir/reports/udd/ui/js/views/contentConfigs/LogsConfigView",
+            "core-basedir/reports/udd/ui/js/views/dataSourceConfigs/QueryConfigView",
+            "core-basedir/reports/udd/ui/js/views/BaseContentConfigView",
+            "core-basedir/reports/udd/ui/js/views/GridStackView",
+            "core-basedir/reports/udd/ui/js/views/LogsView",
+            "core-basedir/reports/udd/ui/js/views/UDDashboardView",
+            "core-basedir/reports/udd/ui/js/views/WidgetView",
         ]
     };
 

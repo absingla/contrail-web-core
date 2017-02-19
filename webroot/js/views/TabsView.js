@@ -52,6 +52,10 @@ define([
     },
 
     initialize: function () {
+      /**
+       * Note: Current TabsView implementation keeps the same elementId for the container.
+       * Todo: cleanup the TabsView implementation. Remove duplicate elementId. styles
+       */
       this.selectors.tabs = "#" + this.attributes.elementId;
     },
 
@@ -93,7 +97,7 @@ define([
           }
       });
 
-      self.$(self.selectors.tabs).contrailTabs({
+      $(self.selectors.tabs).contrailTabs({
         active: activeTab,
         activate: function(event, ui) {
           var tabIndex = ui.newTab.index(),
@@ -146,6 +150,7 @@ define([
 
         theme: viewConfig.theme,
       });
+
     },
 
     _initTabMenu: function(tab) {

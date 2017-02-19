@@ -204,7 +204,7 @@
  */
 .modal.contrail-modal {
     margin-left: 0 !important;
-    top: 0 !important;
+    top: 0;
     height: 100% !important;
     width: 100% !important;
 }
@@ -286,41 +286,41 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
-.contrail-tabs.ui-tabs .ui-state-default a i.contrail-tab-link-icon {
+.ui-tabs .contrail-tabs .ui-state-default a i.contrail-tab-link-icon {
     margin-right: 10px;
     font-weight: normal;
     font-size: 110%;
     display: inline-block;
 }
-.contrail-tabs.ui-tabs .ui-state-default i.fa-ellipsis-v {
+.ui-tabs .contrail-tabs .ui-state-default i.fa-ellipsis-v {
     display: none;
     font-size: 1.5em;
     padding: 9px 4px 5px 4px;
 }
-.contrail-tabs.ui-tabs li.ui-tabs-active i.fa-ellipsis-v {
+.ui-tabs .contrail-tabs li.ui-tabs-active i.fa-ellipsis-v {
     display: inline-block;
 }
-.contrail-tabs.ui-tabs .contrail-tab-link-list .tab-add .link {
+.ui-tabs .contrail-tabs .contrail-tab-link-list .tab-add .link {
     position: absolute;
     padding: 8px;
 }
-.contrail-tabs.ui-tabs .contrail-tab-link-list .tab-add .title-edit {
+.ui-tabs .contrail-tabs .contrail-tab-link-list .tab-add .title-edit {
     display: none;
     padding-top: 4px;
 }
-.contrail-tabs.ui-tabs .contrail-tab-link-list .tab-add .title-edit > input {
+.ui-tabs .contrail-tabs .contrail-tab-link-list .tab-add .title-edit > input {
 }
-.contrail-tabs.ui-tabs .ui-tabs-nav li.pull-right {
+.ui-tabs .contrail-tabs .ui-tabs-nav li.pull-right {
     float: right;
     margin-top: 5px;
 }
-.contrail-tabs.ui-tabs .contrail-tab-link-list .tab-menu {
+.ui-tabs .contrail-tabs .contrail-tab-link-list .tab-menu {
     padding: 8px;
 }
-.contrail-tabs.ui-tabs .contrail-tab-link-list .tab-menu .title-save {
+.ui-tabs .contrail-tabs .contrail-tab-link-list .tab-menu .title-save {
     margin-left: 16px;
 }
-.contrail-tabs.ui-tabs .ui-tabs-nav li a.contrail-tab-extra-link {
+.ui-tabs .contrail-tabs .ui-tabs-nav li a.contrail-tab-extra-link {
     font-weight: normal;
     font-size: 11px;
 }
@@ -333,29 +333,29 @@
     border: none;
     padding: 0;
 }
-.contrail-tabs-overcast.ui-tabs .ui-widget-header,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-widget-header,
 .ui-tabs .ui-widget-header{
     border: none;
     background: none;
     background-color:#f9f9f9;
     border-bottom: 1px solid #eee;
 }
-.contrail-tabs-overcast.ui-tabs .ui-tabs-nav,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-tabs-nav,
 .ui-tabs .ui-tabs-nav{
     margin: -4px -10px 10px -10px;
     padding: 1px;
 }
-.contrail-tabs-overcast.ui-tabs-panel.ui-widget-content,
+.contrail-tabs-overcast .contrail-tabs .ui-tabs-panel.ui-widget-content,
 .ui-tabs-panel.ui-widget-content {
     padding: 0;
 }
-.contrail-tabs-overcast.ui-tabs .ui-tabs-nav li.ui-tabs-active a,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-tabs-nav li.ui-tabs-active a,
 .ui-tabs .ui-tabs-nav li.ui-tabs-active a,
-.contrail-tabs-overcast.ui-tabs .ui-tabs-nav li.ui-state-hover a,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-tabs-nav li.ui-state-hover a,
 .ui-tabs .ui-tabs-nav li.ui-state-hover a,
-.contrail-tabs-overcast.ui-tabs .ui-tabs-nav li.ui-tabs-active .tab-edit-btn,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-tabs-nav li.ui-tabs-active .tab-edit-btn,
 .ui-tabs .ui-tabs-nav li.ui-tabs-active .tab-edit-btn,
-.contrail-tabs-overcast.ui-tabs .ui-tabs-nav li.ui-state-hover .tab-edit-btn,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-tabs-nav li.ui-state-hover .tab-edit-btn,
 .ui-tabs .ui-tabs-nav li.ui-state-hover .tab-edit-btn {
     color: #3182bd;
 }
@@ -372,16 +372,16 @@
   display: inline-block;
 }
 
-.contrail-tabs-overcast.ui-tabs .ui-state-default a,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-state-default a,
 .ui-tabs .ui-state-default a,
-.contrail-tabs-overcast.ui-tabs .ui-state-default a:link,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-state-default a:link,
 .ui-tabs .ui-state-default a:link,
-.contrail-tabs-overcast.ui-tabs .ui-state-default a:visited,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .ui-state-default a:visited,
 .ui-tabs .ui-state-default a:visited {
     color: #787878;
     text-decoration: none;
 }
-.contrail-tabs-overcast.ui-tabs .contrail-tabs-loading,
+.contrail-tabs-overcast.ui-tabs .contrail-tabs .contrail-tabs-loading,
 .ui-tabs .contrail-tabs-loading {
     margin-right: 5px;
 }
@@ -1131,3 +1131,76 @@ li {
 .group-detail-advanced-json {
     padding-left: 30px;
 }
+
+/* Start of Toolbar */
+#toolbar {
+    float:right;
+}
+.btn-toolbar a {
+    color:white;
+}
+.btn-toolbar {
+    height:20px;
+    width:20px;
+    border-radius: 4px;
+}
+.tool-item {
+    width:20px;
+    height:20px;
+}
+a.tool-item {
+    float:left;
+}
+a.tool-item{
+border-left: solid 1px #a9c0db;}
+a.tool-item:nth-child(1) {
+    border:none;
+}
+.tool-contrainer{
+    border-radius:4px;}
+.btn-toolbar{
+    border-radius:3px;
+    padding:5px}
+.tool-container{
+    background-color:#599AC9;}
+.btn-toolbar-primary.pressed, .tool-item.selected   {
+    background-color: #5189b1;
+}
+.btn-toolbar-primary:hover {
+    background-color: #a1c6db;
+}
+
+.btn-toolbar-primary, .tool-container {
+    background-color: #599ac9;
+}
+
+.tool-item {
+    padding: 6px;
+}
+.tool-item > .fa{
+    color:#ffffff;
+    font-size:20px;}
+.tool-container.tool-left .arrow{
+    border-color: transparent transparent transparent #599ac9;
+}
+.tool-vertical-top .tool-item:first-child:hover, .tool-vertical-bottom .tool-item:first-child:hover, .tool-right .tool-item:first-child:hover, .tool-left .tool-item:first-child:hover {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+    border-top-right-radius: 0px;
+}
+.tool-item:hover {
+    background:#9bbfd5;
+}
+
+.tool-vertical-top .tool-item:last-child:hover, .tool-vertical-bottom .tool-item:last-child:hover, .tool-right .tool-item:last-child:hover, .tool-left .tool-item:last-child:hover {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+}
+
+#toolbar_section {
+    position: fixed;
+    margin-top: 4px;
+    z-index: 999;
+}
+/* End of Toolbar */

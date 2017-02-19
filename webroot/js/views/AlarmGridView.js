@@ -53,7 +53,7 @@ define([
                 contrailListModel = self.model;
             }
             contrailListModel.onDataUpdate.subscribe(function (){
-                coreAlarmUtils.fetchAndUpdateAlarmBell();
+                coreAlarmUtils.updateAlarmBell(coreAlarmUtils.getAlarmCounts(contrailListModel.getItems(),true));
             });
             self.renderView4Config(self.$el, contrailListModel, getAlarmGridViewConfig(viewConfig));
         }
@@ -136,16 +136,16 @@ define([
                                     allow: false
                                   }
                               },
-                              {
-                                  field: 'severity',
-                                  name: 'Severity',
-                                  hide:true
-                              },
-                              {
-                                  field: 'ack',
-                                  name: 'Acknowledged',
-                                  hide:true
-                              },
+//                              {
+//                                  field: 'severity',
+//                                  name: 'Severity',
+//                                  hide:true
+//                              },
+//                              {
+//                                  field: 'ack',
+//                                  name: 'Acknowledged',
+//                                  hide:true
+//                              },
                               {
                                   field: 'T',
                                   name: 'Time',
@@ -404,6 +404,7 @@ define([
                                                 },
                                                 {
                                                     key: 'T',
+                                                    label:'Time',
                                                     templateGenerator: 'TextGenerator',
                                                     templateGeneratorConfig: {
                                                         formatter: 'timestampFormatter'

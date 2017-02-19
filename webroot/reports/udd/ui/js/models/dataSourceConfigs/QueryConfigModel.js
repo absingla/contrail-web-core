@@ -4,10 +4,11 @@
 
 define([
     "lodash",
-    "core-basedir/reports/qe/ui/js/common/qe.model.config",
     "core-constants",
-    "query-form-model"
-], function(_, qeModelConfig, coreConstants, QueryFormModel) {
+    "query-form-model",
+    "core-basedir/reports/udd/ui/js/common/udd.form.validation.config",
+    "core-basedir/reports/qe/ui/js/common/qe.model.config"
+], function(_, coreConstants, QueryFormModel, formValidationConfig, qeModelConfig) {
     var QueryConfigModel = QueryFormModel.extend({
         defaultSelectFields: [],
         constructor: function(modelConfig, queryReqConfig) {
@@ -23,7 +24,7 @@ define([
             var defaultConfig = qeModelConfig.getQueryModelConfig({
                 keywords: "",
                 log_level: "",
-                limit: "",
+                limit: ""
             });
 
             var modelData = _.merge(defaultConfig, modelConfig, {limit: coreConstants.QE_DEFAULT_LIMIT_50K});
@@ -38,17 +39,28 @@ define([
 
             this.model().on("change:table_name", function(model, tableName) {
                 var tableType = model.get("table_type");
+
                 if (tableType === coreConstants.QE_FLOW_TABLE_TYPE) {
-                    model.set(_.merge({
-                        table_name: tableName
-                    },
-                        flowTableDefaults[tableName])
-                    );
+                    model.set(
+                            _.merge({
+                                table_name: tableName
+                            },
+                            flowTableDefaults[tableName])
+                        );
                 }
             });
-
+            /** original solution for https://app.asana.com/0/162139934853695/206515470400258,
+                disabled due to solution impact investigation
+            
+            this.model().on("change", function(model) {
+                model.isValid(true, cowc.KEY_RUN_QUERY_VALIDATION);
+            });
+            */
+            
             return this;
         },
+
+        validations: formValidationConfig.mixValidationRules(QueryFormModel.prototype.validations, formValidationConfig.UDDQueryConfigValidations),
 
         reset: function(data, event, resetTR, resetTable) {
             resetTable = contrail.checkIfExist(resetTable) ? resetTable : this.query_prefix() !== coreConstants.SYSTEM_LOGS_PREFIX;

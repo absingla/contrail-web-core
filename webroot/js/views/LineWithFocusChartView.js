@@ -11,12 +11,33 @@ define([
     'chart-utils'
 ], function (_, ContrailView, LineWithFocusChartModel, ContrailListModel, nv, chUtils) {
     var LineWithFocusChartView = ContrailView.extend({
+        settingsChanged: function(newSettings) {
+            var self = this,
+                vc = self.attributes.viewConfig;
+            if(vc.hasOwnProperty("chartOptions")) {
+                vc.chartOptions["resetColor"] = true;
+                for(var key in newSettings) {
+                    if(key in vc.chartOptions) {
+                        vc.chartOptions[key] = newSettings[key];
+                    }
+                }
+                if(!vc.chartOptions.staticColor &&
+                    typeof vc.chartOptions["colors"] != 'function') {
+                    vc.chartOptions["colors"] = cowc.FIVE_NODE_COLOR;
+                }
+            }
+
+            self.renderChart($(self.$el), vc, self.model);
+        },
+
         render: function () {
             var viewConfig = this.attributes.viewConfig,
                 ajaxConfig = viewConfig['ajaxConfig'],
                 self = this, deferredObj = $.Deferred(),
                 selector = $(self.$el),
                 modelMap = contrail.handleIfNull(self.modelMap, {});
+            //settings
+            cowu.updateSettingsWithCookie(viewConfig);
 
             if (contrail.checkIfExist(viewConfig.modelKey) && contrail.checkIfExist(modelMap[viewConfig.modelKey])) {
                 self.model = modelMap[viewConfig.modelKey]
@@ -42,44 +63,42 @@ define([
                         self.updateChart(selector, viewConfig, self.model);
                     });
                 }
+                var prevDimensions = chUtils.getDimensionsObj(self.$el);
+                self.resizeFunction = _.debounce(function (e) {
+                    if(!chUtils.isReRenderRequired({
+                        prevDimensions:prevDimensions,
+                        elem:self.$el})) {
+                        return;
+                    }
+                     self.renderChart($(self.$el), viewConfig, self.model);
+                 },cowc.THROTTLE_RESIZE_EVENT_TIME);
+
+                $(self.$el).parents('.custom-grid-stack-item').on('resize',self.resizeFunction);
             }
         },
 
-        renderChart: function (selector, viewConfig, chartViewModel) {
+        renderChart: function (selector, viewConfig, chartDataModel) {
             var self = this,
-                modelData = chartViewModel.getItems(),
-                data = modelData.slice(0),
+                modelData = chartDataModel.getItems(),
+                data = modelData.slice(0), //work with shallow copy
                 chartTemplate = contrail.getTemplate4Id(cowc.TMPL_CHART),
                 widgetConfig = contrail.checkIfExist(viewConfig.widgetConfig) ? viewConfig.widgetConfig : null,
-                chartViewConfig, chartOptions, chartModel,
+                chartViewConfig, chartOptions, chartViewModel,
                 showLegend = getValueByJsonPath(viewConfig,'chartOptions;showLegend',false),
                 defaultZeroLineDisplay = getValueByJsonPath(viewConfig,'chartOptions;defaultZeroLineDisplay', false);
 
             if (contrail.checkIfFunction(viewConfig['parseFn'])) {
                 data = viewConfig['parseFn'](data, viewConfig['chartOptions']);
             }
-
-            //plot default line
-            if(data.length === 0 && defaultZeroLineDisplay){
-                var defData = {key:'', color:cowc.DEFAULT_COLOR, values:[]},
-                    start = Date.now() - (2 * 60 * 60 * 1000),
-                    end = Date.now();
-
-                defData.values.push({x:start, y:0.01, tooltip:false});
-                defData.values.push({x:start, y:0.01, tooltip:false});
-                defData.values.push({x:end, y:0.01, tooltip:false});
-                viewConfig.chartOptions.forceY = [0, 1];
-                viewConfig.chartOptions.defaultDataStatusMessage = false;
-                data.push(defData);
+            if ($(selector).parents('.custom-grid-stack-item').length != 0) {
+                viewConfig['chartOptions']['height'] = $(selector).parents('.custom-grid-stack-item').height() - 40;
             }
-
             chartViewConfig = self.getChartViewConfig(data, viewConfig);
             chartOptions = chartViewConfig['chartOptions'];
-            chartModel = new LineWithFocusChartModel(chartOptions);
+            chartViewModel = new LineWithFocusChartModel(chartOptions);
+            chartViewModel.chartOptions = chartOptions;
 
-            chartModel.chartOptions = chartOptions;
-
-            self.chartModel = chartModel;
+            self.chartViewModel = chartViewModel;
 
             if ($(selector).find("svg") != null) {
                 $(selector).empty();
@@ -88,7 +107,7 @@ define([
             $(selector).append(chartTemplate(chartOptions));
 
             //Store the chart object as a data attribute so that the chart can be updated dynamically
-            $(selector).data('chart', chartModel);
+            $(selector).data('chart', chartViewModel);
 
             if (chartOptions['showLegend'] && chartOptions['legendView'] != null) {
                 self.legendView = new chartOptions['legendView']({
@@ -98,26 +117,27 @@ define([
                 self.legendView.render();
             }
 
-            if (!($(selector).is(':visible'))) {
-                $(selector).find('svg').bind("refresh", function () {
-                    setData2Chart(self, chartViewConfig, chartViewModel, chartModel);
-                });
-            } else {
-                setData2Chart(self, chartViewConfig, chartViewModel, chartModel);
-            }
+            $(selector).find('svg').bind("refresh", function () {
+                self.updateChart(selector, viewConfig, chartDataModel);
+            });
 
             self.resizeFn = _.debounce(function () {
-                chUtils.updateChartOnResize($(self.$el), self.chartModel);
+                chUtils.updateChartOnResize($(self.$el), self.chartViewModel);
             }, 500);
             nv.utils.windowResize(self.resizeFn);
+
+            if ($(selector).is(':visible')) {
+                setData2Chart(self, chartViewConfig, chartDataModel, chartViewModel);
+            }
+            updateDataStatusMessage(self, chartViewConfig, chartDataModel);
 
             //Seems like in d3 chart renders with some delay so this deferred object helps in that situation,which resolves once the chart is rendered
             if (chartOptions['deferredObj'] != null)
                 chartOptions['deferredObj'].resolve();
 
             if (widgetConfig !== null) {
-                this.renderView4Config(selector.find('.chart-container'), chartViewModel, widgetConfig, null, null, null, function(){
-                    chUtils.updateChartOnResize(selector, chartModel);
+                this.renderView4Config(selector.find('.chart-container'), chartDataModel, widgetConfig, null, null, null, function(){
+                    chUtils.updateChartOnResize(selector, chartViewModel);
                 });
             }
 
@@ -127,7 +147,7 @@ define([
             var self = this,
                 message = contrail.handleIfNull(message, ""),
                 selector = contrail.handleIfNull(selector, $(self.$el)),
-                chartOptions = contrail.handleIfNull(chartOptions, self.chartModel.chartOptions),
+                chartOptions = contrail.handleIfNull(chartOptions, self.chartViewModel.chartOptions),
                 container = d3.select($(selector).find("svg")[0]),
                 requestStateText = container.selectAll('.nv-requestState').data([message]),
                 textPositionX = $(selector).width() / 2,
@@ -169,7 +189,10 @@ define([
             chartOptions['forceY'] = getForceYAxis(chartData, chartOptions);
 
             if (chartData.length > 0) {
-                spliceBorderPoints(chartData);
+                if (chartOptions['spliceAtBorders'] != false) {
+                    spliceBorderPoints(chartData);
+                }
+
                 var values = chartData[0].values,
                     brushExtent = null,
                     hideFocusChart = getValueByJsonPath(chartOptions,'hideFocusChart', false),
@@ -212,29 +235,34 @@ define([
             //If legendView exist, update with new config built from new data.
             if (self.legendView) self.legendView.update(getLegendViewConfig(chartViewConfig.chartOptions, data));
 
-            setData2Chart(self, chartViewConfig, dataModel, self.chartModel);
+            setData2Chart(self, chartViewConfig, dataModel, self.chartViewModel);
+            updateDataStatusMessage(self, chartViewConfig, dataModel);
         }
     });
 
-    function setData2Chart(self, chartViewConfig, chartViewModel, chartModel) {
+    function setData2Chart(self, chartViewConfig, chartDataModel, chartViewModel) {
+        var chartDataObj = {
+                data: chartViewConfig.chartData,
+                requestState: getDataRequestState(chartViewConfig, chartDataModel)
+            };
+        d3.select($(self.$el)[0]).select('svg').datum(chartDataObj).call(chartViewModel);
+    }
 
+    function getDataRequestState(chartViewConfig, chartDataModel) {
         var chartData = chartViewConfig.chartData,
             checkEmptyDataCB = function (data) {
                 return (!data || data.length === 0 || !data.filter(function (d) { return d.values.length; }).length);
-            },
-            chartDataRequestState = cowu.getRequestState4Model(chartViewModel, chartData, checkEmptyDataCB),
-            chartDataObj = {
-                data: chartData,
-                requestState: chartDataRequestState
-            },
-            chartOptions = chartViewConfig['chartOptions'];
+            };
+        return cowu.getRequestState4Model(chartDataModel, chartData, checkEmptyDataCB);
+    }
 
-        d3.select($(self.$el)[0]).select('svg').datum(chartDataObj).call(chartModel);
-
+    function updateDataStatusMessage(self, chartViewConfig, dataModel) {
+        var chartDataModel = dataModel || self.model(),
+            chartOptions = chartViewConfig.chartOptions,
+            chartDataRequestState = getDataRequestState(chartViewConfig, chartDataModel);
         if (chartOptions.defaultDataStatusMessage) {
             var messageHandler = chartOptions.statusMessageHandler;
             self.renderMessage(messageHandler(chartDataRequestState));
-
         } else {
             self.removeMessage();
         }
@@ -244,7 +272,8 @@ define([
         var lineChart;
         for(var i = 0; i < chartData.length; i++) {
             lineChart = chartData[i];
-            if (lineChart.length > 2) {
+            //Taking out first and last value as it may be incomplete sample.
+            if (lineChart.values.length > 2) {
                 lineChart['values'] = lineChart['values'].slice(1, -1);
             }
         }

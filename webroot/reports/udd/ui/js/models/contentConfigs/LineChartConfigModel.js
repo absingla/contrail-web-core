@@ -2,14 +2,24 @@
  * Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.
  */
 
-define(function(require) {
-    var ContentConfigModel = require("reports/udd/ui/js/models/ContentConfigModel.js");
-    var cowc = require("core-constants");
-    var cowf = new(require("core-formatters"));
+define([
+    "core-constants",
+    "core-basedir/reports/udd/ui/js/common/udd.form.validation.config",
+    "core-basedir/reports/udd/ui/js/models/ContentConfigModel"
+], function(cowc, formValidationConfig, ContentConfigModel) {
 
     return ContentConfigModel.extend({
+        constructor: function(modelConfig, modelRemoteDataConfig) {
+            ContentConfigModel.prototype.constructor.call(this, modelConfig, modelRemoteDataConfig);
+            
+            if (this.yAxisLabel() === "") {
+                this.yAxisValue.subscribe(function(newValue) {
+                    this.yAxisLabel(newValue);
+                }, this);
+            }
+        },
         defaultConfig: {
-            color: "1f77b4",
+            color: cowc.D3_COLOR_CATEGORY5[3],
             yAxisLabel: "",
             yAxisValue: "",
             yAxisValueUnit: "",
@@ -27,7 +37,17 @@ define(function(require) {
 
         // update fields dependent on data model
         onDataModelChange: function(viewModel) {
-            this.yAxisValues(this.timeSeries(viewModel.get("select")));
+            var UIAddedParams = viewModel.get("ui_added_parameters"),
+                plottableFields = viewModel.get("select");
+
+            if (UIAddedParams) {
+                var columnSchemaMap = viewModel.get("ui_added_parameters").table_schema_column_names_map;
+                
+                plottableFields = formValidationConfig
+                    .getPlottableFields(plottableFields, columnSchemaMap);
+            }
+
+            this.yAxisValues(this.timeSeries(plottableFields));
         },
 
         toJSON: function() {
@@ -41,38 +61,37 @@ define(function(require) {
         },
 
         getParserOptions: function() {
-            var self = this;
             return {
-                dataFields: [self.yAxisValue()],
+                dataFields: [this.yAxisValue()],
             };
         },
 
         chartDataParser: function(data) {
-            var self = this;
-            var dataSeries = cowu.timeSeriesParser({dataFields: [self.yAxisValue()]}, data);
+            var dataSeries = cowu.timeSeriesParser({dataFields: [this.yAxisValue()]}, data);
+
             if (dataSeries.length === 0) {
                 dataSeries[0] = {};
                 dataSeries[0].values = [];
             }
-            dataSeries[0].key = self.yAxisLabel();
-            dataSeries[0].color = self.color();
+            dataSeries[0].key = this.yAxisLabel();
+            dataSeries[0].color = this.color();
+
             return dataSeries;
         },
 
         getContentViewOptions: function() {
-            var self = this;
             return {
-                parseFn: self.chartDataParser.bind(self),
+                parseFn: this.chartDataParser.bind(this),
                 chartOptions: {
                     axisLabelDistance: 5,
                     height: 300,
-                    yAxisLabel: self.yAxisLabel(),
-                    colors: [self.color()],
+                    yAxisLabel: this.yAxisLabel(),
+                    colors: [this.color()],
                     forceY: [0, 10],
-                    yFormatter: cowf.getFormattedValue.bind(cowf, [{
-                        format: cowc.QUERY_COLUMN_FORMATTER[self.yAxisValue()],
+                    yFormatter: window.cowf.getFormattedValue.bind(window.cowf, [{
+                        format: cowc.QUERY_COLUMN_FORMATTER[this.yAxisValue()],
                         options: {
-                            unit: self.yAxisValueUnit()
+                            unit: this.yAxisValueUnit()
                         }
                     }]),
                 },

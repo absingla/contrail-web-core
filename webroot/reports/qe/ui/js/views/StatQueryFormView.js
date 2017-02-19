@@ -5,13 +5,11 @@
 define([
     "knockback",
     "validation",
-    "layout-handler",
+    "core-constants",
     "query-form-view",
     "core-basedir/reports/qe/ui/js/models/StatQueryFormModel",
     "core-basedir/reports/qe/ui/js/common/qe.utils"
-], function(kb, kbValidation, LayoutHandler, QueryFormView, StatQueryFormModel, qeUtils) {
-    var layoutHandler = new LayoutHandler();
-
+], function(kb, kbValidation, coreConstants, QueryFormView, StatQueryFormModel, qeUtils) {
     var StatQueryFormView = QueryFormView.extend({
         render: function() {
             var self = this,
@@ -19,7 +17,7 @@ define([
                 modelMap = contrail.handleIfNull(self.modelMap, {}),
                 hashParams = layoutHandler.getURLHashParams(),
                 queryPrefix = cowc.STAT_QUERY_PREFIX,
-                queryPageTmpl = contrail.getTemplate4Id(ctwc.TMPL_QUERY_PAGE),
+                queryPageTmpl = contrail.getTemplate4Id(coreConstants.TMPL_QUERY_PAGE),
                 queryType = contrail.checkIfExist(hashParams.queryType) ? hashParams.queryType : null,
                 widgetConfig = contrail.checkIfExist(viewConfig.widgetConfig) ? viewConfig.widgetConfig : null,
                 queryFormId = cowc.QE_HASH_ELEMENT_PREFIX + cowc.STAT_QUERY_PREFIX + cowc.QE_FORM_SUFFIX,

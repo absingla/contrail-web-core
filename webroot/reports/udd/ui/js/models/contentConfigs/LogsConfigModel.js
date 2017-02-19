@@ -3,24 +3,26 @@
  */
 
 define([
-    "reports/udd/ui/js/models/ContentConfigModel.js"
+    "core-basedir/reports/udd/ui/js/models/ContentConfigModel"
 ], function(ContentConfigModel) {
     return ContentConfigModel.extend({
+        constructor: function(modelConfig, modelRemoteDataConfig) {
+            ContentConfigModel.prototype.constructor.call(this, modelConfig, modelRemoteDataConfig);
+        },
+
         defaultConfig: {
             records: 5,
         },
 
         toJSON: function() {
-            var self = this;
             return {
-                records: self.records(),
+                records: this.records(),
             };
         },
 
         getContentViewOptions: function() {
-            var self = this;
             return {
-                totalRecords: self.records(),
+                totalRecords: this.records(),
             };
         },
     });

@@ -44,12 +44,6 @@ define([
             return self;
         },
 
-        rollback: function () {
-          //TODO is there a way to rollback in one shot?
-          this.model().set(this._modelAttributes);
-          this.model().set(this._modelAttributes);
-        },
-
         getValueByPath: function (path) {
             var obj = this.model().attributes;
             path = path.replace(/\[(\w+)\]/g, '.$1');
@@ -69,11 +63,18 @@ define([
         validateAttr: function (attributePath, validation) {
             var attr = cowu.getAttributeFromPath(attributePath),
                 errors = this.model().get(cowc.KEY_MODEL_ERRORS),
-                attrErrorObj = {}, isValid;
+                attrErrorObj = {}, isValid, model = this.model();
 
-            isValid = this.model().isValid(attributePath, validation);
+            isValid = model.isValid(attributePath, validation);
             attrErrorObj[attr + cowc.ERROR_SUFFIX_ID] = (isValid == true) ? false : isValid;
             errors.set(attrErrorObj);
+
+            /** original solution for https://app.asana.com/0/162139934853695/206515470400258,
+                disabled due to solution impact investigation
+            
+            model.trigger("validated", isValid === "", model, attributePath);
+            model.trigger("validated:" + (isValid === "" ? "valid" : "invalid"), model, attributePath);
+            */
         },
 
         isDeepValid: function(validations) {

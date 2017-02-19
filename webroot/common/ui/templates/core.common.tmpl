@@ -351,8 +351,10 @@
                             <span {{#if link}}class="hyperlink" onclick=javascript:layoutHandler.setURLHashObj({{#jsonStringify link}}{{/jsonStringify}}){{else}}class="hyperlink-inactive"{{/if}}> {{moduleId}} </span>
                         </div>
                         <div class="time col-xs-3">
-                            <i class="fa fa-clock-o" style="cursor:default"></i>
-                            <span class="green"> {{timeStr}} </span>
+                            <div class="pull-right">
+                                <i class="fa fa-clock-o" style="cursor:default"></i>
+                                <span class="green"> {{timeStr}} </span>
+                            </div>
                         </div>
                     </div>
                     <div class="text col-xs-12"> {{#truncate message 200}} {{/truncate}}</div>
@@ -859,7 +861,7 @@
     <div id="{{elementId}}" class="{{class}}" data-bind="{{#if viewConfig.[0].visible}} visible: {{viewConfig.[0].visible}} {{/if}}">
         {{#each viewConfig}}
             {{#if this.title}}
-                <h3 data-rootViewPath="{{dataRootViewPath}}" data-path="{{dataPath}}">{{this.title}} <span class="red pull-right" style="display:none;" data-bind="visible: errors().{{this.elementId}}_error()"> <i class="fa fa-exclamation-triangle red"></i></span></h3>
+                <h3 style="margin-left:15px;margin-right:15px;" data-rootViewPath="{{dataRootViewPath}}" data-path="{{dataPath}}">{{this.title}} <span class="red pull-right" style="display:none;" data-bind="visible: errors().{{this.elementId}}_error()"> <i class="fa fa-exclamation-triangle red"></i></span></h3>
             {{/if}}
             <div data-rootViewPath="{{dataRootViewPath}}" data-path="{{dataPath}}" id="{{this.elementId}}"> </div>
         {{/each}}
@@ -942,14 +944,14 @@
 <script type="text/x-handlebars-template" id="core-editable-grid-input-view-template">
         <div class="form-group" data-bind="{{#if viewConfig.visible}} visible: {{viewConfig.visible}} {{/if}}">
             {{#IfCompare type 'password' operator='==='}}
-                <div class="input-append editable-grid-input-append inset col-xs-12">
+                <div class="input-group input-append editable-grid-input-append inset col-xs-12">
                     <input type="{{type}}" name="{{id}}" class="col-xs-12 {{class}}"
                         data-bind="
                             {{#if viewConfig.disabled}}disable: {{viewConfig.disabled}}, {{/if}}{{#if lockAttr}}disable: locks().{{name}}_locked, {{/if}}
                             value: {{viewConfig.dataBindValue}},
                             event: { focusout: function() { validateAttr()('{{viewConfig.path}}', '{{validation}}', $data) } }"
                     />
-                    <span class="input-group-addon input-type-toggle-action"><i class="fa fa-eye-open"></i></span>
+                    <span class="input-group-addon input-type-toggle-action"><i class="fa fa-eye"></i></span>
                 </div>
             {{else}}
                 <input type="{{type}}" name="{{name}}" class="form-control" placeholder="{{viewConfig.placeholder}}"
@@ -1696,7 +1698,7 @@
         <label style="margin:0">{{viewConfig.label}}</label>
     {{/IfCompare}}
     <div id="{{elementId}}" class="collection or-clause-collection row" data-bind="foreach: {{viewConfig.collection}}">
-        <div class="row or-clause" data-bind="css: 'or-clause-' + $index()">
+        <div class="or-clause" data-bind="css: 'or-clause-' + $index()">
             <div class="row or-clause-header">
                 <p class="or-clause-text col-xs-10" data-bind="text: getOrClauseText()($data)"></p>
                 {{#each viewConfig.rowActions}}
@@ -1708,7 +1710,7 @@
             <div class="row">
                 {{#each viewConfig.rows}}
                     <div style="padding: 5px 5px 0 5px;">
-                        <div class="row">
+                        <div >
                             {{#each columns}}
                                 <div class="and-clause-collection data-cell-{{elementId}}" />
                             {{/each}}
@@ -2138,7 +2140,7 @@
 
 <script type="text/x-handlebars-template" id="core-button-view-template">
     <div data-bind="{{#if viewConfig.visible}} visible: {{viewConfig.visible}} {{/if}}">
-        <button class="btn btn-mini {{viewConfig.elementConfig.btnClass}}"
+        <button type="button" class="btn btn-mini {{viewConfig.elementConfig.btnClass}}"
             data-bind="{{#if viewConfig.disabled}}disable: {{viewConfig.disabled}},
             {{/if}}click: {{viewConfig.elementConfig.onClick}}"
         >
@@ -2230,6 +2232,11 @@
 <script type="text/x-handlebars-template" id="core-stacked-bar-chart-template">
     <div class="stacked-bar-chart-container chart-container">
          <!-- <svg style="height:{{height}}px;"></svg> -->
+    </div>
+</script>
+
+<script type="text/x-handlebars-template" id="core-stacked-area-chart-template">
+    <div class="stacked-area-chart-container chart-container">
     </div>
 </script>
 
@@ -2377,7 +2384,7 @@
 </script>
 
 <script type="text/x-handlebars-template" id="gridstack-widget-template">
-    <div class='gridstack-item'>
+    <div class='custom-grid-stack-item'>
         <div class='grid-stack-item-content'>
             <header>Widget</header>
             <div class='item-content'>
@@ -2431,3 +2438,107 @@
     {{/if}}
     </div>
 </script>
+<script type="text/x-handlebars-template" id="carousal-view-template">
+    <div class="carousel slide" data-ride="carousel">
+        <!--<ol class="carousel-indicators">
+            {{#each pages}}
+                <li id={{@index}}></li>
+            {{/each}}
+        </ol>-->
+        <div class="carousel-inner">
+            <div class="carousel-content">
+            </div>
+        </div>
+        <!-- Controls -->
+        <a class="custom-carousel-control-left custom-carousel-control" role="button">
+            <!--<i id="prev" class="fa fa-chevron-circle-left" aria-hidden="true"></i>-->
+            <div id="prev" class="carousel-control-cover carousel-control-cover-left">
+                <i  id="prev" class="fa fa-angle-left" aria-hidden="true"></i>
+            </div>
+            <div  id="prev" class="carousel-control-cover-story carousel-control-cover-left-story"></div>
+        </a>
+        <a class="custom-carousel-control-right custom-carousel-control"role="button">
+            <!--<i id="next" class="fa fa-chevron-circle-right" aria-hidden="true"></i>-->
+            <div id="next" class="carousel-control-cover carousel-control-cover-right">
+                <i id="next" class="fa fa-angle-right" aria-hidden="true"></i>
+            </div>
+            <div  id="next" class="carousel-control-cover-story carousel-control-cover-right-story"></div>
+        </a>
+    </div>
+</script>
+<script type="text/x-handlebars-template" id="grid-tag-template">
+    <span class='badge' style='background-color:{{bgcolor}}'>{{celltext}}</span>
+</script>
+<script type="text/x-handlebars-template" id="toolbar-options-template">
+    <div id="toolbar_options" class="hidden">
+    </div>
+</script>
+<script type="text/x-handlebars-template" id="toolbar-settings">
+    <div class="btn-toolbar btn-toolbar-primary" id="toolbar_settings">
+        <a href="#"><i class="fa contrailGlyph-menu"></i></a>
+    </div>
+</script>
+
+<script type="text/x-handlebars-template" id="core-settings-color-template">
+    <div id="scheme">
+        <div id="palettes"></div>
+    </div>
+</script>
+<script type="text/x-handlebars-template" id="core-settings-color-more-template">
+    <div class="text-center">
+        <a href="#" id="more_btn">More
+        <span class="fa fa-caret-down"></span></a>
+    </div>
+</script>
+<script type="text/x-handlebars-template" id="tooltip-template">
+ <div class="nvtooltip xy-tooltip nv-pointer-events-none popover popover-tooltip popover-tooltip-no-icon" id="nvtooltip">
+    <div class="popover-title">
+        <p class="heading">{{{this.yAxisLabel}}}</p>
+        <p class="sub-heading">{{{this.subTitle}}}</p>
+    </div>
+    <div class="popover-content">
+        <div class="popover-tooltip-icon font-element">
+            <i class="false"></i>
+        </div>
+        <div class="popover-info">
+                <span  class="sub-heading"><span>{{{this.Time}}}</span>
+            <table>
+                       <tbody>
+                       {{#each this.tooltipData}}
+                       <tr><td class="legend-color-guide"><div
+                       style="background-color: {{{this.color}}};"></div></td>
+                       <td class="key">{{{this.values.name}}} :</td><td
+                       class="value">{{{this.values.y}}}</td></tr>
+                       {{/each}}
+                       </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+ </script>
+<script type="text/x-handlebars-template" id="tooltip-lineareachart-template">
+  <div class="nvtooltip xy-tooltip nv-pointer-events-none popover popover-tooltip popover-tooltip-no-icon" id="nvtooltip">
+    <div class="popover-title">
+        <p class="heading">{{{this.yAxisLabel}}}</p>
+        <p class="sub-heading">{{{this.subTitle}}}</p>
+    </div>
+    <div class="popover-content">
+        <div class="popover-tooltip-icon font-element">
+            <i class="false"></i>
+        </div>
+        <div class="popover-info">
+                <span  class="sub-heading">{{{this.Time}}}</span>
+            <table>
+                       <tbody>
+                        {{#each this.series}}
+                       <tr><td class="legend-color-guide"><div
+                       style="background-color: {{{this.color}}};"></div></td>
+                       <td class="key" style="">{{{this.key}}} :</td><td
+                       class="value">{{{this.value}}}</tr>
+                        {{/each}}
+                       </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+ </script>

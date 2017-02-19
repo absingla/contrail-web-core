@@ -1,7 +1,7 @@
 {
   "contentViews": {
     "GridView": {
-      "label": "Grid List",
+      "label": "Grid",
       "contentView": {
         "view": "GridView",
         "viewPathPrefix": "js/views/"
@@ -10,11 +10,14 @@
         "view": "GridConfigView",
         "viewPathPrefix": "reports/udd/ui/js/views/contentConfigs/",
         "model": "GridConfigModel",
-        "modelPathPrefix": "reports/udd/ui/js/models/contentConfigs/"
+        "modelPathPrefix": "core-basedir/reports/udd/ui/js/models/contentConfigs/"
+      },
+      "validations": {
+        "QueryConfigView": {}
       }
     },
     "LineWithFocusChartView": {
-      "label": "Line With Focus Chart",
+      "label": "Line Chart",
       "contentView": {
         "view": "LineWithFocusChartView",
         "viewPathPrefix": "js/views/"
@@ -23,11 +26,21 @@
         "view": "LineChartConfigView",
         "viewPathPrefix": "reports/udd/ui/js/views/contentConfigs/",
         "model": "LineChartConfigModel",
-        "modelPathPrefix": "reports/udd/ui/js/models/contentConfigs/"
+        "modelPathPrefix": "core-basedir/reports/udd/ui/js/models/contentConfigs/"
+      },
+      "validations": {
+        "QueryConfigView": {
+          "select": {
+              "requiredFieldTypes": ["plottable"]
+          },
+          "table_type": {
+              "rejectedFieldTypes": ["loggable.normal", "loggable.object"]
+          }
+        }
       }
     },
     "LineBarWithFocusChartView": {
-      "label": "Line Bar Chart View",
+      "label": "Line Bar Chart",
       "contentView": {
         "view": "LineBarWithFocusChartView",
         "viewPathPrefix": "js/views/"
@@ -36,11 +49,21 @@
         "view": "LineBarChartConfigView",
         "viewPathPrefix": "reports/udd/ui/js/views/contentConfigs/",
         "model": "LineBarChartConfigModel",
-        "modelPathPrefix": "reports/udd/ui/js/models/contentConfigs/"
+        "modelPathPrefix": "core-basedir/reports/udd/ui/js/models/contentConfigs/"
+      },
+      "validations": {
+        "QueryConfigView": {
+          "select": {
+              "requiredFieldTypes": ["plottable"]
+          },
+          "table_type": {
+              "rejectedFieldTypes": ["loggable.normal", "loggable.object"]
+          }
+        }
       }
     },
     "LogsView": {
-      "label": "Logs View",
+      "label": "Logs",
       "contentView": {
         "view": "LogsView",
         "viewPathPrefix": "reports/udd/ui/js/views/"
@@ -49,7 +72,14 @@
         "view": "LogsConfigView",
         "viewPathPrefix": "reports/udd/ui/js/views/contentConfigs/",
         "model": "LogsConfigModel",
-        "modelPathPrefix": "reports/udd/ui/js/models/contentConfigs/"
+        "modelPathPrefix": "core-basedir/reports/udd/ui/js/models/contentConfigs/"
+      },
+      "validations": {
+        "QueryConfigView": {
+          "table_type": {
+              "requiredFieldTypes": ["loggable.normal"]
+          }
+        }
       }
     }
   },
@@ -59,7 +89,7 @@
       "view": "QueryConfigView",
       "viewPathPrefix": "reports/udd/ui/js/views/dataSourceConfigs/",
       "model": "QueryConfigModel",
-      "modelPathPrefix": "reports/udd/ui/js/models/dataSourceConfigs/",
+      "modelPathPrefix": "core-basedir/reports/udd/ui/js/models/dataSourceConfigs/",
       "modelConfig": {
         "time_range": 600
       }
