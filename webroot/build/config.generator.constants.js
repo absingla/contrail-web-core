@@ -36,19 +36,22 @@ constants.coreModules  = [
             "contrail-list-model","contrail-model","contrail-view-model","d3","nv.d3","slick.checkboxselectcolumn","jquery.event.drag",
             "slick.grid","slick.rowselectionmodel","select2","jquery-ui","jquery.multiselect","jquery.multiselect.filter"
         ]
-    },{
+    },/*{
         enabled: true,
         name: "./js/common/chart.libs",
         exclude: [
             "jquery","lodash","backbone"
         ]
-    },{
+    },*/{
         enabled: true,
         name: "./js/common/thirdparty.libs",
         exclude: [
-            "jquery","jquery.event.drag","knockout","backbone","knockback","validation"
-        ]
-    },{
+            "jquery","jquery-ui","knockout","backbone","knockback","validation","lodash"
+        ],
+        override: {
+            wrapShim: false
+        }
+    },/*{
         enabled: true,
         name: "./js/common/jquery.dep.libs",
         exclude: [
@@ -57,7 +60,7 @@ constants.coreModules  = [
         override: {
             wrapShim: false
         }
-    },{
+    },*/{
         enabled: true,
         name: "./js/common/nonamd.libs",
         exclude: [
@@ -136,33 +139,61 @@ constants.controllerModules = [
         enabled: true,
         name: "monitor-infra-module",
         include: [
-            "mon-infra-controller-dashboard",
+              "mon-infra-controller-dashboard",
 
-            "controller-basedir/monitor/infrastructure/common/ui/js/views/VRouterScatterChartView",
-            "controller-basedir/monitor/infrastructure/common/ui/js/views/ControlNodeScatterChartView",
-            "controller-basedir/monitor/infrastructure/common/ui/js/views/DatabaseNodeScatterChartView",
-            "controller-basedir/monitor/infrastructure/common/ui/js/views/AnalyticsNodeScatterChartView",
-            "vrouter-dashboard-view",
+              "controller-basedir/monitor/infrastructure/common/ui/js/views/VRouterScatterChartView",
+              "controller-basedir/monitor/infrastructure/common/ui/js/views/ControlNodeScatterChartView",
+              "controller-basedir/monitor/infrastructure/common/ui/js/views/DatabaseNodeScatterChartView",
+              "controller-basedir/monitor/infrastructure/common/ui/js/views/AnalyticsNodeScatterChartView",
+              "controller-basedir/monitor/infrastructure/common/ui/js/views/ConfigNodeDonutChartView",
+              "vrouter-dashboard-view",
+              "controller-basedir/monitor/infrastructure/vrouter/ui/js/views/VRouterView",
+              "controller-basedir/monitor/infrastructure/vrouter/ui/js/views/VRouterListView",
+              "controller-basedir/monitor/infrastructure/vrouter/ui/js/views/VRouterSummaryGridView",
+              "controller-basedir/monitor/infrastructure/analyticsnode/ui/js/views/AnalyticsNodeView",
+              "controller-basedir/monitor/infrastructure/analyticsnode/ui/js/views/AnalyticsNodeListView",
+              "controller-basedir/monitor/infrastructure/confignode/ui/js/views/ConfigNodeView",
+              "controller-basedir/monitor/infrastructure/confignode/ui/js/views/ConfigNodeListView",
+              "controller-basedir/monitor/infrastructure/databasenode/ui/js/views/DatabaseNodeView",
+              "controller-basedir/monitor/infrastructure/databasenode/ui/js/views/DatabaseNodeListView",
+              "controller-basedir/monitor/infrastructure/databasenode/ui/js/views/PercentileBarView",
 
-            "monitor-infra-analyticsnode-model",
-            "monitor-infra-databasenode-model",
-            "monitor-infra-confignode-model",
-            "monitor-infra-controlnode-model",
-            "monitor-infra-vrouter-model",
 
-            "monitor-infra-parsers",
-            "monitor-infra-utils",
-            "monitor-infra-constants"
-        ],
-        exclude: [
-            "underscore",
-            "cf-datasource",
-            "contrail-view",
-            "controller-init",
-            "contrail-model",
-            "mon-infra-dashboard-view",
-            "core-basedir/js/views/LoginWindowView"
-        ]
+              "monitor-infra-analyticsnode-model",
+              "monitor-infra-databasenode-model",
+              "monitor-infra-confignode-model",
+              "monitor-infra-controlnode-model",
+              "monitor-infra-vrouter-model",
+
+              "monitor-infra-parsers",
+              "monitor-infra-utils",
+              "monitor-infra-constants",
+
+              "controlnode-viewconfig",
+              "vrouter-viewconfig",
+              "databasenode-viewconfig",
+              "analyticsnode-viewconfig",
+              "confignode-viewconfig",
+              "monitor-infra-viewconfig",
+              "node-color-mapping"
+          ],
+          exclude: [
+              "underscore",
+              "cf-datasource",
+              "contrail-view",
+              "controller-init",
+              "contrail-model",
+              "mon-infra-dashboard-view",
+              "core-basedir/js/views/LoginWindowView",
+              "core-basedir/js/views/CarouselView",
+              "gs-view",
+              "core-basedir/js/views/PercentileTextView",
+              "core-basedir/js/views/StackBarChartWithFocusView",
+              "core-basedir/js/views/StackedAreaChartView",
+              "core-basedir/js/views/ToolbarView",
+              "widget-configmanager",
+              "legend-view"
+          ]
     },
     {
         enabled: true,

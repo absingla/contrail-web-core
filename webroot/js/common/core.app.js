@@ -64,7 +64,6 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'vis-node-model'              : coreWebDir + '/js/models/VisNodeModel',
         'vis-edge-model'              : coreWebDir + '/js/models/VisEdgeModel',
         'vis-tooltip-model'           : coreWebDir + '/js/models/VisTooltipModel',
-        'gs-view'                     : coreWebDir + '/js/views/GridStackView',
         'color-scheme'                : coreWebDir + '/js/color_schemes',
         'palette'                     : coreWebDir + '/assets/palette/js/palette',
         'graph-view'                  : coreWebDir + '/js/views/GraphView',
@@ -104,8 +103,7 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
         'jdorn-jsoneditor'            : coreWebDir + '/assets/jdorn-jsoneditor/js/jdorn-jsoneditor',
         'jquery-linedtextarea'        : coreWebDir + '/assets/jquery-linedtextarea/js/jquery-linedtextarea',
         'qe-module'                   : coreWebDir + '/reports/qe/ui/js/qe.module',
-        'udd-module'                  : coreWebDir + '/reports/udd/ui/js/udd.module',
-        'legend-view'                 : coreWebDir + '/js/views/LegendView',
+        'udd-module'                  : coreWebDir + '/reports/udd/ui/js/udd.module'
     };
 
     //Separate out aliases that need to be there for both prod & dev environments
@@ -197,7 +195,15 @@ function getCoreAppPaths(coreBaseDir, coreBuildDir, env) {
 
             'infoboxes'                   : coreWebDir + '/js/views/InfoboxesView',
             'barchart-cf'                 : coreWebDir + '/js/views/BarChartView',
-            'storage-init'                : 'empty:'
+            'storage-init'                : 'empty:',
+            'legend-view'                 : coreWebDir + '/js/views/LegendView',
+            'gs-view'                     : coreWebDir + '/js/views/GridStackView',
+            'controlnode-viewconfig'      : 'empty:',
+            'vrouter-viewconfig'          : 'empty:',
+            'databasenode-viewconfig'     : 'empty:',
+            'analyticsnode-viewconfig'    : 'empty:',
+            'confignode-viewconfig'       : 'empty:',
+            'monitor-infra-viewconfig'    : 'empty:'
 
         };
         //Merge common (for both prod & dev) alias
@@ -231,9 +237,6 @@ var coreAppShim =  {
     },
     'jquery' : {
         exports: 'jQuery'
-    },
-    'gridstack' :{
-        deps:['jquery-ui']
     },
     'jquery.multiselect' : {
         deps: ['jquery-ui'],
@@ -314,8 +317,8 @@ var coreAppShim =  {
     'slick.groupmetadata': {
         deps: ['jquery']
     },
-    'jquery-dep-libs' : {
-        deps: ['jquery-ui']
+    'thirdparty-libs' : {
+        deps: ['jquery-ui', 'slick.core']
     },
     'slickgrid-utils': {
         deps: ['jquery','slick.grid','slick.dataview']
@@ -385,16 +388,36 @@ var coreAppShim =  {
     },
     'contrail-list-model': {
         deps: ['contrail-remote-data-handler']
+    },
+    'gridstack' :{
+        deps:['jquery-ui']
     }
 };
 
 var coreBundles = {
         //chart-libs,thirdparty-libs,contrail-core-views are loaded lazily
-        'chart-libs'        : [
+        /*'chart-libs'        : [
             'd3',
             'nv.d3'
-        ],
+        ],*/
         'thirdparty-libs'   : [
+           'jquery.xml2json',
+           'jquery.json',
+           'bootstrap',
+           'select2',
+           'slick.core',
+           'slick.dataview',
+           //From jquery-libs
+           'jquery.timer',
+           'jquery.ui.touch-punch',
+           'jquery.validate',
+           'jquery.tristate',
+           'jquery.multiselect',
+           'jquery.multiselect.filter',
+           'jquery.steps.min',
+           'jquery.panzoom',
+           'jquery.event.drag',
+           'jquery.datetimepicker',
             'slick.grid',
             'slick.checkboxselectcolumn',
             'slick.groupmetadata',
@@ -404,8 +427,10 @@ var coreBundles = {
             'sprintf',
             'ipv6',
             'xdate',
+            'd3',
+            'nv.d3'
         ],
-        'jquery-dep-libs': [
+        /*'jquery-dep-libs': [
             'jquery.xml2json',
             'jquery.json',
             'bootstrap',
@@ -422,7 +447,7 @@ var coreBundles = {
             'jquery.panzoom',
             'jquery.event.drag',
             'jquery.datetimepicker'
-        ],
+        ],*/
         'core-bundle'       : [
             'underscore',
             'moment',
@@ -451,6 +476,9 @@ var coreBundles = {
             'lodash',
             'crossfilter',
             'text',
+            'backbone',
+            'knockout',
+            'knockback',
             'layout-handler',
             'menu-handler',
             'help-handler',
@@ -472,7 +500,8 @@ var coreBundles = {
             'mon-infra-alert-grid-view',
             "core-basedir/js/views/LogListView",
             'mon-infra-sysinfo-view',
-            'mon-infra-dashboard-view'
+            'mon-infra-dashboard-view',
+            'core-alarm-utils'
         ],
         'contrail-core-views': [
             'core-basedir/js/views/GridView',
@@ -513,7 +542,14 @@ var coreBundles = {
             'core-basedir/js/views/QueryWhereView',
             'core-basedir/js/views/SparklineView',
             'core-basedir/js/views/TabsView',
-            'core-basedir/js/views/WizardView'
+            'core-basedir/js/views/WizardView',
+            'gs-view',
+            'legend-view',
+            'core-basedir/js/views/CarouselView',
+            'core-basedir/js/views/PercentileTextView',
+            'core-basedir/js/views/ToolbarView',
+            'core-basedir/js/views/StackedBarChartWithFocusView',
+            'core-basedir/js/views/StackedAreaChartView'
         ],
         'nonamd-libs': [
             'web-utils',
@@ -718,9 +754,9 @@ function initCustomKOBindings(Knockout) {
                     if (contrail.checkIfExist(value)) {
                         if (value !== '') {
                             value = $.isArray(value) ? value : [value];
-                            multiselect.value(value, true);
+                            multiselect.value(value);
                         } else if (value === '') {
-                            multiselect.value([], true);
+                            multiselect.value([]);
                         }
                     }
                 }
@@ -1044,7 +1080,7 @@ if (typeof document !== 'undefined' && document) {
                     //Post-Authentication
                     webServerInfoDefObj.done(function() {
                         //Need to remove "slickgrid-utils" once all grids are moved to GridView
-                        require(['core-bundle','jquery-dep-libs','nonamd-libs'],function() {
+                        require(['core-bundle','thirdparty-libs','nonamd-libs'],function() {
                             require(['slickgrid-utils'],function() {
                                 loadUtils.getScript(smUrl);
                             });
@@ -1112,7 +1148,10 @@ if (typeof document !== 'undefined' && document) {
             postAuthenticate: function(response) {
                 require(['jquery'],function() {
                     //To fetch alarmtypes
-                    require(['core-alarm-utils'],function() {});
+                    require(['core-alarm-utils'],function(alarmUtil) {
+                      //Call the update alarm bell after user authentication
+                        alarmUtil.fetchAndUpdateAlarmBell();
+                    });
                     $('#signin-container').empty();
                     //If #content-container already exists,just show it
                     if($('#content-container').length == 0) {
@@ -1133,7 +1172,7 @@ if (typeof document !== 'undefined' && document) {
                     globalObj['webServerInfo'] = loadUtils.parseWebServerInfo(response);
 
                     //For Region drop-down
-                    require(['jquery', 'jquery-dep-libs','nonamd-libs'], function() {
+                    require(['jquery', 'thirdparty-libs','nonamd-libs'], function() {
                         var regionList =
                             globalObj.webServerInfo.regionList;
                         var cnt = 0;
@@ -1191,7 +1230,7 @@ if (typeof document !== 'undefined' && document) {
             },
             onAuthenticationReq: function(loadCfg) {
                 document.getElementById('signin-container').innerHTML = document.getElementById('signin-container-tmpl').innerHTML;
-                require(['jquery','jquery-dep-libs'], function() {
+                require(['jquery','thirdparty-libs'], function() {
                     var isRegionsFromConfig = false;
                     if (null != loadCfg) {
                         isRegionsFromConfig = loadCfg.isRegionListFromConfig;
@@ -1373,8 +1412,8 @@ if (typeof document !== 'undefined' && document) {
             });
             loadUtils.fetchMenu(menuXMLLoadDefObj);
 
-            require(['chart-libs'],function() {});
-            require(['jquery-dep-libs'],function() {});
+            //require(['jquery-dep-libs'],function() {});
+            require(['thirdparty-libs'],function() {});
             globalObj['layoutDefObj'] = $.Deferred();
 
             SVGElement.prototype.getTransformToElement = SVGElement.prototype.getTransformToElement || function(toElement) {
@@ -1383,7 +1422,7 @@ if (typeof document !== 'undefined' && document) {
 
             //nonamd-libs   #no dependency on jquery
             require(['backbone','validation','knockout','knockback'],function() {
-                require(['core-bundle','jquery-dep-libs','nonamd-libs'],function() {
+                require(['core-bundle','nonamd-libs'],function() {
                     require(['validation','knockout','backbone'],function(validation,ko) {
                         window.kbValidation = validation;
                         // window.ko = ko;
