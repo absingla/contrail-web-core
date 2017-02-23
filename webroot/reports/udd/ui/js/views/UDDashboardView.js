@@ -33,6 +33,7 @@ define([
             // add default tab
             if (_.isEmpty(tabIds)) {
                 tabIds.push(this.currentTab);
+                this.model.setTabCreationTime(Date.now());
             }
 
             // sort by creationTime
@@ -170,13 +171,13 @@ define([
             if (tabConfig.model.isEmpty()) {
                 tabConfig.title = tabName || tabId;
                 tabConfig.model.setTabName(tabConfig.title);
-                tabConfig.model.setTabCreationTime(tabCreationTime);
+                tabConfig.model.setTabCreationTime(tabCreationTime || this.model.getTabCreationTime());
             } else {
                 tabConfig.title = tabConfig.model.getTabName();
             }
 
             return tabConfig;
-        },
+        }
     });
 
     return UDDashboardView;
