@@ -9,7 +9,7 @@ define([
         var self = this;
 
         this.INFRA_MODEL_CACHE_TIMEOUT = 5 * 60;
-        this.ENABLE_CAROUSEL = true;
+        this.ENABLE_CAROUSEL = false;
         this.THROTTLE_RESIZE_EVENT_TIME = 500;
 
         this.TMPL_SUFFIX_ID = "-template";
@@ -93,6 +93,7 @@ define([
         this.TMPL_JSON_EDITOR_VIEW = "core-json-editor-view-template";
         this.TMPL_INPUT_VIEW = "core-input-view-template";
         this.TMPL_EDITABLE_GRID_INPUT_VIEW = "core-editable-grid-input-view-template";
+        this.TMPL_EDITABLE_GRID_INPUT_LEFT_LABEL_VIEW = "core-editable-grid-label-input-view-template";
         this.TMP_EDITABLE_GRID_ACTION_VIEW = "core-editable-grid-action-view-template";
         this.TMPL_DROPDOWN_VIEW = "core-dropdown-view-template";
         this.TMPL_EDITABLE_GRID_DROPDOWN_VIEW = "core-editable-grid-dropdown-view-template";
@@ -112,7 +113,9 @@ define([
         this.TMPL_AUTOCOMPLETETEXTBOX_VIEW = "core-autocompletetextbox-view-template";
         this.TMPL_BUTTON_VIEW = "core-button-view-template";
         this.TMPL_COMPOSITE_VIEW = "core-composite-view-template";
+        this.TMPL_EDITABLE_GRID_RADIO_BUTTON_VIEW = "core-editable-grid-radio-button-view-template";
         this.TMPL_RADIO_BUTTON_VIEW = "core-radio-button-view-template";
+        this.TMPL_FOUR_OPTNS_RADIO_BUTTON_VIEW = "core-four-optns-radio-button-view-template";
         this.TMPL_EDITABLE_GRID_VIEW = "core-editable-grid-view-template";
         this.TMPL_TEXT_VIEW = "core-text-view-template";
 
@@ -2041,6 +2044,14 @@ define([
         this.TMPL_QUERY_QUEUE_PAGE = "query-queue-page-template";
         this.TMPL_QUERY_TEXT = "query-text-template";
         this.TMPL_QUERY_SELECT = "query-select-popup-template";
+        //Grid stack
+        this.GRID_STACK_COLUMN_CNT = 24;
+        this.GRID_STACK_DEFAULT_WIDTH = 12;
+        this.LAYOUT_PREFERENCE = 'layout-preference';
+        //Global controller constants
+        this.GLOBAL_CONTROLLER_ALL_REGIONS = "All Regions";
+        this.GLOBAL_CONTROLLER_ROLE = "globalController";
+        this.CLOUDADMIN_ROLE = "cloudAdmin";
     };
     //Export to global scope
     cowc = new CoreConstants();

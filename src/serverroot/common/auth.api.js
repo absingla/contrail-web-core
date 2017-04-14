@@ -69,9 +69,16 @@ function doAuthenticate (req, res, appData, callback) {
 
 function getTokenObj (authObj, callback)
 {
-    var req = authObj.req 
+    var req = authObj.req;
     getAuthMethod[req.session.loggedInOrchestrationMode].getToken(authObj,
                                                                   callback);
+}
+
+function getTokenAndUpdateLastToken (authObj, callback)
+{
+    var req = authObj.req;
+    getAuthMethod[req.session.loggedInOrchestrationMode].getTokenAndUpdateLastToken(authObj,
+                                                                                    callback);
 }
 
 function getTenantList (req, appData, callback)
@@ -203,10 +210,11 @@ function getDomainNameByUUID (request, uuid, domList)
                                                                              domList);
 }
 
-function getServiceAPIVersionByReqObj (request, svcType, callback, reqBy)
+function getServiceAPIVersionByReqObj (request, appData, svcType, callback, reqBy)
 {
     var orchMode = request.session.loggedInOrchestrationMode;
     return getAuthMethod[orchMode].getServiceAPIVersionByReqObj(request,
+                                                                appData,
                                                                 svcType,
                                                                 callback, reqBy);
 }
@@ -330,9 +338,22 @@ function getAuthRetryData (token, req, reqUrl, callback)
                                                     callback);
 }
 
+function getPortToProcessMapByReqObj (req)
+{
+    var orchMode = req.session.loggedInOrchestrationMode;
+    return getAuthMethod[orchMode].getPortToProcessMapByReqObj(req);
+}
+
+function getConfigEntityByServiceEndpoint (req, serviceName)
+{
+    var orchMode = req.session.loggedInOrchestrationMode;
+    return getAuthMethod[orchMode].getConfigEntityByServiceEndpoint(req, serviceName);
+}
+
 exports.doAuthenticate = doAuthenticate;
 exports.getTenantList = getTenantList;
 exports.getTokenObj = getTokenObj;
+exports.getTokenAndUpdateLastToken = getTokenAndUpdateLastToken;
 exports.checkAndUpdateDefTenantToken = checkAndUpdateDefTenantToken;
 exports.getAPIServerAuthParams = getAPIServerAuthParams;
 exports.createAuthKeyBySessionId = createAuthKeyBySessionId;
@@ -362,4 +383,6 @@ exports.getCurrentRegion = getCurrentRegion;
 exports.shiftServiceEndpointList = shiftServiceEndpointList;
 exports.getRoleList = getRoleList;
 exports.getAuthRetryData = getAuthRetryData;
+exports.getPortToProcessMapByReqObj = getPortToProcessMapByReqObj;
+exports.getConfigEntityByServiceEndpoint = getConfigEntityByServiceEndpoint;
 

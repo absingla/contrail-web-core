@@ -84,8 +84,8 @@ global.SERVICE_ENDPT_TYPE_IMAGE = 'image';
 global.SERVICE_ENDPT_TYPE_VOLUME = 'volume';
 global.SERVICE_ENDPT_TYPE_EC2 = 'ec2';
 global.SERVICE_ENDPT_TYPE_IDENTITY = 'identity';
-global.SERVICE_ENDPT_TYPE_APISERVER = 'apiServer';
-global.SERVICE_ENDPT_TYPE_OPSERVER = 'opServer';
+global.SERVICE_ENDPT_TYPE_APISERVER = 'ApiServer';
+global.SERVICE_ENDPT_TYPE_OPSERVER = 'OpServer';
 global.SERVICE_ENDPT_TYPE_CGC = 'cgc';
 global.REGION_ALL = 'All Regions';
 
@@ -149,6 +149,7 @@ global.DEMO_USER_MAX_AGE_SESSION = 2 * 60 * 60 * 1000;
 global.STR_ROLE_USER = 'member';
 global.STR_ROLE_ADMIN = 'cloudAdmin';
 global.STR_ROLE_WILDCARD = '*';
+global.STR_ROLE_GLOBAL_CONTROLLER = "globalController";
 
 global.DFLT_REDIS_SERVER_PORT = '6379';
 global.DFLT_REDIS_SERVER_IP = '127.0.0.1';

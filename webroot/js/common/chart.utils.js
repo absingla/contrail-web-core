@@ -185,6 +185,29 @@ define([
                 series:series
             });
         },
+        defaultLineWithFocusChartTooltipFn: function (d,chartOptions, yAxisFormatter) {
+            var series = d.series;
+            if(yAxisFormatter != null){
+                series = $.map(series,function(d){
+                    d['value'] = yAxisFormatter(d['value']);
+                    return d;
+                });
+            }
+            else if (chartOptions.yFormatter) {
+                series = $.map(series,function(d){
+                    d['value'] = chartOptions.yFormatter(d['value']);
+                    return d;
+                });
+            }
+            var toolTipTemplate = contrail.getTemplate4Id("dashboard-custom-tooltip");
+            return toolTipTemplate({
+                title: chartOptions.title,
+                subtitle: chartOptions.subtitle,
+                yAxisLabel:chartOptions.yAxisLabel,
+                Time:d.value,
+                series:series
+            });
+        },
         getDefaultViewConfig: function(chartType) {
             var stackChartConfig = {
                     viewConfig: {
@@ -197,11 +220,13 @@ define([
                             tickPadding: 8,
                             margin: {
                                 left: 45,
-                                top: 20,
-                                right: 0,
-                                bottom: 15
+                                top: 15,
+                                right: 10,
+                                bottom: 20
                             },
                             yAxisOffset: 25,
+                            showXMinMax: true,
+                            showYMinMax: true,
                             forceY: [0, 0.01],
                             defaultZeroLineDisplay: true,
                             tooltipFn: this.defaultLineAreaTooltipFn
@@ -222,6 +247,8 @@ define([
                             xAxisLabel: '',
                             yAxisLabel: '',
                             groupBy: 'Source',
+                            showXMinMax: true,
+                            showYMinMax: true,
                             yField: '',
                             yFieldOperation: 'average',
                             // bucketSize: this.STATS_BUCKET_DURATION,
@@ -233,7 +260,7 @@ define([
                             margin: {
                                 left: 58,
                                 top: 20,
-                                right: 0,
+                                right: 10,
                                 bottom: 20
                             },
                             tickPadding: 8,
@@ -284,6 +311,64 @@ define([
                 return defaultViewConfigMap[chartType]
             else
                 return {};
+        },
+        updateTickOptionsInChart: function (chartObj, chartOptions) {
+            var showXMinMax = cowu.getValueByJsonPath(chartOptions, 'showXMinMax', false),
+                showYMinMax = cowu.getValueByJsonPath(chartOptions, 'showYMinMax', false),
+                xTickCnt = cowu.getValueByJsonPath(chartOptions, 'xTickCnt'),
+                showTicks = cowu.getValueByJsonPath(chartOptions, 'showTicks', true)
+                showXAxis = cowu.getValueByJsonPath(chartOptions, 'showXAxis', true),
+                showYAxis = cowu.getValueByJsonPath(chartOptions, 'showYAxis', true),
+                yTickCnt = cowu.getValueByJsonPath(chartOptions, 'yTickCnt');
+            if (xTickCnt) {
+                chartObj.xAxis.ticks(xTickCnt);
+            }
+            if (yTickCnt) {
+                if (chartObj.y1Axis != null) {
+                    chartObj.y1Axis.ticks(yTickCnt)
+                }
+                chartObj.yAxis.ticks(yTickCnt);
+            }
+            if (!showTicks) {
+                chartObj.xAxis.ticks(0);
+                chartObj.y1Axis != null ? chartObj.y1Axis.ticks(0): chartObj.yAxis.ticks(0);
+                if (chartObj.x2Axis != null) {
+                    chartObj.x2Axis.ticks(0);
+                }
+                if (chartObj.y2Axis != null) {
+                    chartObj.y2Axis.ticks(0);
+                }
+            }
+            // If showXMinMax/showYMinMax is true we are
+            // hiding the other ticks.
+            if (showXMinMax) {
+                chartObj.xAxis.ticks(0);
+                if (chartObj.x2Axis != null) {
+                    chartObj.x2Axis.ticks(0);
+                }
+            }
+            if (showYMinMax) {
+                chartObj.y1Axis != null ? chartObj.y1Axis.ticks(0): chartObj.yAxis.ticks(0);
+                if (chartObj.y2Axis != null) {
+                    chartObj.y2Axis.ticks(0);
+                }
+            }
+            // Even though we want to hide the axis, we need the formatter
+            // configured to display the formatted data in tooltip
+            if (chartOptions['yFormatter'] != null) {
+                chartObj.y1Axis != null ?
+                chartObj.y1Axis.tickFormat(chartOptions['yFormatter']): chartObj.yAxis.tickFormat(chartOptions['yFormatter']);
+                if (chartObj.y2Axis) {
+                    chartObj.y2Axis.tickFormat(chartOptions['yFormatter']);
+                }
+            }
+            if (chartOptions['xFormatter'] != null) {
+                chartObj.xAxis.tickFormat(chartOptions['xFormatter']);
+                if (chartObj.x2Axis != null) {
+                    chartObj.x2Axis.tickFormat(chartOptions['xFormatter']);
+                }
+            }
+            return chartObj;
         }
     };
 

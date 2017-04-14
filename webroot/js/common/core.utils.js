@@ -834,6 +834,22 @@ define([
             }
         }
 
+        this.sanitize = function (str) {
+            try {
+                return (str != null)? (str + "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"): str;
+            } catch(e) {
+                return str;
+            }
+        }
+
+        this.deSanitize = function (str) {
+            try {
+                return (str != null)? (str + "").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">"): str;
+            } catch(e) {
+                return str;
+            }
+        }
+
         this.getValueByConfig = function(configValue, app, objectAccessor) {
             var templateGenerator = configValue.templateGenerator;
             if (templateGenerator === 'TextGenerator' || templateGenerator === 'LinkGenerator' || templateGenerator === 'json') {
@@ -1188,46 +1204,48 @@ define([
                 }
             }
         };
-
         this.loadAlertsPopup = function(cfgObj) {
-            var prefixId = 'dashboard-alerts';
-            var notificationView = false;
-            var cfgObj = ifNull(cfgObj,{});
-            var modalTemplate =
-                contrail.getTemplate4Id('core-modal-template');
-            var modalId = 'dashboard-alerts-modal';
-            var modalLayout = modalTemplate({prefixId: prefixId, modalId: modalId});
-            var formId = prefixId + '_modal';
-            var modalConfig = {
-                    'modalId': modalId,
-                    'className': 'modal-840',
-                    'body': modalLayout,
-                    'onCancel': function() {
-                        $("#" + modalId).modal('hide');
-                    }
-                }
-            if (notificationView) {
-                require(['js/views/NotificationView', 'core-alarm-parsers', 'core-alarm-utils'],
-                 function (NotificationView, coreAlarmParsers, coreAlarmUtils) {
-                    var notificationView = new NotificationView({
-                        el: $("#alarms-popup-link a"),
-                        viewConfig: {
-                            template: 'notification-popover-template',
-                            title: 'Alarms'
+           var region = contrail.getCookie('region');
+           if(region != 'All Regions') {
+                var prefixId = 'dashboard-alerts';
+                var notificationView = false;
+                var cfgObj = ifNull(cfgObj,{});
+                var modalTemplate =
+                    contrail.getTemplate4Id('core-modal-template');
+                var modalId = 'dashboard-alerts-modal';
+                var modalLayout = modalTemplate({prefixId: prefixId, modalId: modalId});
+                var formId = prefixId + '_modal';
+                var modalConfig = {
+                        'modalId': modalId,
+                        'className': 'modal-840',
+                        'body': modalLayout,
+                        'onCancel': function() {
+                            $("#" + modalId).modal('hide');
                         }
-                    });
-                    notificationView.render();
-                });
-            } else {
-                    cowu.createModal(modalConfig);
-                    require(['js/views/AlarmGridView'], function(AlarmGridView) {
-                        var alarmGridView = new AlarmGridView({
-                            el:$("#" + modalId).find('#' + formId),
-                            viewConfig:{}
+                    }
+                if (notificationView) {
+                    require(['js/views/NotificationView', 'core-alarm-parsers', 'core-alarm-utils'],
+                     function (NotificationView, coreAlarmParsers, coreAlarmUtils) {
+                        var notificationView = new NotificationView({
+                            el: $("#alarms-popup-link a"),
+                            viewConfig: {
+                                template: 'notification-popover-template',
+                                title: 'Alarms'
+                            }
                         });
-                        alarmGridView.render();
+                        notificationView.render();
                     });
-            }
+                } else {
+                        cowu.createModal(modalConfig);
+                        require(['js/views/AlarmGridView'], function(AlarmGridView) {
+                            var alarmGridView = new AlarmGridView({
+                                el:$("#" + modalId).find('#' + formId),
+                                viewConfig:{}
+                            });
+                            alarmGridView.render();
+                        });
+                }
+           }
         };
 
         this.delete_cookie = function(name) {
@@ -1761,7 +1779,7 @@ define([
                     if (yField != null) {
                         var groupByDimSum = groupDim.group().reduceSum(
                             function (d) {
-                                return d[yField];
+                                return cowu.getValueByJsonPath(d, yField);
                         });
                         if (yFieldOperation == 'average') {
                             groupCountsObj = _.indexBy(groupDim.group().reduceCount().all(), 'key');
@@ -1865,7 +1883,7 @@ define([
                      // Currently we are computing the max value
                      // we can add sum, failures etc based on need
                      var maxValueObj = _.max(recordsArr, function (d) {
-                         return ifNull(d[yField], 0);
+                         return cowu.getValueByJsonPath(d, yField, 0);
                      });
                      var maxValue = getValueByJsonPath(maxValueObj, yField, 0);
                      parsedData[yAxisLabel].values.push({
@@ -2099,7 +2117,7 @@ define([
 
         self.resetGridStackLayout = function(allPages) {
             //var gridStackId = $('.custom-grid-stack').attr('data-widget-id');
-            localStorage.clear();
+            localStorage.removeItem(cowc.LAYOUT_PREFERENCE);
             var gridStackInst = $('.custom-grid-stack').data('grid-stack-instance')
             if(gridStackInst != null ) {
                 gridStackInst.render()
@@ -2113,8 +2131,37 @@ define([
                 items = gridInst._dataView.getItems();
             }
             return items;
-        }
+        };
+        self.getLayoutPreference = function (elementId) {
+            // We have remove this if block once all the keys
+            // are removed from local storage
+            if (localStorage.getItem(elementId) != null) {
+                var preferences = JSON.parse(localStorage.getItem(elementId));
+                _.map(preferences, function (item) {
+                    if (item != null && item.itemAttr != null) {
+                        item.itemAttr.width *= 2;
+                        item.itemAttr.x *= 2;
+                    }
+                    return item;
+                });
+                self.updateLayoutPreference(elementId, preferences);
+                localStorage.removeItem(elementId);
+            }
 
+            if (localStorage.getItem(cowc.LAYOUT_PREFERENCE) != null) {
+                return _.result(JSON.parse(localStorage.getItem(cowc.LAYOUT_PREFERENCE)), elementId);
+            }
+        };
+        self.updateLayoutPreference = function (elementId, preferences) {
+            var layoutPref = localStorage.getItem(cowc.LAYOUT_PREFERENCE);
+            if (layoutPref != null) {
+                layoutPref = JSON.parse(layoutPref);
+            } else {
+                layoutPref = {};
+            }
+            layoutPref[elementId] = preferences;
+            localStorage.setItem(cowc.LAYOUT_PREFERENCE, JSON.stringify(layoutPref));
+        }
         /**
          * Takes input as an array of configs.
          * The first one is considered as primary req and the rest are added as
@@ -2310,7 +2357,7 @@ define([
         for(var i in updatedObj){
             if(typeof updatedObj[i] === 'number' || typeof updatedObj[i] === 'string' || typeof updatedObj[i] === 'boolean'){
                 if(oldObj === undefined){
-                    if(updatedObj[i] === '' || updatedObj[i] === 0 || updatedObj[i] === false){
+                    if(updatedObj[i] === '' || updatedObj[i] === false){
                         delete updatedObj[i];
                     }
                 }else{
@@ -2318,7 +2365,7 @@ define([
                         if(updatedObj[i] === oldObj[i] && !oldJson.hasOwnProperty(i)){
                             delete updatedObj[i];
                         }
-                        if(oldJson[i] === null){
+                        if(oldJson[i] === null && updatedObj[i] === null){
                             updatedObj[i] = null;
                         }
                     }else{
@@ -2327,6 +2374,8 @@ define([
                         }
                     }
                 }
+            }else if(updatedObj[i] === null){
+                delete updatedObj[i];
             }else if(typeof updatedObj[i] === 'object' && updatedObj[i] !== null && updatedObj[i].constructor !== Array){
                 if(oldJson !== undefined && oldJson !== null){
                     getDeepDiffOfKey(updatedObj[i], oldObj[i], oldJson[i]);

@@ -185,12 +185,12 @@ config.analytics.ca = '';
 config.analytics.statusURL = "/analytics/uves/bgp-peers";
 
 //DNS API Server and port.
+/* Please note: being introspect port, SSL options for dns should come from
+   config.introspect.ssl configuration
+ */
 config.dns = {};
 config.dns.server_ip = ['127.0.0.1'];
 config.dns.server_port = '8092';
-config.dns.authProtocol = 'http';
-config.dns.strictSSL = false;
-config.dns.ca = '';
 config.dns.statusURL = "/Snh_PageReq?x=AllEntries%20VdnsServersReq";
 
 // vcenter related parameters
@@ -203,6 +203,32 @@ config.vcenter.dvsswitch = 'vswitch';           //dvsswitch name
 config.vcenter.strictSSL = false;               //Validate the certificate or ignore
 config.vcenter.ca = '';                         //specify the certificate key file
 config.vcenter.wsdl = '/usr/src/contrail/contrail-web-core/webroot/js/vim.wsdl';
+
+/*****************************************************************************
+ * The below configurations descibe the SSL options for connecting to different
+ * introspect port.
+ *
+ * enabled:
+ *      Boolean flag to enable or disable ssl while connecting to different
+ *      introspect port
+ * key:
+ *      Private key to use for SSL
+ * cert:
+ *      Public x509 certificate to use
+ * ca:
+ *      A string, Buffer or array of strings or Buffers of trusted certificates
+ *      in PEM format. These are used to authorize connections.
+ * strictSSL:
+ *      If true, the server certificate is verified against the list of
+ *      supplied CAs
+ *****************************************************************************/
+config.introspect = {};
+config.introspect.ssl = {};
+config.introspect.ssl.enabled = false;
+config.introspect.ssl.key = '';
+config.introspect.ssl.cert = '';
+config.introspect.ssl.ca = '';
+config.introspect.ssl.strictSSL = false;
 
 /* Job Server */
 config.jobServer = {};

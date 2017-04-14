@@ -1237,6 +1237,45 @@ function getToken (authObj, callback)
     });
 }
 
+function getAccessDataByProject (req, tenantName)
+{
+    return commonUtils.getValueByJsonPath(req, "session;accessData;" +
+                                          tenantName, null, false);
+}
+
+function updateAccessDataByProject (req, tenantName, accessData)
+{
+    if ((null == tenantName) || (null == accessData) || (null == req)) {
+        return;
+    }
+    if (null == req.session.accessData) {
+        req.session.accessData = {};
+    }
+    req.session.accessData[tenantName] = accessData;
+}
+
+function getTokenAndUpdateLastToken (authObj, callback)
+{
+    var req = authObj.req;
+    var tenantName = authObj.project;
+    var cachedAccessData = getAccessDataByProject(req, tenantName);
+    var token = commonUtils.getValueByJsonPath(cachedAccessData, "access;token",
+                                               null);
+    if (null != token) {
+        callback(null, token, cachedAccessData);
+        return;
+    }
+    getUserAuthData(req, tenantName, function(error, data) {
+        var token = data.access.token;
+        var dataAccess = commonUtils.cloneObj(data);
+        updateTokenIdForProject(req, tenantName, data.access);
+        updateDefTenantToken(req, tenantName, data);
+        updateLastTokenUsed(req, data.access);
+        updateAccessDataByProject(req, tenantName, data);
+        callback(null, token, dataAccess);
+    });
+}
+
 /** Function: getToken
  *   This function is used to get token object from the tenantId and once done,
  *   call the callback
@@ -2928,14 +2967,71 @@ function getSessionExpiryTime (req, appData, callback)
     return null;
 }
 
-function getServiceAPIVersionByReqObj (req, svcType, callback, reqBy)
+function getServiceAPIVersionByReqObj (req, appData, svcType, callback, reqBy)
 {
-    oStack.getServiceAPIVersionByReqObj(req, svcType, callback, reqBy);
+    oStack.getServiceAPIVersionByReqObj(req, appData, svcType, callback, reqBy);
 }
 
 function shiftServiceEndpointList (req, serviceType, regionName)
 {
     oStack.shiftServiceEndpointList(req, serviceType, regionName);
+}
+
+function getPortToProcessMapByReqObj (req)
+{
+    var portToProcessMap = {};
+    var regionCookie = commonUtils.getValueByJsonPath(req, "cookies;region",
+                                                      null, false);
+    var portToEntityMaps = commonUtils.getValueByJsonPath(req,
+                                                          "session;portToProcessMap;"
+                                                          + regionCookie,
+                                                          null, false);
+    if (null != portToEntityMaps) {
+        return portToEntityMaps;
+    }
+    /* compute from catalog */
+    var serviceCatalog = commonUtils.getValueByJsonPath(req,
+                                                        "session;serviceCatalog",
+                                                        null, false);
+    if (null == serviceCatalog[regionCookie]) {
+        return null;
+    }
+    for (var key in serviceCatalog[regionCookie]) {
+        var port = commonUtils.getValueByJsonPath(serviceCatalog[regionCookie],
+                                                  key + ";maps;0;port", null);
+        if (null == port) {
+            continue;
+        }
+        portToProcessMap[port] = key;
+    }
+    /* Save it to session object */
+    if (null == req.session.portToProcessMap) {
+        req.session.portToProcessMap = {};
+    }
+    req.session.portToProcessMap[regionCookie] = portToProcessMap;
+    return portToProcessMap;
+}
+
+function getConfigEntityByServiceEndpoint (req, serviceName)
+{
+    switch (serviceName) {
+    case global.SERVICE_ENDPT_TYPE_IDENTITY:
+        return "identityManager";
+    case global.SERVICE_ENDPT_TYPE_NETWORK:
+        return "networkManager";
+    case global.SERVICE_ENDPT_TYPE_IMAGE:
+        return "imageManager";
+    case global.SERVICE_ENDPT_TYPE_COMPUTE:
+        return "computeManager";
+    case global.SERVICE_ENDPT_TYPE_APISERVER:
+        return "cnfg";
+    case global.SERVICE_ENDPT_TYPE_OPSERVER:
+        return "analytics";
+    default:
+        /* Not used in contrail-ui */
+        return null;
+    }
+    return null;
 }
 
 exports.authenticate = authenticate;
@@ -2963,4 +3059,6 @@ exports.getServiceCatalogByRegion = getServiceCatalogByRegion;
 exports.shiftServiceEndpointList = shiftServiceEndpointList;
 exports.getRoleList = getRoleList;
 exports.getAuthRetryData = getAuthRetryData;
-
+exports.getPortToProcessMapByReqObj = getPortToProcessMapByReqObj;
+exports.getConfigEntityByServiceEndpoint = getConfigEntityByServiceEndpoint;
+exports.getTokenAndUpdateLastToken = getTokenAndUpdateLastToken;

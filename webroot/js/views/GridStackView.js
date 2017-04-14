@@ -2,7 +2,7 @@
  * Copyright (c) 2016 Juniper Networks, Inc. All rights reserved.
  */
 define([
-    'underscore',
+    'lodash',
     'backbone',
     'contrail-view',
     'gridstack',
@@ -22,15 +22,18 @@ define([
             self.gridAttr = cowu.getValueByJsonPath(options,'attributes;viewConfig;gridAttr',{});
             self.elementId = cowu.getValueByJsonPath(options,'attributes;viewConfig;elementId','');
             self.movedWidgetCfg = cowu.getValueByJsonPath(options,'attributes;viewConfig;movedWidgetCfg',null);
+            self.disableDrag = cowu.getValueByJsonPath(options,'attributes;viewConfig;disableDrag',false);
+            self.disableResize = cowu.getValueByJsonPath(options,'attributes;viewConfig;disableResize',false);
+            self.isSaveLayout = cowu.getValueByJsonPath(options,'attributes;viewConfig;savelayout',true);
             self.COLUMN_CNT = 2;
             self.VIRTUAL_COLUMNS = 2;
             //Decouple cellHieght from height assigned to widget
             self.CELL_HEIGHT_MULTIPLER = 1;
             //Default is 12 columns. To have 3 column layout, set defaultWidth as 4
             if(self.gridAttr['defaultWidth'] != null)
-                self.COLUMN_CNT = 12/self.gridAttr['defaultWidth'];
+                self.COLUMN_CNT = cowc.GRID_STACK_COLUMN_CNT/self.gridAttr['defaultWidth'];
 
-            self.$el.addClass('grid-stack grid-stack-12 custom-grid-stack');
+            self.$el.addClass('grid-stack grid-stack-24 custom-grid-stack');
             self.$el.attr('data-widget-id',self.elementId);
             self.gridStack = $(self.$el).gridstack({
                 float:true,
@@ -38,12 +41,15 @@ define([
                 resizable: {
                     handles:'sw,se',
                 },
+                disableDrag: self.disableDrag,
+                disableResize: self.disableResize,
                 verticalMargin:8/self.CELL_HEIGHT_MULTIPLER,
                 cellHeight: 20,
                 animate:false,
-                acceptWidgets:'label'
+                acceptWidgets:'label',
+                width: 24
             }).data('gridstack');
-            
+
             self.$el.on('drag','.grid-stack-item',function(event,ui) {
                 $('.custom-grid-stack').addClass('show-borders');
             });
@@ -63,7 +69,7 @@ define([
             //Listen for change events once gridStack is rendered else it's getting triggered even while adding widgets for the first time
             self.$el.on('change',function(event,items) {
                 //Added to avoid saving to localStorage on resetLayout..as change event gets triggered even if we remove all widgets from gridstack
-                if(localStorage.getItem(self.elementId) != null) {
+                if(cowu.getLayoutPreference(self.elementId) != null) {
                     if(self.doSaveLayout == true)
                         self.saveGrid();
                     if(self.doSaveLayout == true)
@@ -71,9 +77,21 @@ define([
                 }
             });
         },
+        //Mark the layout as invalid if there are more than 5 widgets in a row i.e
+        //avg width of a widget shouldn't be more than 12/5 (12 being the total width)
+        isLayoutValid: function(data) {
+            var itemWidths = _.sum(data,'itemAttr.width');
+            var avgItemWidth = itemWidths/data.length;
+            if(avgItemWidth < 2.3) {
+                return false;
+            }
+            return true;
+        },
         saveGrid : function () {
             var self = this;
             var isValidLayout = true;
+            if(self.isSaveLayout === false)
+            return false;
             var serializedData = _.map(self.$el.find('.custom-grid-stack-item:visible'), function (el) {
                 el = $(el);
                 var node = el.data('_gridstack_node');
@@ -94,9 +112,15 @@ define([
                         })
                 };
             }, this);
+
+            if(!self.isLayoutValid(serializedData)) {
+                isValidLayout = false;
+            }
+
             if(isValidLayout == true) {
-                localStorage.setItem(self.elementId,JSON.stringify(serializedData));
+                cowu.updateLayoutPreference(self.elementId, serializedData);
             } else {
+
             }
         },
         render: function() {
@@ -119,9 +143,9 @@ define([
             }
             var widgetCfgList = self.widgetCfgList;
             //Check if there exists a saved preference for current gridStack id
-            if(localStorage.getItem(self.elementId) != null) {
-                var serializedData = localStorage.getItem(self.elementId),
-                    tmpData = JSON.parse(serializedData);
+            if(cowu.getLayoutPreference(self.elementId) != null) {
+                var serializedData = cowu.getLayoutPreference(self.elementId),
+                    tmpData = serializedData;
                 if(tmpData.length > 0){
                     widgetCfgList = tmpData;
                 }
@@ -130,7 +154,7 @@ define([
             // widgetCfgList[i]['itemAttr'] - Defined in ListView file
             for(var i=0;i < widgetCfgList.length;i++) {
                 var currWidgetCfg = widgetConfigManager.get(widgetCfgList[i]['id'])(
-                        widgetCfgList[i]);
+                        widgetCfgList[i],i);
                 //Here using extend for itemAttr - to get properties from both view.config & ListView
                 self.add({
                     widgetCfg: widgetCfgList[i],
@@ -156,7 +180,7 @@ define([
             var widgetCnt = self.widgets.length;
             $(currElem).attr('data-widget-id',widgetCfg['id']);
             $(currElem).data('data-cfg', cfg);
-            if(localStorage.getItem(self.elementId) != null || isMoved) {
+            if(cowu.getLayoutPreference(self.elementId) != null || isMoved) {
                 if(isMoved){
                     self.tmpHeight = itemAttr['height'];
                     itemAttr['x'] = 0;
@@ -181,20 +205,25 @@ define([
             var modelCfg = cfg['modelCfg'],model;
             //Add cache Config
             var modelId = cfg['modelCfg']['modelId'];
+            var region = contrail.getCookie('region');
+            if(region == null) {
+                region = "Default"
+            }
             //if there exists a mapping of modelId in widgetConfigManager.modelInstMap, use it
             //Maintain a mapping of cacheId vs contrailListModel and if found,return that
-            var cachedModelObj = widgetConfigManager.modelInstMap[modelId];
+            var cachedModelObj = cowu.getValueByJsonPath(widgetConfigManager.modelInstMap,region + ';' + modelId);
             var isCacheExpired = true;
+            
             if(cachedModelObj != null && 
                (_.now() - cachedModelObj['time']) < cowc.INFRA_MODEL_CACHE_TIMEOUT * 1000) {
-                model = widgetConfigManager.modelInstMap[modelId]['model'];
+                model = cowu.getValueByJsonPath(widgetConfigManager.modelInstMap,region + ';' + modelId+ ';model');
                 if(model.errorList.length == 0) {
                     isCacheExpired = false;
                     model.loadedFromCache = true;
                 }
             }
             if(!isCacheExpired) {
-                model = widgetConfigManager.modelInstMap[modelId]['model'];
+                model = cowu.getValueByJsonPath(widgetConfigManager.modelInstMap,region + ';' + modelId+ ';model');
             } else if(cowu.getValueByJsonPath(cfg,'modelCfg;source','').match(/STATTABLE|LOG|OBJECT/)) {
                 model = new ContrailListModel(cowu.getStatsModelConfig(modelCfg['config']));
             } else if(cowu.getValueByJsonPath(cfg,'modelCfg;listModel','') != '') {
@@ -203,13 +232,14 @@ define([
                 model = new ContrailListModel(modelCfg['config']);
             }
             if(isCacheExpired && modelId != null) {
-                widgetConfigManager.modelInstMap[modelId] = {
+                widgetConfigManager.modelInstMap[region] = {};
+                widgetConfigManager.modelInstMap[region][modelId] = {
                     model: model,
                     time: _.now()
                 };
             }
             var viewType = cowu.getValueByJsonPath(cfg,'viewCfg;view','');
-            if(viewType.match(/eventDropsView/)) {
+            if(viewType.match(/eventDropsView/) || viewType.match(/VRouterCrossFiltersView/)) {
                 $(currElem).find('header').addClass('drag-handle');
             } else {
                 $(currElem).find('.item-content').addClass('drag-handle');
